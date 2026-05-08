@@ -797,7 +797,7 @@ function checkLogin() {
   var input = document.getElementById('pw-input').value;
   var err   = document.getElementById('pw-error');
   if(input === ADMIN_PW) {
-    sessionStorage.setItem('bjm_logged_in','true');
+    localStorage.setItem('bjm_logged_in','true');
     var el = document.getElementById('login-screen');
     if(el) el.remove();
   } else {
@@ -820,7 +820,7 @@ window.addEventListener('DOMContentLoaded', () => {
   // 로그인 체크
   var loginEl = document.getElementById('login-screen');
   if(loginEl) {
-    if(sessionStorage.getItem('bjm_logged_in') !== 'true') {
+    if(localStorage.getItem('bjm_logged_in') !== 'true') {
       loginEl.style.display = 'flex';
       setTimeout(function() {
         var inp = document.getElementById('pw-input');
