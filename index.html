@@ -224,8 +224,13 @@ textarea{resize:vertical;min-height:80px;}
       <div class="sec-hd"><h2>👥 학생 목록</h2><div class="actions">
         <select id="filter-class" onchange="renderStudents()" style="font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:3px;background:var(--white);cursor:pointer;font-family:var(--sans);">
           <option value="">전체 반</option>
-          <option>공통수학1</option><option>공통수학2</option><option>대수</option>
-          <option>미적분Ⅰ</option><option>확률통계</option><option>미적분Ⅱ</option><option>기하</option>
+          <optgroup label="공통수학1"><option>공통수학1 개념</option><option>공통수학1 문풀</option><option>공통수학1 심화</option></optgroup>
+          <optgroup label="공통수학2"><option>공통수학2 개념</option><option>공통수학2 문풀</option><option>공통수학2 심화</option></optgroup>
+          <optgroup label="대수"><option>대수 개념</option><option>대수 문풀</option><option>대수 심화</option></optgroup>
+          <optgroup label="미적분Ⅰ"><option>미적분Ⅰ 개념</option><option>미적분Ⅰ 문풀</option><option>미적분Ⅰ 심화</option></optgroup>
+          <optgroup label="확률통계"><option>확률통계 개념</option><option>확률통계 문풀</option><option>확률통계 심화</option></optgroup>
+          <optgroup label="미적분Ⅱ"><option>미적분Ⅱ 개념</option><option>미적분Ⅱ 문풀</option><option>미적분Ⅱ 심화</option></optgroup>
+          <optgroup label="기하"><option>기하 개념</option><option>기하 문풀</option><option>기하 심화</option></optgroup>
         </select>
         <button class="btn-sm" onclick="openStudentModal()">+ 학생 추가</button>
       </div></div>
@@ -312,7 +317,11 @@ textarea{resize:vertical;min-height:80px;}
       </div>
       <div class="form-row">
         <div class="form-group"><label>학교</label><input id="s-school" placeholder="경북고등학교"></div>
-        <div class="form-group"><label>수업 반</label><select id="s-class"><option>공통수학1</option><option>공통수학2</option><option>대수</option><option>미적분Ⅰ</option><option>확률통계</option><option>미적분Ⅱ</option><option>기하</option></select></div>
+        <div class="form-group"><label>과목</label><select id="s-subject" onchange="updateClassOptions()"><option>공통수학1</option><option>공통수학2</option><option>대수</option><option>미적분Ⅰ</option><option>확률통계</option><option>미적분Ⅱ</option><option>기하</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>수업 유형</label><select id="s-type" onchange="updateClassOptions()"><option>개념</option><option>문풀</option><option>심화</option></select></div>
+        <div class="form-group"><label>반 (자동 생성)</label><input id="s-class" readonly style="background:var(--bg2);cursor:default;" placeholder="과목+유형 선택시 자동입력"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>학생 연락처</label><input id="s-phone" placeholder="010-0000-0000"></div>
@@ -409,6 +418,16 @@ textarea{resize:vertical;min-height:80px;}
 <div class="toast" id="toast"></div>
 
 <script>
+
+// 반 자동 생성
+function updateClassOptions() {
+  var subject = document.getElementById('s-subject');
+  var type = document.getElementById('s-type');
+  var cls = document.getElementById('s-class');
+  if(subject && type && cls) {
+    cls.value = subject.value + ' ' + type.value;
+  }
+}
 // 데이터 저장소
 var DB = {
   get: function(k) { try { return JSON.parse(localStorage.getItem('bjm_'+k)||'[]'); } catch(e){ return []; } },
@@ -521,6 +540,16 @@ function editStudent(id) {
   document.getElementById('s-name').value=s.name;
   document.getElementById('s-grade').value=s.grade;
   document.getElementById('s-school').value=s.school;
+  // 반에서 과목/유형 분리
+  var parts = (s.class||'').split(' ');
+  var subjects = ['공통수학1','공통수학2','대수','미적분Ⅰ','확률통계','미적분Ⅱ','기하'];
+  var types = ['개념','문풀','심화'];
+  if(parts.length>=2) {
+    var subj = parts.slice(0,-1).join(' ');
+    var typ = parts[parts.length-1];
+    if(subjects.includes(subj)) document.getElementById('s-subject').value = subj;
+    if(types.includes(typ)) document.getElementById('s-type').value = typ;
+  }
   document.getElementById('s-class').value=s.class;
   document.getElementById('s-phone').value=s.phone||'';
   document.getElementById('s-parent').value=s.parent||'';
