@@ -75,7 +75,7 @@ body{font-family:'Pretendard','Gowun Dodum','Apple SD Gothic Neo',sans-serif;bac
   background:var(--red-bg);color:var(--red);
   font-size:11px;font-weight:700;padding:5px 12px;border-radius:100px;
 }
-.btn-sm{white-space:nowrap;white-space:nowrap;
+.btn-sm{white-space:nowrap;white-space:nowrap;white-space:nowrap;
   background:var(--red);color:#fff;border:0;
   font-size:12px;font-weight:700;padding:7px 14px;border-radius:3px;cursor:pointer;
   font-family:'Pretendard','Gowun Dodum','Apple SD Gothic Neo',sans-serif;transition:.15s;
@@ -298,28 +298,6 @@ textarea{resize:vertical;min-height:80px;}
 </head>
 <body>
 
-
-<div id="login-screen" style="position:fixed;inset:0;z-index:99999;background:#0f0f0f;display:none;align-items:center;justify-content:center;">
-  <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:40px 36px;width:100%;max-width:360px;">
-    <div style="text-align:center;margin-bottom:32px;">
-            <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:4px;">김병진 수학연구소</div>
-      <div style="font-size:12px;color:#555;">학생 관리 시스템 · 관리자 전용</div>
-    </div>
-    <div style="margin-bottom:16px;">
-      <div style="font-size:11px;font-weight:700;color:#555;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">비밀번호</div>
-      <input type="password" id="pw-input" placeholder="비밀번호 입력"
-        onkeydown="if(event.key==='Enter') checkLogin()"
-        style="width:100%;background:#111;border:1.5px solid #2a2a2a;border-radius:6px;padding:12px 14px;font-size:14px;color:#fff;outline:none;font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;"
-        onfocus="this.style.borderColor='#b4281e'"
-        onblur="this.style.borderColor='#2a2a2a'">
-    </div>
-    <div id="pw-error" style="font-size:12px;color:#b4281e;margin-bottom:12px;display:none;">비밀번호가 틀렸습니다</div>
-    <button onclick="checkLogin()"
-      style="width:100%;background:#b4281e;color:#fff;border:0;border-radius:6px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;"
-      onmouseover="this.style.background='#8f1e16'" onmouseout="this.style.background='#b4281e'">로그인</button>
-    <div style="text-align:center;margin-top:20px;font-size:11px;color:#333;">관리자 외 접근 불가</div>
-  </div>
-</div>
 
 
 <div class="shell">
@@ -791,21 +769,6 @@ textarea{resize:vertical;min-height:80px;}
 
 <script>
 
-// ══ 비밀번호 로그인 ══════════════════════════════
-var ADMIN_PW = 'focus5966';
-function checkLogin() {
-  var input = document.getElementById('pw-input').value;
-  var err   = document.getElementById('pw-error');
-  if(input === ADMIN_PW) {
-    localStorage.setItem('bjm_logged_in','true');
-    var el = document.getElementById('login-screen');
-    if(el) el.remove();
-  } else {
-    err.style.display = 'block';
-    document.getElementById('pw-input').value = '';
-    document.getElementById('pw-input').focus();
-  }
-}
 
 // ══ 데이터 저장소 (localStorage) ══════════════════
 const DB = {
@@ -817,41 +780,6 @@ const DB = {
 
 // ══ 초기화 ════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', () => {
-  // 로그인 체크
-  var loginEl = document.getElementById('login-screen');
-  if(loginEl) {
-    if(localStorage.getItem('bjm_logged_in') !== 'true') {
-      loginEl.style.display = 'flex';
-      setTimeout(function() {
-        var inp = document.getElementById('pw-input');
-        if(inp) inp.focus();
-      }, 100);
-    } else {
-      loginEl.style.display = 'none';
-      loginEl.style.pointerEvents = 'none';
-    }
-  }
-
-  const today = new Date();
-  document.getElementById('today-label').textContent =
-    today.toLocaleDateString('ko-KR', {month:'long', day:'numeric', weekday:'short'});
-  const att = document.getElementById('att-date');
-  const attIn = document.getElementById('att-date-input');
-  const testDate = document.getElementById('test-date-input');
-  const hwDue = document.getElementById('hw-due');
-  const schDate = document.getElementById('sch-date');
-  const todayStr = today.toISOString().slice(0, 10);
-  if(att) att.value = todayStr;
-  if(attIn) attIn.value = todayStr;
-  if(testDate) testDate.value = todayStr;
-  if(hwDue) hwDue.value = todayStr;
-  if(schDate) schDate.value = todayStr;
-
-  const memo = DB.getOne('memo');
-  if(memo) document.getElementById('memo-area').value = memo;
-
-  renderDashboard();
-});
 
 // ══ 뷰 전환 ════════════════════════════════════════
 const viewTitles = {
