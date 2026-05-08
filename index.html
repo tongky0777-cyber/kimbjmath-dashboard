@@ -224,8 +224,8 @@ textarea{resize:vertical;min-height:80px;}
       <div class="sec-hd"><h2>👥 학생 목록</h2><div class="actions">
         <select id="filter-class" onchange="renderStudents()" style="font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:3px;background:var(--white);cursor:pointer;font-family:var(--sans);">
           <option value="">전체 반</option>
-          <option>공통수학A</option><option>공통수학B</option><option>대수A</option>
-          <option>미적분ⅠA</option><option>확률통계</option><option>미적분Ⅱ</option><option>기하</option>
+          <option>공통수학1</option><option>공통수학2</option><option>대수</option>
+          <option>미적분Ⅰ</option><option>확률통계</option><option>미적분Ⅱ</option><option>기하</option>
         </select>
         <button class="btn-sm" onclick="openStudentModal()">+ 학생 추가</button>
       </div></div>
@@ -312,7 +312,7 @@ textarea{resize:vertical;min-height:80px;}
       </div>
       <div class="form-row">
         <div class="form-group"><label>학교</label><input id="s-school" placeholder="경북고등학교"></div>
-        <div class="form-group"><label>수업 반</label><select id="s-class"><option>공통수학A</option><option>공통수학B</option><option>대수A</option><option>미적분ⅠA</option><option>확률통계</option><option>미적분Ⅱ</option><option>기하</option></select></div>
+        <div class="form-group"><label>수업 반</label><select id="s-class"><option>공통수학1</option><option>공통수학2</option><option>대수</option><option>미적분Ⅰ</option><option>확률통계</option><option>미적분Ⅱ</option><option>기하</option></select></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>학생 연락처</label><input id="s-phone" placeholder="010-0000-0000"></div>
@@ -536,7 +536,7 @@ function renderStudents() {
   if(!tbody) return;
   if(!filtered.length) { tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">학생을 추가해보세요</td></tr>'; return; }
   tbody.innerHTML = filtered.map(function(s){
-    var tag = s.class.startsWith('공통') ? 'ct-1' : (s.class==='대수A'||s.class==='미적분ⅠA') ? 'ct-2' : 'ct-s';
+    var tag = s.class.startsWith('공통') ? 'ct-1' : (s.class==='대수'||s.class==='미적분Ⅰ') ? 'ct-2' : 'ct-s';
     return '<tr><td class="student-name">'+s.name+'</td><td>'+(s.school||'—')+'</td><td>'+s.grade+'</td><td><span class="class-tag '+tag+'">'+s.class+'</span></td><td>'+(s.phone||'—')+'</td><td>'+(s.parent||'—')+'</td><td style="font-size:11px;color:var(--muted);">'+(s.createdAt||'—')+'</td><td><div class="row-action"><button class="icon-btn" onclick="editStudent(\''+s.id+'\')">✏️</button><button class="icon-btn" onclick="deleteStudent(\''+s.id+'\')">🗑️</button></div></td></tr>';
   }).join('');
 }
