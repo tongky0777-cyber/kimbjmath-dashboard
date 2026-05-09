@@ -105,8 +105,8 @@ tr:hover td{background:#fafaf8;}
 .hw-half{background:var(--gold-bg);color:var(--gold);}
 
 /* 아이콘 버튼 */
-.row-action{display:flex;gap:6px;opacity:0;transition:.15s;}
-tr:hover .row-action{opacity:1;}
+.row-action{display:flex;gap:6px;opacity:1;transition:.15s;}
+
 .icon-btn{background:var(--bg2);border:0;border-radius:3px;width:26px;height:26px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;}
 .icon-btn:hover{background:var(--line);}
 
@@ -1392,22 +1392,106 @@ function renderProgress() {
   var recs = DB.get('progress').sort(function(a,b){ return b.date.localeCompare(a.date); });
   var tbody = document.getElementById('progress-body');
   if(!tbody) return;
-  if(!recs.length) { tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">진도를 입력해보세요</td></tr>'; return; }
+  tbody.innerHTML = '';
+  if(!recs.length) {
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:32px;">진도를 입력해보세요</td></tr>';
+    return;
+  }
+
   var statusLabel = {'done':'✅ 완료','ing':'🔄 진행 중','review':'⚠️ 복습 필요'};
   var statusColor = {'done':'var(--green)','ing':'var(--blue)','review':'var(--gold)'};
-  tbody.innerHTML = recs.map(function(r){
-    var s = students.find(function(x){ return x.id===r.sid; });
-    return '<tr>'
-      +'<td class="student-name">'+(s?s.name:'—')+'</td>'
-      +'<td>'+(s?s.class:'—')+'</td>'
-      +'<td style="font-size:12px;">'+(r.book||'—')+'</td>'
-      +'<td style="font-size:12px;">'+(r.unit||'—')+'</td>'
-      +'<td style="font-size:12px;font-weight:500;">'+(r.range||'—')+'</td>'
-      +'<td style="font-size:11px;color:var(--muted);">'+(r.date||'—')+'</td>'
-      +'<td><span style="font-size:11px;font-weight:700;color:'+statusColor[r.status]+';">'+(statusLabel[r.status]||r.status)+'</span></td>'
-      +'<td><div class="row-action"><button class="icon-btn" onclick="deleteProgress(\''+r.id+'\')">🗑️</button></div></td>'
-      +'</tr>';
-  }).join('');
+
+  // 반별 진도 묶기: groupName+book+unit+range+date 가 같으면 묶음
+  var processed = {};
+  var rows = [];
+
+  recs.forEach(function(r) {
+    if(r.groupName) {
+      // 반별 진도 - 같은 반+날짜+교재면 묶기
+      var key = r.groupName + '||' + r.date + '||' + r.book + '||' + r.unit + '||' + r.range;
+      if(!processed[key]) {
+        processed[key] = {type:'group', groupName:r.groupName, date:r.date, book:r.book, unit:r.unit, range:r.range, status:r.status, memo:r.memo, ids:[r.id]};
+        rows.push(processed[key]);
+      } else {
+        processed[key].ids.push(r.id);
+      }
+    } else {
+      // 개별 진도
+      rows.push({type:'individual', r:r});
+    }
+  });
+
+  rows.forEach(function(row) {
+    var tr = document.createElement('tr');
+
+    if(row.type === 'group') {
+      // 반별 진도 행
+      tr.innerHTML =
+        '<td><span class="class-tag ct-1">'+row.groupName+'</span></td>'
+        +'<td><span style="background:var(--gold-bg);color:var(--gold);font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;">반 전체</span></td>'
+        +'<td style="font-size:12px;">'+(row.book||'—')+'</td>'
+        +'<td style="font-size:12px;">'+(row.unit||'—')+'</td>'
+        +'<td style="font-size:12px;font-weight:500;">'+(row.range||'—')+'</td>'
+        +'<td style="font-size:11px;color:var(--muted);">'+(row.date||'—')+'</td>'
+        +'<td><span style="font-size:11px;font-weight:700;color:'+(statusColor[row.status]||'var(--muted)')+';">'+(statusLabel[row.status]||row.status)+'</span></td>'
+        +'<td style="font-size:12px;color:var(--muted);">'+(row.memo||'—')+'</td>'
+        +'<td></td>';
+
+      // 삭제 버튼 (반 전체 삭제)
+      var btnWrap = document.createElement('div');
+      btnWrap.style.cssText = 'display:flex;gap:6px;';
+      var delBtn = document.createElement('button');
+      delBtn.className = 'icon-btn'; delBtn.textContent = '🗑️';
+      delBtn.title = '반 전체 진도 삭제';
+      var ids = row.ids;
+      delBtn.onclick = function(){
+        if(!confirm('반 전체 진도를 삭제할까요?')) return;
+        var all = DB.get('progress');
+        DB.set('progress', all.filter(function(x){ return !ids.includes(x.id); }));
+        renderProgress(); toast('삭제되었습니다');
+      };
+      btnWrap.appendChild(delBtn);
+      tr.querySelector('td:last-child').appendChild(btnWrap);
+
+    } else {
+      // 개별 진도 행
+      var r = row.r;
+      var s = students.find(function(x){ return x.id===r.sid; });
+      var myGroups = s ? getStudentGroups(s.id) : [];
+      var groupStr = myGroups.length
+        ? '<span class="class-tag ct-1">'+myGroups[0].name+'</span>'
+        : '<span style="color:var(--muted);font-size:11px;">미배정</span>';
+
+      tr.innerHTML =
+        '<td class="student-name">'+(s?s.name:'—')+'</td>'
+        +'<td>'+groupStr+'</td>'
+        +'<td style="font-size:12px;">'+(r.book||'—')+'</td>'
+        +'<td style="font-size:12px;">'+(r.unit||'—')+'</td>'
+        +'<td style="font-size:12px;font-weight:500;">'+(r.range||'—')+'</td>'
+        +'<td style="font-size:11px;color:var(--muted);">'+(r.date||'—')+'</td>'
+        +'<td><span style="font-size:11px;font-weight:700;color:'+(statusColor[r.status]||'var(--muted)')+';">'+(statusLabel[r.status]||r.status)+'</span></td>'
+        +'<td style="font-size:12px;color:var(--muted);">'+(r.memo||'—')+'</td>'
+        +'<td></td>';
+
+      var btnWrap = document.createElement('div');
+      btnWrap.style.cssText = 'display:flex;gap:6px;';
+
+      var editBtn = document.createElement('button');
+      editBtn.className='icon-btn'; editBtn.textContent='✏️';
+      var rid = r.id;
+      editBtn.onclick = function(){ editProgress(rid); };
+      btnWrap.appendChild(editBtn);
+
+      var delBtn = document.createElement('button');
+      delBtn.className='icon-btn'; delBtn.textContent='🗑️';
+      delBtn.onclick = function(){ deleteProgress(rid); };
+      btnWrap.appendChild(delBtn);
+
+      tr.querySelector('td:last-child').appendChild(btnWrap);
+    }
+
+    tbody.appendChild(tr);
+  });
 }
 
 
