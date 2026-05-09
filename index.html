@@ -36,12 +36,12 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .sb-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:rgba(255,255,255,.25);}
 
 /* 메인 */
-.main{display:flex;flex-direction:column;overflow:visible;}
+.main{display:flex;flex-direction:column;min-height:100vh;}
 .topbar{background:var(--white);border-bottom:1px solid var(--line);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
 .topbar-title{font-size:15px;font-weight:700;color:var(--ink);}
 .topbar-right{display:flex;align-items:center;gap:10px;}
 .today-badge{background:var(--red-bg);color:var(--red);font-size:11px;font-weight:700;padding:5px 12px;border-radius:100px;}
-.content{padding:24px 28px;flex:1;overflow-y:auto;}
+.content{padding:24px 28px;flex:1;overflow-y:auto;min-height:0;}
 
 /* 뷰 */
 .view{display:none;}
@@ -861,6 +861,11 @@ window.addEventListener('DOMContentLoaded', function() {
   }
   updateTestFilter();
   renderDashboard();
+  // 초기 뷰 설정
+  document.querySelectorAll('.view').forEach(function(v){
+    if(!v.classList.contains('on')) v.style.display = 'none';
+    else v.style.display = 'block';
+  });
 });
 
 // 뷰 전환
@@ -877,9 +882,18 @@ function activateMemo() {
 var viewTitles = {dashboard:'📊 전체 현황',progress:'📖 진도 관리',groups:'🏫 반 관리',students:'👥 학생 목록',attendance:'✅ 출결 관리',tests:'📝 테스트 결과',homework:'📚 숙제 관리',schedule:'📅 보강 · 일정',memo:'🗒️ 메모'};
 
 function showView(id, el) {
-  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('on'); });
+  // 모든 뷰 숨기기
+  document.querySelectorAll('.view').forEach(function(v){
+    v.classList.remove('on');
+    v.style.display = 'none';
+  });
   document.querySelectorAll('.sb-item').forEach(function(i){ i.classList.remove('on'); });
-  document.getElementById('view-'+id).classList.add('on');
+  // 선택된 뷰 보이기
+  var target = document.getElementById('view-'+id);
+  if(target) {
+    target.classList.add('on');
+    target.style.display = 'block';
+  }
   if(el) el.classList.add('on');
   document.getElementById('page-title').textContent = viewTitles[id]||'';
   if(id==='students') renderStudents();
