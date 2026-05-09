@@ -185,6 +185,29 @@ textarea{resize:vertical;min-height:80px;}
 </style>
 </head>
 <body>
+
+<div id="login-screen" style="position:fixed;inset:0;z-index:99999;background:#0f0f0f;display:none;align-items:center;justify-content:center;">
+  <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:40px 36px;width:100%;max-width:360px;">
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:4px;">김병진 수학연구소</div>
+      <div style="font-size:12px;color:#555;">학생 관리 시스템 · 관리자 전용</div>
+    </div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:700;color:#555;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">비밀번호</div>
+      <input type="password" id="login-pw" placeholder="비밀번호 입력"
+        style="width:100%;background:#111;border:1.5px solid #2a2a2a;border-radius:6px;padding:12px 14px;font-size:14px;color:#fff;outline:none;font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;box-sizing:border-box;"
+        onfocus="this.style.borderColor='#b4281e'"
+        onblur="this.style.borderColor='#2a2a2a'">
+    </div>
+    <div id="login-err" style="font-size:12px;color:#b4281e;margin-bottom:12px;display:none;">비밀번호가 틀렸습니다</div>
+    <button id="login-btn"
+      style="width:100%;background:#b4281e;color:#fff;border:0;border-radius:6px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;">
+      로그인
+    </button>
+    <div style="text-align:center;margin-top:20px;font-size:11px;color:#333;">관리자 외 접근 불가</div>
+  </div>
+</div>
+
 <div class="shell">
 
 <!-- 사이드바 -->
@@ -647,6 +670,40 @@ textarea{resize:vertical;min-height:80px;}
 <div class="toast" id="toast"></div>
 
 <script>
+
+// 로그인
+var LOGIN_PW = 'tongky07';
+
+function doLogin() {
+  var pw = document.getElementById('login-pw').value;
+  var err = document.getElementById('login-err');
+  if(pw === LOGIN_PW) {
+    localStorage.setItem('bjm_auth', 'true');
+    var sc = document.getElementById('login-screen');
+    if(sc) sc.remove();
+  } else {
+    err.style.display = 'block';
+    document.getElementById('login-pw').value = '';
+    document.getElementById('login-pw').focus();
+  }
+}
+
+(function() {
+  if(localStorage.getItem('bjm_auth') !== 'true') {
+    document.addEventListener('DOMContentLoaded', function() {
+      var sc = document.getElementById('login-screen');
+      if(sc) {
+        sc.style.display = 'flex';
+        var btn = document.getElementById('login-btn');
+        var pw  = document.getElementById('login-pw');
+        if(btn) btn.addEventListener('click', doLogin);
+        if(pw)  pw.addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
+        setTimeout(function(){ if(pw) pw.focus(); }, 100);
+      }
+    });
+  }
+})();
+
 // 데이터 저장소
 var DB = {
   get: function(k) { try { return JSON.parse(localStorage.getItem('bjm_'+k)||'[]'); } catch(e){ return []; } },
