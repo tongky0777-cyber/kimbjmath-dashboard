@@ -939,28 +939,56 @@ function renderGroups() {
     el.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:48px;background:var(--white);border:1px solid var(--line);border-radius:6px;">반을 만들어보세요</div>';
     return;
   }
-  el.innerHTML = groups.map(function(g){
+  var cards = '';
+  groups.forEach(function(g) {
     var sNames = (g.students||[]).map(function(sid){
       var s = students.find(function(x){ return x.id===sid; });
       return s ? s.name : null;
     }).filter(Boolean);
-    return '<div style="background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden;">'
-      + '<div style="background:var(--red);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">'
-      + '<div><div style="font-size:13px;font-weight:700;color:#fff;">'+g.name+'</div>'
-      + '<div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;">'+(g.subject||'')+' '+(g.type||'')+' · '+(g.time||'시간 미정')+'</div></div>'
-      + '<div style="display:flex;gap:6px;">'
-      + '<button class="icon-btn" style="background:rgba(255,255,255,.15);color:#fff;" onclick="openGroupModal(''+g.id+'')">✏️</button>'
-      + '<button class="icon-btn" style="background:rgba(255,255,255,.15);color:#fff;" onclick="deleteGroup(''+g.id+'')">🗑️</button>'
-      + '</div></div>'
-      + '<div style="padding:14px 16px;">'
-      + '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">학생 '+sNames.length+'명</div>'
-      + '<div style="display:flex;flex-wrap:wrap;gap:5px;">'
-      + (sNames.length ? sNames.map(function(n){ return '<span style="background:var(--bg2);padding:3px 8px;border-radius:100px;font-size:11px;">'+n+'</span>'; }).join('') : '<span style="color:var(--muted);font-size:12px;">학생 없음</span>')
-      + '</div></div>'
-      + '<div style="padding:10px 16px;border-top:1px solid var(--line);">'
-      + '<button class="btn-sm" style="width:100%;font-size:11px;" onclick="openGroupHwForGroup(''+g.id+'')">📚 숙제 일괄 등록</button>'
-      + '</div></div>';
-  }).join('');
+    var nameChips = sNames.length
+      ? sNames.map(function(n){ return '<span style="background:var(--bg2);padding:3px 8px;border-radius:100px;font-size:11px;">'+n+'</span>'; }).join('')
+      : '<span style="color:var(--muted);font-size:12px;">학생 없음</span>';
+    var gid = g.id;
+    var card = document.createElement('div');
+    card.style.cssText = 'background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden;';
+    card.innerHTML = [
+      '<div style="background:var(--red);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">',
+        '<div>',
+          '<div style="font-size:13px;font-weight:700;color:#fff;">'+g.name+'</div>',
+          '<div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;">'+(g.subject||'')+' '+(g.type||'')+' · '+(g.time||'시간 미정')+'</div>',
+        '</div>',
+        '<div style="display:flex;gap:6px;" id="gbtn-'+gid+'"></div>',
+      '</div>',
+      '<div style="padding:14px 16px;">',
+        '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">학생 '+sNames.length+'명</div>',
+        '<div style="display:flex;flex-wrap:wrap;gap:5px;">'+nameChips+'</div>',
+      '</div>',
+      '<div style="padding:10px 16px;border-top:1px solid var(--line);" id="ghwbtn-'+gid+'"></div>'
+    ].join('');
+    el.appendChild(card);
+
+    // 버튼 별도 생성
+    var editBtn = document.createElement('button');
+    editBtn.className = 'icon-btn';
+    editBtn.style.cssText = 'background:rgba(255,255,255,.15);color:#fff;';
+    editBtn.textContent = '✏️';
+    editBtn.onclick = function(){ openGroupModal(gid); };
+    document.getElementById('gbtn-'+gid).appendChild(editBtn);
+
+    var delBtn = document.createElement('button');
+    delBtn.className = 'icon-btn';
+    delBtn.style.cssText = 'background:rgba(255,255,255,.15);color:#fff;';
+    delBtn.textContent = '🗑️';
+    delBtn.onclick = function(){ deleteGroup(gid); };
+    document.getElementById('gbtn-'+gid).appendChild(delBtn);
+
+    var hwBtn = document.createElement('button');
+    hwBtn.className = 'btn-sm';
+    hwBtn.style.cssText = 'width:100%;font-size:11px;';
+    hwBtn.textContent = '📚 숙제 일괄 등록';
+    hwBtn.onclick = function(){ openGroupHwForGroup(gid); };
+    document.getElementById('ghwbtn-'+gid).appendChild(hwBtn);
+  });
 }
 
 // ══ 그룹 숙제 ════════════════════════════════════
@@ -1068,7 +1096,7 @@ function renderProgress() {
       +'<td style="font-size:12px;font-weight:500;">'+(r.range||'—')+'</td>'
       +'<td style="font-size:11px;color:var(--muted);">'+(r.date||'—')+'</td>'
       +'<td><span style="font-size:11px;font-weight:700;color:'+statusColor[r.status]+';">'+(statusLabel[r.status]||r.status)+'</span></td>'
-      +'<td><div class="row-action"><button class="icon-btn" onclick="deleteProgress(''+r.id+'')">🗑️</button></div></td>'
+      +'<td><div class="row-action"><button class="icon-btn" onclick="deleteProgress(\''+r.id+'\')">🗑️</button></div></td>'
       +'</tr>';
   }).join('');
 }
