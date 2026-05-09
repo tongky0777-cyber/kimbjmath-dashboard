@@ -224,20 +224,11 @@ textarea{resize:vertical;min-height:80px;}
     <!-- 학생 목록 -->
     <div class="view" id="view-students">
       <div class="sec-hd"><h2>👥 학생 목록</h2><div class="actions">
-        <select id="filter-class" onchange="renderStudents()" style="font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:3px;background:var(--white);cursor:pointer;font-family:var(--sans);">
-          <option value="">전체 반</option>
-          <optgroup label="공통수학1"><option>공통수학1 개념</option><option>공통수학1 문풀</option><option>공통수학1 심화</option></optgroup>
-          <optgroup label="공통수학2"><option>공통수학2 개념</option><option>공통수학2 문풀</option><option>공통수학2 심화</option></optgroup>
-          <optgroup label="대수"><option>대수 개념</option><option>대수 문풀</option><option>대수 심화</option></optgroup>
-          <optgroup label="미적분Ⅰ"><option>미적분Ⅰ 개념</option><option>미적분Ⅰ 문풀</option><option>미적분Ⅰ 심화</option></optgroup>
-          <optgroup label="확률통계"><option>확률통계 개념</option><option>확률통계 문풀</option><option>확률통계 심화</option></optgroup>
-          <optgroup label="미적분Ⅱ"><option>미적분Ⅱ 개념</option><option>미적분Ⅱ 문풀</option><option>미적분Ⅱ 심화</option></optgroup>
-          <optgroup label="기하"><option>기하 개념</option><option>기하 문풀</option><option>기하 심화</option></optgroup>
-        </select>
+<select id="filter-class" onchange="renderStudents()" style="font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:3px;background:var(--white);cursor:pointer;font-family:var(--sans);"><option value="">전체 반</option></select>
         <button class="btn-sm" onclick="openStudentModal()">+ 학생 추가</button>
       </div></div>
       <div class="tbl-wrap">
-        <table><thead><tr><th>이름</th><th>학교</th><th>학년</th><th>반</th><th>연락처</th><th>학부모</th><th>등록일</th><th></th></tr></thead>
+        <table><thead><tr><th>이름</th><th>학교</th><th>학년</th><th>소속 반</th><th>연락처</th><th>학부모</th><th>등록일</th><th></th></tr></thead>
         <tbody id="student-body"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">학생을 추가해보세요</td></tr></tbody></table>
       </div>
     </div>
@@ -329,21 +320,18 @@ textarea{resize:vertical;min-height:80px;}
     <div class="modal-hd"><h3>학생 추가 / 수정</h3><button class="modal-close" onclick="closeModal('modal-student')">×</button></div>
     <div class="modal-body">
       <input type="hidden" id="s-id">
+      <input type="hidden" id="s-class" value="">
       <div class="form-row">
         <div class="form-group"><label>이름 *</label><input id="s-name" placeholder="홍길동"></div>
         <div class="form-group"><label>학년</label><select id="s-grade"><option>초5</option><option>초6</option><option>중1</option><option>중2</option><option>중3</option><option>고1</option><option>고2</option><option>고3</option></select></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>학교</label><input id="s-school" placeholder="경북고등학교"></div>
-        <div class="form-group"><label>과목</label><select id="s-subject" onchange="updateClassOptions()"><option>공통수학1</option><option>공통수학2</option><option>대수</option><option>미적분Ⅰ</option><option>확률통계</option><option>미적분Ⅱ</option><option>기하</option></select></div>
+        <div class="form-group"><label>연락처</label><input id="s-phone" placeholder="010-0000-0000"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>수업 유형</label><select id="s-type" onchange="updateClassOptions()"><option>개념</option><option>문풀</option><option>심화</option></select></div>
-        <div class="form-group"><label>반 (자동 생성)</label><input id="s-class" readonly style="background:var(--bg2);cursor:default;" placeholder="과목+유형 선택시 자동입력"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>학생 연락처</label><input id="s-phone" placeholder="010-0000-0000"></div>
         <div class="form-group"><label>학부모 연락처</label><input id="s-parent" placeholder="010-0000-0000"></div>
+        <div class="form-group"></div>
       </div>
       <div class="form-group full"><label>메모</label><textarea id="s-memo" placeholder="특이사항, 취약 단원 등"></textarea></div>
     </div>
@@ -502,16 +490,6 @@ textarea{resize:vertical;min-height:80px;}
 <div class="toast" id="toast"></div>
 
 <script>
-
-// 반 자동 생성
-function updateClassOptions() {
-  var subject = document.getElementById('s-subject');
-  var type = document.getElementById('s-type');
-  var cls = document.getElementById('s-class');
-  if(subject && type && cls) {
-    cls.value = subject.value + ' ' + type.value;
-  }
-}
 // 데이터 저장소
 var DB = {
   get: function(k) { try { return JSON.parse(localStorage.getItem('bjm_'+k)||'[]'); } catch(e){ return []; } },
@@ -559,6 +537,7 @@ function showView(id, el) {
   if(id==='dashboard') renderDashboard();
   if(id==='progress') renderProgress();
   if(id==='groups') renderGroups();
+  updateGroupFilter();
 }
 
 // 모달
@@ -641,6 +620,20 @@ function editStudent(id) {
   document.getElementById('s-parent').value=s.parent||'';
   document.getElementById('s-memo').value=s.memo||'';
   openModal('modal-student');
+}
+
+
+function updateGroupFilter() {
+  var groups = DB.get('groups');
+  var sel = document.getElementById('filter-class');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">전체 반</option>' +
+    groups.map(function(g){ return '<option value="'+g.id+'">'+g.name+'</option>'; }).join('');
+}
+
+function getStudentGroups(sid) {
+  var groups = DB.get('groups');
+  return groups.filter(function(g){ return (g.students||[]).includes(sid); });
 }
 
 function renderStudents() {
@@ -921,7 +914,7 @@ function saveGroup() {
   if(idx===-1) groups.push(group); else groups[idx]=group;
   DB.set('groups', groups);
   closeModal('modal-group');
-  renderGroups(); toast(name+' 반이 저장되었습니다');
+  renderGroups(); updateGroupFilter(); toast(name+' 반이 저장되었습니다');
 }
 
 function deleteGroup(id) {
