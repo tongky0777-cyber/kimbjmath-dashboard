@@ -254,7 +254,8 @@ textarea{resize:vertical;min-height:80px;}
     <div class="view" id="view-tests">
       <div class="sec-hd"><h2>📝 테스트 결과</h2><div class="actions">
         <select id="test-filter" onchange="renderTests()" style="font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:3px;background:var(--white);cursor:pointer;font-family:var(--sans);"><option value="">전체 테스트</option></select>
-        <button class="btn-sm" onclick="openTestModal()">+ 테스트 입력</button>
+        <button class="btn-sm sec" onclick="openGroupTestModal()">👥 반별 입력</button>
+        <button class="btn-sm" onclick="openTestModal()">+ 개별 입력</button>
       </div></div>
       <div class="tbl-wrap">
         <table><thead><tr><th>이름</th><th>반</th><th>테스트명</th><th>날짜</th><th>점수</th><th>메모</th><th></th></tr></thead>
@@ -484,6 +485,59 @@ textarea{resize:vertical;min-height:80px;}
       </div>
     </div>
     <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-group')">취소</button><button class="btn-save" onclick="saveGroup()">저장</button></div>
+  </div>
+</div>
+
+
+<!-- 모달: 반별 테스트 입력 -->
+<div class="modal-bg" id="modal-group-test">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-hd"><h3>👥 반별 테스트 입력</h3><button class="modal-close" onclick="closeModal('modal-group-test')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>반 선택 *</label><select id="gt-group" onchange="updateGroupTestList()"></select></div>
+        <div class="form-group"><label>날짜</label><input type="date" id="gt-date"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>테스트명 *</label><input id="gt-name" placeholder="5월 2주차 단원 테스트"></div>
+        <div class="form-group"></div>
+      </div>
+      <div id="gt-student-scores" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;padding:4px;"></div>
+    </div>
+    <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-group-test')">취소</button><button class="btn-save" onclick="saveGroupTest()">전체 저장</button></div>
+  </div>
+</div>
+
+<!-- 모달: 학생 상세 -->
+<div class="modal-bg" id="modal-student-detail">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-hd">
+      <div>
+        <h3 id="detail-name">학생 상세</h3>
+        <div id="detail-info" style="font-size:11px;color:var(--muted);margin-top:3px;"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-student-detail')">×</button>
+    </div>
+    <div class="modal-body" style="gap:12px;">
+      <!-- 요약 카드 -->
+      <div id="detail-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;"></div>
+      <!-- 테스트 그래프 -->
+      <div style="background:var(--bg);border-radius:6px;padding:16px;">
+        <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:12px;">📈 테스트 성적 추이</div>
+        <canvas id="detail-chart" height="180"></canvas>
+        <div id="detail-no-test" style="text-align:center;color:var(--muted);font-size:12px;padding:24px;display:none;">테스트 기록이 없습니다</div>
+      </div>
+      <!-- 최근 출결 -->
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;">✅ 최근 출결</div>
+        <div id="detail-att" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+      </div>
+      <!-- 미제출 숙제 -->
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;">📚 미제출 숙제</div>
+        <div id="detail-hw" style="font-size:12px;color:var(--muted);"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1092,6 +1146,180 @@ function renderProgress() {
       +'<td><div class="row-action"><button class="icon-btn" onclick="deleteProgress(\''+r.id+'\')">🗑️</button></div></td>'
       +'</tr>';
   }).join('');
+}
+
+// ══ 반별 테스트 입력 ══════════════════════════════
+function openGroupTestModal() {
+  var groups = DB.get('groups');
+  var sel = document.getElementById('gt-group');
+  sel.innerHTML = groups.length
+    ? groups.map(function(g){ return '<option value="'+g.id+'">'+g.name+'</option>'; }).join('')
+    : '<option value="">반 없음 (반 관리에서 먼저 생성)</option>';
+  document.getElementById('gt-name').value = '';
+  document.getElementById('gt-date').value = new Date().toISOString().slice(0,10);
+  updateGroupTestList();
+  openModal('modal-group-test');
+}
+
+function updateGroupTestList() {
+  var gid = document.getElementById('gt-group').value;
+  var groups = DB.get('groups');
+  var students = DB.get('students');
+  var g = groups.find(function(x){ return x.id===gid; });
+  var el = document.getElementById('gt-student-scores');
+  if(!g || !g.students || !g.students.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:16px;font-size:12px;">반에 학생이 없습니다</div>';
+    return;
+  }
+  el.innerHTML = g.students.map(function(sid){
+    var s = students.find(function(x){ return x.id===sid; });
+    if(!s) return '';
+    return '<div style="display:flex;align-items:center;gap:12px;background:var(--bg2);padding:8px 12px;border-radius:4px;">'
+      +'<div style="font-size:13px;font-weight:700;min-width:80px;">'+s.name+'</div>'
+      +'<input type="number" id="gt-score-'+sid+'" min="0" max="100" placeholder="점수" '
+      +'style="width:90px;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:13px;font-family:var(--sans);background:var(--white);">'
+      +'<input type="text" id="gt-memo-'+sid+'" placeholder="메모 (선택)" '
+      +'style="flex:1;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:12px;font-family:var(--sans);background:var(--white);">'
+      +'</div>';
+  }).join('');
+}
+
+function saveGroupTest() {
+  var gid = document.getElementById('gt-group').value;
+  var name = document.getElementById('gt-name').value.trim();
+  var date = document.getElementById('gt-date').value;
+  if(!gid || !name) { toast('반과 테스트명을 입력해주세요'); return; }
+  var groups = DB.get('groups');
+  var g = groups.find(function(x){ return x.id===gid; });
+  if(!g || !g.students || !g.students.length) { toast('반에 학생이 없습니다'); return; }
+  var recs = DB.get('tests');
+  var saved = 0;
+  g.students.forEach(function(sid){
+    var scoreEl = document.getElementById('gt-score-'+sid);
+    var memoEl  = document.getElementById('gt-memo-'+sid);
+    if(!scoreEl || scoreEl.value === '') return;
+    recs.push({
+      id: Date.now().toString()+sid,
+      sid: sid,
+      name: name,
+      score: +scoreEl.value,
+      date: date,
+      memo: memoEl ? memoEl.value : ''
+    });
+    saved++;
+  });
+  DB.set('tests', recs);
+  updateTestFilter();
+  closeModal('modal-group-test');
+  renderTests();
+  toast(name+' 테스트 결과 '+saved+'명 저장 완료!');
+}
+
+// ══ 학생 상세 (꺾은선 그래프) ════════════════════
+var detailChartInstance = null;
+
+function openStudentDetail(sid) {
+  var students = DB.get('students');
+  var s = students.find(function(x){ return x.id===sid; });
+  if(!s) return;
+
+  var tests = DB.get('tests').filter(function(t){ return t.sid===sid; }).sort(function(a,b){ return a.date.localeCompare(b.date); });
+  var att   = DB.get('attendance').filter(function(r){ return r.sid===sid; });
+  var hw    = DB.get('homework').filter(function(h){ return h.sid===sid && h.status==='pending'; });
+  var myGroups = getStudentGroups(sid);
+
+  // 헤더
+  document.getElementById('detail-name').textContent = s.name;
+  document.getElementById('detail-info').textContent = s.grade + ' · ' + (s.school||'') + (myGroups.length ? ' · '+myGroups.map(function(g){return g.name;}).join(', ') : '');
+
+  // 요약 카드
+  var total   = att.length;
+  var present = att.filter(function(r){ return r.status==='O'||r.status==='B'; }).length;
+  var rate    = total ? Math.round(present/total*100) : 0;
+  var avg     = tests.length ? Math.round(tests.reduce(function(s,t){return s+t.score;},0)/tests.length) : 0;
+  var statsEl = document.getElementById('detail-stats');
+  statsEl.innerHTML = [
+    {label:'출석률', value: total ? rate+'%' : '—', color:'var(--teal)'},
+    {label:'테스트 평균', value: tests.length ? avg+'점' : '—', color: avg>=90?'var(--green)':avg>=70?'var(--gold)':'var(--red)'},
+    {label:'미제출 숙제', value: hw.length+'건', color: hw.length ? 'var(--red)' : 'var(--green)'},
+  ].map(function(c){
+    return '<div style="background:var(--white);border:1px solid var(--line);border-radius:6px;padding:14px;text-align:center;">'
+      +'<div style="font-size:11px;color:var(--muted);margin-bottom:6px;">'+c.label+'</div>'
+      +'<div style="font-size:22px;font-weight:700;color:'+c.color+';">'+c.value+'</div>'
+      +'</div>';
+  }).join('');
+
+  // 테스트 그래프
+  var chartEl  = document.getElementById('detail-chart');
+  var noTestEl = document.getElementById('detail-no-test');
+  if(detailChartInstance) { detailChartInstance.destroy(); detailChartInstance=null; }
+
+  if(!tests.length) {
+    chartEl.style.display='none'; noTestEl.style.display='block';
+  } else {
+    chartEl.style.display=''; noTestEl.style.display='none';
+    var labels = tests.map(function(t){ return t.date.slice(5)+'\n'+(t.name.length>8?t.name.slice(0,8)+'…':t.name); });
+    var scores = tests.map(function(t){ return t.score; });
+    var colors = scores.map(function(sc){ return sc>=90?'#1a6b3a':sc>=70?'#8a6820':'#b4281e'; });
+
+    function loadChartAndRender() {
+      var ctx = chartEl.getContext('2d');
+      detailChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '점수',
+            data: scores,
+            borderColor: '#b4281e',
+            borderWidth: 2.5,
+            pointBackgroundColor: colors,
+            pointBorderColor: colors,
+            pointRadius: 6,
+            pointHoverRadius: 8,
+            fill: {target:'origin', above:'rgba(180,40,30,0.06)'},
+            tension: 0.3,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {display:false},
+            tooltip: {callbacks:{label:function(c){return ' '+c.parsed.y+'점';}}}
+          },
+          scales: {
+            y: {min:0, max:100, ticks:{callback:function(v){return v+'점';}, font:{size:11}}, grid:{color:'#e4e1d8'}},
+            x: {ticks:{font:{size:10}, maxRotation:0}, grid:{display:false}}
+          }
+        }
+      });
+    }
+
+    if(window.Chart) {
+      loadChartAndRender();
+    } else {
+      var sc = document.createElement('script');
+      sc.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+      sc.onload = loadChartAndRender;
+      document.head.appendChild(sc);
+    }
+  }
+
+  // 최근 출결
+  var attEl = document.getElementById('detail-att');
+  var recentAtt = att.sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,14);
+  var dotCls = {O:'att-o',X:'att-x',T:'att-t',B:'att-b',E:'att-b'};
+  attEl.innerHTML = recentAtt.length
+    ? recentAtt.map(function(r){ return '<span class="att-dot '+(dotCls[r.status]||'att-o')+'" title="'+r.date+'">'+r.status+'</span>'; }).join('')
+    : '<span style="color:var(--muted);font-size:12px;">출결 기록 없음</span>';
+
+  // 미제출 숙제
+  var hwEl = document.getElementById('detail-hw');
+  hwEl.innerHTML = hw.length
+    ? hw.map(function(h){ return '<span style="background:var(--red-bg);color:var(--red);padding:3px 8px;border-radius:100px;margin-right:4px;margin-bottom:4px;display:inline-block;">'+h.name+(h.due?' (~'+h.due+')':'')+'</span>'; }).join('')
+    : '<span style="color:var(--green);">미제출 숙제 없음 👍</span>';
+
+  openModal('modal-student-detail');
 }
 
 // 메모 저장
