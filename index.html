@@ -1401,22 +1401,20 @@ function renderProgress() {
   var statusLabel = {'done':'✅ 완료','ing':'🔄 진행 중','review':'⚠️ 복습 필요'};
   var statusColor = {'done':'var(--green)','ing':'var(--blue)','review':'var(--gold)'};
 
-  // 반별 진도 묶기: groupName+book+unit+range+date 가 같으면 묶음
+  // 반별 진도 묶기
   var processed = {};
   var rows = [];
 
   recs.forEach(function(r) {
     if(r.groupName) {
-      // 반별 진도 - 같은 반+날짜+교재면 묶기
       var key = r.groupName + '||' + r.date + '||' + r.book + '||' + r.unit + '||' + r.range;
       if(!processed[key]) {
-        processed[key] = {type:'group', groupName:r.groupName, date:r.date, book:r.book, unit:r.unit, range:r.range, status:r.status, memo:r.memo, ids:[r.id]};
+        processed[key] = {type:'group', key:key, groupName:r.groupName, date:r.date, book:r.book, unit:r.unit, range:r.range, status:r.status, memo:r.memo, ids:[r.id], firstId:r.id};
         rows.push(processed[key]);
       } else {
         processed[key].ids.push(r.id);
       }
     } else {
-      // 개별 진도
       rows.push({type:'individual', r:r});
     }
   });
@@ -1425,7 +1423,6 @@ function renderProgress() {
     var tr = document.createElement('tr');
 
     if(row.type === 'group') {
-      // 반별 진도 행
       tr.innerHTML =
         '<td><span class="class-tag ct-1">'+row.groupName+'</span></td>'
         +'<td><span style="background:var(--gold-bg);color:var(--gold);font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;">반 전체</span></td>'
@@ -1437,13 +1434,23 @@ function renderProgress() {
         +'<td style="font-size:12px;color:var(--muted);">'+(row.memo||'—')+'</td>'
         +'<td></td>';
 
-      // 삭제 버튼 (반 전체 삭제)
       var btnWrap = document.createElement('div');
       btnWrap.style.cssText = 'display:flex;gap:6px;';
-      var delBtn = document.createElement('button');
-      delBtn.className = 'icon-btn'; delBtn.textContent = '🗑️';
-      delBtn.title = '반 전체 진도 삭제';
+
+      // 반별 진도 수정 버튼
+      var editBtn = document.createElement('button');
+      editBtn.className = 'icon-btn';
+      editBtn.textContent = '✏️';
+      editBtn.title = '반 전체 진도 수정';
       var ids = row.ids;
+      var rowData = row;
+      editBtn.onclick = function(){ editGroupProgress(rowData); };
+      btnWrap.appendChild(editBtn);
+
+      var delBtn = document.createElement('button');
+      delBtn.className = 'icon-btn';
+      delBtn.textContent = '🗑️';
+      delBtn.title = '반 전체 진도 삭제';
       delBtn.onclick = function(){
         if(!confirm('반 전체 진도를 삭제할까요?')) return;
         var all = DB.get('progress');
@@ -1454,7 +1461,6 @@ function renderProgress() {
       tr.querySelector('td:last-child').appendChild(btnWrap);
 
     } else {
-      // 개별 진도 행
       var r = row.r;
       var s = students.find(function(x){ return x.id===r.sid; });
       var myGroups = s ? getStudentGroups(s.id) : [];
@@ -1492,6 +1498,59 @@ function renderProgress() {
 
     tbody.appendChild(tr);
   });
+}
+
+// 반별 진도 수정
+function editGroupProgress(rowData) {
+  // 반별 진도 수정 모달 (그룹 진도 모달 재활용)
+  var groups = DB.get('groups');
+  var sel = document.getElementById('gp-group');
+  sel.innerHTML = groups.length
+    ? groups.map(function(g){ return '<option value="'+g.id+'">'+g.name+'</option>'; }).join('')
+    : '<option value="">반 없음</option>';
+
+  // 해당 반 선택
+  var matchGroup = groups.find(function(g){ return g.name === rowData.groupName; });
+  if(matchGroup) sel.value = matchGroup.id;
+
+  document.getElementById('gp-date').value  = rowData.date  || '';
+  document.getElementById('gp-book').value  = rowData.book  || '';
+  document.getElementById('gp-unit').value  = rowData.unit  || '';
+  document.getElementById('gp-range').value = rowData.range || '';
+  document.getElementById('gp-status').value= rowData.status|| 'done';
+  document.getElementById('gp-memo').value  = rowData.memo  || '';
+
+  // 저장 버튼을 수정 모드로
+  var saveBtn = document.querySelector('#modal-group-progress .btn-save');
+  if(saveBtn) {
+    saveBtn.textContent = '수정 저장';
+    var ids = rowData.ids;
+    saveBtn.onclick = function(){
+      var recs = DB.get('progress');
+      var book  = document.getElementById('gp-book').value.trim();
+      var unit  = document.getElementById('gp-unit').value;
+      var range = document.getElementById('gp-range').value;
+      var status= document.getElementById('gp-status').value;
+      var date  = document.getElementById('gp-date').value;
+      var memo  = document.getElementById('gp-memo').value;
+      if(!book) { toast('교재를 입력해주세요'); return; }
+      recs = recs.map(function(r){
+        if(ids.includes(r.id)){
+          return Object.assign({}, r, {book:book, unit:unit, range:range, status:status, date:date, memo:memo});
+        }
+        return r;
+      });
+      DB.set('progress', recs);
+      // 버튼 원래대로
+      saveBtn.textContent = '전체 저장';
+      saveBtn.onclick = saveGroupProgress;
+      closeModal('modal-group-progress');
+      renderProgress();
+      toast('진도가 수정되었습니다');
+    };
+  }
+  updateGroupProgressList();
+  openModal('modal-group-progress');
 }
 
 
