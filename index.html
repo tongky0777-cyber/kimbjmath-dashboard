@@ -275,9 +275,9 @@ textarea{resize:vertical;min-height:80px;}
 
     <!-- 진도 관리 -->
     <div class="view" id="view-progress">
-      <div class="sec-hd"><h2>📖 진도 관리</h2><button class="btn-sm" onclick="openProgressModal()">+ 진도 입력</button></div>
+      <div class="sec-hd"><h2>📖 진도 관리</h2><div class="actions"><button class="btn-sm sec" onclick="openGroupProgressModal()">👥 반별 진도</button><button class="btn-sm" onclick="openProgressModal()">+ 개별 진도</button></div></div>
       <div class="tbl-wrap">
-        <table><thead><tr><th>이름</th><th>반</th><th>교재</th><th>단원</th><th>진도</th><th>날짜</th><th>메모</th><th></th></tr></thead>
+        <table><thead><tr><th>이름</th><th>소속 반</th><th>교재</th><th>단원</th><th>진도</th><th>날짜</th><th>상태</th><th>메모</th><th></th></tr></thead>
         <tbody id="progress-body"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">진도를 입력해보세요</td></tr></tbody></table>
       </div>
     </div>
@@ -547,6 +547,37 @@ textarea{resize:vertical;min-height:80px;}
         <div id="detail-hw" style="font-size:12px;color:var(--muted);"></div>
       </div>
     </div>
+  </div>
+</div>
+
+
+<!-- 모달: 반별 진도 입력 -->
+<div class="modal-bg" id="modal-group-progress">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-hd"><h3>👥 반별 진도 입력</h3><button class="modal-close" onclick="closeModal('modal-group-progress')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>반 선택 *</label><select id="gp-group" onchange="updateGroupProgressList()"></select></div>
+        <div class="form-group"><label>날짜</label><input type="date" id="gp-date"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>교재</label><input id="gp-book" placeholder="공통수학1 개념서"></div>
+        <div class="form-group"><label>단원</label><input id="gp-unit" placeholder="3단원. 방정식"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>진도 (페이지/범위)</label><input id="gp-range" placeholder="p.45~62"></div>
+        <div class="form-group"><label>완료 여부</label>
+          <select id="gp-status">
+            <option value="done">✅ 완료</option>
+            <option value="ing">🔄 진행 중</option>
+            <option value="review">⚠️ 복습 필요</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group full"><label>메모</label><textarea id="gp-memo" placeholder="다음 수업 준비사항 등" style="min-height:60px;"></textarea></div>
+      <div id="gp-student-list" style="background:var(--bg2);border-radius:4px;padding:12px;font-size:12px;color:var(--muted);">반을 선택하면 학생 목록이 표시됩니다.</div>
+    </div>
+    <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-group-progress')">취소</button><button class="btn-save" onclick="saveGroupProgress()">전체 저장</button></div>
   </div>
 </div>
 
@@ -1273,6 +1304,66 @@ function calcGtPct(sid) {
   } else if(pctEl) {
     pctEl.textContent = '—';
   }
+}
+
+
+// ══ 반별 진도 입력 ══════════════════════════════
+function openGroupProgressModal() {
+  var groups = DB.get('groups');
+  var sel = document.getElementById('gp-group');
+  sel.innerHTML = groups.length
+    ? groups.map(function(g){ return '<option value="'+g.id+'">'+g.name+'</option>'; }).join('')
+    : '<option value="">반 없음 (반 관리에서 먼저 생성)</option>';
+  ['gp-book','gp-unit','gp-range','gp-memo'].forEach(function(i){ document.getElementById(i).value=''; });
+  document.getElementById('gp-date').value = new Date().toISOString().slice(0,10);
+  updateGroupProgressList();
+  openModal('modal-group-progress');
+}
+
+function updateGroupProgressList() {
+  var gid = document.getElementById('gp-group').value;
+  var groups = DB.get('groups');
+  var students = DB.get('students');
+  var g = groups.find(function(x){ return x.id===gid; });
+  var el = document.getElementById('gp-student-list');
+  if(!g || !g.students || !g.students.length) {
+    el.innerHTML = '반에 학생이 없습니다.';
+    return;
+  }
+  var sNames = g.students.map(function(sid){
+    var s = students.find(function(x){ return x.id===sid; });
+    return s ? '<span style="background:var(--white);padding:3px 8px;border-radius:100px;font-size:11px;font-weight:500;">'+s.name+'</span>' : null;
+  }).filter(Boolean).join(' ');
+  el.innerHTML = '등록 대상 ('+g.students.length+'명): ' + sNames;
+}
+
+function saveGroupProgress() {
+  var gid  = document.getElementById('gp-group').value;
+  var book = document.getElementById('gp-book').value.trim();
+  if(!gid || !book) { toast('반과 교재를 입력해주세요'); return; }
+  var groups = DB.get('groups');
+  var g = groups.find(function(x){ return x.id===gid; });
+  if(!g || !g.students || !g.students.length) { toast('반에 학생이 없습니다'); return; }
+  var recs = DB.get('progress');
+  var date   = document.getElementById('gp-date').value;
+  var unit   = document.getElementById('gp-unit').value;
+  var range  = document.getElementById('gp-range').value;
+  var status = document.getElementById('gp-status').value;
+  var memo   = document.getElementById('gp-memo').value;
+  var gName  = g.name;
+  g.students.forEach(function(sid){
+    recs.push({
+      id: Date.now().toString()+sid,
+      sid: sid,
+      book: book, unit: unit, range: range,
+      status: status, date: date, memo: memo,
+      groupName: gName
+    });
+  });
+  DB.set('progress', recs);
+  closeModal('modal-group-progress');
+  renderProgress();
+  toast(g.name+' '+g.students.length+'명 진도 저장 완료!');
 }
 
 // ══ 반별 테스트 입력 ══════════════════════════════
