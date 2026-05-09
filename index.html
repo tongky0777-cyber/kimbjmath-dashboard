@@ -328,11 +328,14 @@ textarea{resize:vertical;min-height:80px;}
       </div>
       <div class="form-row">
         <div class="form-group"><label>학교</label><input id="s-school" placeholder="경북고등학교"></div>
-        <div class="form-group"><label>연락처</label><input id="s-phone" placeholder="010-0000-0000"></div>
+        <div class="form-group"></div>
       </div>
       <div class="form-row">
+        <div class="form-group"><label>학생 연락처</label><input id="s-phone" placeholder="010-0000-0000"></div>
         <div class="form-group"><label>학부모 연락처</label><input id="s-parent" placeholder="010-0000-0000"></div>
-        <div class="form-group"></div>
+      </div>
+      <div class="form-group full"><label>반 배정 (복수 선택 가능)</label>
+        <div id="s-group-list" style="display:flex;flex-wrap:wrap;gap:8px;padding:12px;background:var(--bg2);border-radius:4px;min-height:48px;font-size:12px;color:var(--muted);">반 관리에서 반을 먼저 만들어주세요</div>
       </div>
       <div class="form-group full"><label>메모</label><textarea id="s-memo" placeholder="특이사항, 취약 단원 등"></textarea></div>
     </div>
@@ -639,7 +642,35 @@ function openModal(id) { document.getElementById(id).classList.add('on'); }
 function closeModal(id) { document.getElementById(id).classList.remove('on'); }
 window.addEventListener('click', function(e){ if(e.target.classList.contains('modal-bg')) closeModal(e.target.id); });
 
-function openStudentModal() { populateSel(); openModal('modal-student'); document.getElementById('s-id').value=''; ['s-name','s-school','s-phone','s-parent','s-memo'].forEach(function(id){ document.getElementById(id).value=''; }); }
+
+function populateStudentGroupList(sid) {
+  var groups = DB.get('groups');
+  var el = document.getElementById('s-group-list');
+  if(!el) return;
+  if(!groups.length) {
+    el.innerHTML = '<span style="color:var(--muted);font-size:12px;">반 관리에서 반을 먼저 만들어주세요</span>';
+    return;
+  }
+  el.innerHTML = groups.map(function(g){
+    var checked = sid && (g.students||[]).includes(sid) ? 'checked' : '';
+    return '<label style="display:flex;align-items:center;gap:5px;background:var(--white);padding:5px 10px;border-radius:3px;border:1px solid var(--line);cursor:pointer;font-size:12px;">'
+      +'<input type="checkbox" class="s-group-check" value="'+g.id+'" '+checked+' style="width:auto;"> '
+      +g.name
+      +'</label>';
+  }).join('');
+}
+function openStudentModal() {
+  populateSel();
+  document.getElementById('s-id').value='';
+  document.getElementById('s-class').value='';
+  ['s-name','s-school','s-phone','s-parent','s-memo'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.value='';
+  });
+  document.getElementById('s-grade').value='고1';
+  populateStudentGroupList('');
+  openModal('modal-student');
+}
 function openAttModal() { populateSel(); openModal('modal-att'); }
 function openTestModal() { populateSel(); openModal('modal-test'); }
 function openHwModal() { populateSel(); openModal('modal-hw'); }
@@ -681,8 +712,23 @@ function saveStudent() {
   };
   if(idx===-1) students.push(student); else students[idx]=student;
   DB.set('students', students);
+
+  // 반 배정 업데이트
+  var checkedGroups = [...document.querySelectorAll('.s-group-check:checked')].map(function(el){ return el.value; });
+  var uncheckedGroups = [...document.querySelectorAll('.s-group-check:not(:checked)')].map(function(el){ return el.value; });
+  var groups = DB.get('groups');
+  groups = groups.map(function(g){
+    if(checkedGroups.includes(g.id)) {
+      if(!(g.students||[]).includes(student.id)) g.students = (g.students||[]).concat(student.id);
+    } else if(uncheckedGroups.includes(g.id)) {
+      g.students = (g.students||[]).filter(function(x){ return x!==student.id; });
+    }
+    return g;
+  });
+  DB.set('groups', groups);
+
   closeModal('modal-student');
-  renderStudents(); renderDashboard();
+  renderStudents(); renderDashboard(); updateGroupFilter();
   toast(name+' 학생이 저장되었습니다');
 }
 
@@ -693,26 +739,18 @@ function deleteStudent(id) {
 }
 
 function editStudent(id) {
-  var s = DB.get('students').find(function(s){ return s.id===id; });
+  var s = DB.get('students').find(function(x){ return x.id===id; });
   if(!s) return;
-  document.getElementById('s-id').value=s.id;
-  document.getElementById('s-name').value=s.name;
-  document.getElementById('s-grade').value=s.grade;
-  document.getElementById('s-school').value=s.school;
-  // 반에서 과목/유형 분리
-  var parts = (s.class||'').split(' ');
-  var subjects = ['공통수학1','공통수학2','대수','미적분Ⅰ','확률통계','미적분Ⅱ','기하'];
-  var types = ['개념','문풀','심화'];
-  if(parts.length>=2) {
-    var subj = parts.slice(0,-1).join(' ');
-    var typ = parts[parts.length-1];
-    if(subjects.includes(subj)) document.getElementById('s-subject').value = subj;
-    if(types.includes(typ)) document.getElementById('s-type').value = typ;
-  }
-  document.getElementById('s-class').value=s.class;
-  document.getElementById('s-phone').value=s.phone||'';
-  document.getElementById('s-parent').value=s.parent||'';
-  document.getElementById('s-memo').value=s.memo||'';
+  populateSel();
+  document.getElementById('s-id').value    = s.id;
+  document.getElementById('s-name').value  = s.name;
+  document.getElementById('s-grade').value = s.grade || '고1';
+  document.getElementById('s-school').value= s.school || '';
+  document.getElementById('s-phone').value = s.phone || '';
+  document.getElementById('s-parent').value= s.parent || '';
+  document.getElementById('s-memo').value  = s.memo || '';
+  document.getElementById('s-class').value = s.class || '';
+  populateStudentGroupList(s.id);
   openModal('modal-student');
 }
 
