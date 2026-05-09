@@ -356,11 +356,46 @@ textarea{resize:vertical;min-height:80px;}
 
 
     <!-- 진도 관리 -->
+      <!-- 진도 관리 -->
     <div class="view" id="view-progress">
       <div class="sec-hd"><h2>📖 진도 관리</h2><div class="actions"><button class="btn-sm sec" onclick="openGroupProgressModal()">👥 반별 진도</button><button class="btn-sm" onclick="openProgressModal()">+ 개별 진도</button></div></div>
+
+      <!-- 진도 달력 -->
+      <div style="background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--line);">
+          <button onclick="changeProgMonth(-1)" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink);padding:0 8px;">‹</button>
+          <div id="prog-cal-title" style="font-size:14px;font-weight:700;"></div>
+          <button onclick="changeProgMonth(1)" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink);padding:0 8px;">›</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;border-bottom:1px solid var(--line);">
+          <div style="padding:7px;font-size:11px;font-weight:700;color:var(--red);">일</div>
+          <div style="padding:7px;font-size:11px;font-weight:700;color:var(--muted);">월</div>
+          <div style="padding:7px;font-size:11px;font-weight:700;color:var(--muted);">화</div>
+          <div style="padding:7px;font-size:11px;font-weight:700;color:var(--muted);">수</div>
+          <div style="padding:7px;font-size:11px;font-weight:700;color:var(--muted);">목</div>
+          <div style="padding:7px;font-size:11px;font-weight:700;color:var(--muted);">금</div>
+          <div style="padding:7px;font-size:11px;font-weight:700;color:var(--blue);">토</div>
+        </div>
+        <div id="prog-cal-body" style="display:grid;grid-template-columns:repeat(7,1fr);"></div>
+      </div>
+
+      <!-- 날짜 클릭 시 진도 패널 -->
+      <div id="prog-day-panel" style="display:none;background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--bg2);border-bottom:1px solid var(--line);">
+          <div id="prog-day-title" style="font-size:13px;font-weight:700;"></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-sm" onclick="openProgressModalForDate()">+ 이 날 진도 입력</button>
+            <button onclick="document.getElementById('prog-day-panel').style.display='none'" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;line-height:1;">×</button>
+          </div>
+        </div>
+        <div id="prog-day-list" style="padding:16px 20px;display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
+      <!-- 전체 진도 목록 -->
+      <div class="sec-hd" style="margin-top:4px;"><h2>📋 전체 진도 기록</h2></div>
       <div class="tbl-wrap">
-        <table><thead><tr><th>이름</th><th>소속 반</th><th>교재</th><th>단원</th><th>진도</th><th>날짜</th><th>상태</th><th>메모</th><th></th></tr></thead>
-        <tbody id="progress-body"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">진도를 입력해보세요</td></tr></tbody></table>
+        <table><thead><tr><th>이름/반</th><th>소속 반</th><th>교재</th><th>단원</th><th>진도</th><th>날짜</th><th>상태</th><th>메모</th><th></th></tr></thead>
+        <tbody id="progress-body"><tr><td colspan="9" style="text-align:center;color:var(--muted);padding:32px;">진도를 입력해보세요</td></tr></tbody>
       </div>
     </div>
 
@@ -787,7 +822,7 @@ function showView(id, el) {
   if(id==='homework') renderHw();
   if(id==='schedule') { renderSchedule(); }
   if(id==='dashboard') renderDashboard();
-  if(id==='progress') renderProgress();
+  if(id==='progress') { renderProgress(); progCalYear=new Date().getFullYear(); progCalMonth=new Date().getMonth(); renderProgCalendar(); }
   if(id==='groups') renderGroups();
   updateGroupFilter();
 }
@@ -841,7 +876,16 @@ function toast(msg) {
 // 학생 선택 셀렉트 채우기
 function populateSel() {
   var students = DB.get('students');
-  var opts = students.length ? students.map(function(s){ return '<option value="'+s.id+'">'+s.name+' ('+s.grade+')</option>'; }).join('') : '<option value="">학생 없음</option>';
+  var gradeOrder = ['초5','초6','중1','중2','중3','고1','고2','고3'];
+  var sorted = students.slice().sort(function(a,b){
+    var ai = gradeOrder.indexOf(a.grade||''); if(ai===-1) ai=999;
+    var bi = gradeOrder.indexOf(b.grade||''); if(bi===-1) bi=999;
+    if(ai!==bi) return ai-bi;
+    return a.name.localeCompare(b.name);
+  });
+  var opts = sorted.length
+    ? sorted.map(function(s){ return '<option value="'+s.id+'">'+s.name+' ('+s.grade+')</option>'; }).join('')
+    : '<option value="">학생 없음</option>';
   ['att-student','test-student','hw-student','prog-student'].forEach(function(id){
     var el = document.getElementById(id);
     if(el) el.innerHTML = opts;
@@ -1591,7 +1635,8 @@ function saveProgress() {
   }
   DB.set('progress', recs);
   closeModal('modal-progress');
-  renderProgress();
+  renderProgress(); renderProgCalendar();
+  if(progSelectedDate) selectProgDay(progSelectedDate);
   toast(existingId ? '진도가 수정되었습니다' : '진도가 저장되었습니다');
 }
 
@@ -1799,6 +1844,192 @@ function calcGtPct(sid) {
 }
 
 
+// ══ 진도 달력 ════════════════════════════════════
+var progCalYear  = new Date().getFullYear();
+var progCalMonth = new Date().getMonth();
+var progSelectedDate = '';
+
+function changeProgMonth(dir) {
+  progCalMonth += dir;
+  if(progCalMonth > 11) { progCalMonth = 0; progCalYear++; }
+  if(progCalMonth < 0)  { progCalMonth = 11; progCalYear--; }
+  renderProgCalendar();
+}
+
+function renderProgCalendar() {
+  var recs     = DB.get('progress');
+  var today    = new Date().toISOString().slice(0,10);
+  var firstDay = new Date(progCalYear, progCalMonth, 1);
+  var lastDay  = new Date(progCalYear, progCalMonth+1, 0);
+  var startDow = firstDay.getDay();
+  var totalDays = lastDay.getDate();
+
+  var titleEl = document.getElementById('prog-cal-title');
+  if(titleEl) titleEl.textContent = progCalYear+'년 '+(progCalMonth+1)+'월';
+
+  var body = document.getElementById('prog-cal-body');
+  if(!body) return;
+  body.innerHTML = '';
+
+  // 이전달 빈칸
+  for(var i=0; i<startDow; i++) {
+    var cell = document.createElement('div');
+    cell.style.cssText = 'min-height:56px;padding:4px;border:0.5px solid var(--line);opacity:.3;background:var(--bg2);';
+    var prev = new Date(progCalYear, progCalMonth, -startDow+i+1);
+    cell.innerHTML = '<div style="font-size:11px;text-align:center;color:var(--muted);">'+prev.getDate()+'</div>';
+    body.appendChild(cell);
+  }
+
+  // 이번달 날짜
+  for(var d=1; d<=totalDays; d++) {
+    (function(day) {
+      var dateStr = progCalYear+'-'+String(progCalMonth+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+      var dow     = new Date(progCalYear, progCalMonth, day).getDay();
+      var dayRecs = recs.filter(function(r){ return r.date===dateStr; });
+      var isToday = dateStr === today;
+      var isSel   = dateStr === progSelectedDate;
+
+      // 반별/개별 구분
+      var groupRecs = dayRecs.filter(function(r){ return r.groupName; });
+      var indivRecs = dayRecs.filter(function(r){ return !r.groupName; });
+
+      // 반별은 묶어서 카운트
+      var groupNames = [...new Set(groupRecs.map(function(r){ return r.groupName; }))];
+
+      var cell = document.createElement('div');
+      var baseBg = isSel ? 'var(--teal-bg)' : isToday ? '#f0faf9' : 'var(--white)';
+      cell.style.cssText = 'min-height:56px;padding:4px;border:0.5px solid var(--line);cursor:pointer;transition:.12s;background:'+baseBg+';'+(isSel?'outline:2px solid var(--teal);':'');
+
+      var dateColor = dow===0?'var(--red)':dow===6?'var(--blue)':'var(--ink2)';
+      var dateDiv = document.createElement('div');
+      dateDiv.style.cssText = 'font-size:11px;font-weight:'+(isToday?'700':'500')+';text-align:center;color:'+dateColor+';margin-bottom:3px;';
+      dateDiv.textContent = day;
+      cell.appendChild(dateDiv);
+
+      // 반별 진도 표시
+      groupNames.slice(0,2).forEach(function(gn){
+        var dot = document.createElement('div');
+        dot.style.cssText = 'font-size:9px;background:var(--red-bg);color:var(--red);padding:1px 4px;border-radius:2px;margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+        dot.textContent = gn;
+        cell.appendChild(dot);
+      });
+
+      // 개별 진도 표시
+      if(indivRecs.length) {
+        var dot2 = document.createElement('div');
+        dot2.style.cssText = 'font-size:9px;background:var(--blue-bg);color:var(--blue);padding:1px 4px;border-radius:2px;margin-bottom:1px;';
+        dot2.textContent = '개별 '+indivRecs.length+'건';
+        cell.appendChild(dot2);
+      }
+
+      if(!dayRecs.length) {
+        var dot3 = document.createElement('div');
+        dot3.style.cssText = 'font-size:9px;color:var(--line);text-align:center;';
+        dot3.textContent = '—';
+        cell.appendChild(dot3);
+      }
+
+      cell.onclick = function(){ selectProgDay(dateStr); };
+      body.appendChild(cell);
+    })(d);
+  }
+
+  // 다음달 빈칸
+  var rem = 7 - ((startDow + totalDays) % 7);
+  if(rem < 7) {
+    for(var j=1; j<=rem; j++) {
+      var cell2 = document.createElement('div');
+      cell2.style.cssText = 'min-height:56px;padding:4px;border:0.5px solid var(--line);opacity:.3;background:var(--bg2);';
+      cell2.innerHTML = '<div style="font-size:11px;text-align:center;color:var(--muted);">'+j+'</div>';
+      body.appendChild(cell2);
+    }
+  }
+}
+
+function selectProgDay(dateStr) {
+  progSelectedDate = dateStr;
+  renderProgCalendar();
+
+  var students = DB.get('students');
+  var recs     = DB.get('progress');
+  var panel    = document.getElementById('prog-day-panel');
+  var title    = document.getElementById('prog-day-title');
+  var list     = document.getElementById('prog-day-list');
+  if(!panel||!title||!list) return;
+
+  var d = new Date(dateStr);
+  var dowNames = ['일','월','화','수','목','금','토'];
+  var dayRecs = recs.filter(function(r){ return r.date===dateStr; });
+  title.textContent = (d.getMonth()+1)+'월 '+d.getDate()+'일 ('+dowNames[d.getDay()]+') · '+dayRecs.length+'건';
+
+  list.innerHTML = '';
+  var statusLabel = {'done':'✅ 완료','ing':'🔄 진행 중','review':'⚠️ 복습 필요'};
+  var statusColor = {'done':'var(--green)','ing':'var(--blue)','review':'var(--gold)'};
+
+  if(!dayRecs.length) {
+    list.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;font-size:12px;">이 날 진도 기록이 없습니다</div>';
+  } else {
+    // 반별 묶기
+    var grouped = {};
+    var individuals = [];
+    dayRecs.forEach(function(r){
+      if(r.groupName) {
+        var key = r.groupName+'||'+r.book+'||'+r.unit+'||'+r.range;
+        if(!grouped[key]) grouped[key] = {groupName:r.groupName, book:r.book, unit:r.unit, range:r.range, status:r.status, memo:r.memo, ids:[r.id]};
+        else grouped[key].ids.push(r.id);
+      } else {
+        individuals.push(r);
+      }
+    });
+
+    // 반별 진도 카드
+    Object.values(grouped).forEach(function(g){
+      var card = document.createElement('div');
+      card.style.cssText = 'background:var(--red-bg);border:1px solid rgba(180,40,30,.2);border-radius:6px;padding:12px 14px;';
+      card.innerHTML = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
+        +'<span style="background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;">반 전체</span>'
+        +'<span style="font-size:13px;font-weight:700;color:var(--ink);">'+g.groupName+'</span>'
+        +'</div>'
+        +'<div style="font-size:12px;color:var(--ink2);">📚 '+(g.book||'—')+(g.unit?' · '+g.unit:'')+(g.range?' · <b>'+g.range+'</b>':'')+'</div>'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">'
+        +'<span style="font-size:11px;font-weight:700;color:'+(statusColor[g.status]||'var(--muted)')+';">'+(statusLabel[g.status]||g.status)+'</span>'
+        +(g.memo?'<span style="font-size:11px;color:var(--muted);">'+g.memo+'</span>':'')
+        +'</div>';
+      list.appendChild(card);
+    });
+
+    // 개별 진도 카드
+    individuals.forEach(function(r){
+      var s = students.find(function(x){ return x.id===r.sid; });
+      var card = document.createElement('div');
+      card.style.cssText = 'background:var(--blue-bg);border:1px solid rgba(28,60,110,.2);border-radius:6px;padding:12px 14px;';
+      card.innerHTML = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
+        +'<span style="background:var(--blue);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;">개별</span>'
+        +'<span style="font-size:13px;font-weight:700;color:var(--ink);">'+(s?s.name:'—')+'</span>'
+        +'<span style="font-size:11px;color:var(--muted);">'+(s?s.grade:'')+'</span>'
+        +'</div>'
+        +'<div style="font-size:12px;color:var(--ink2);">📚 '+(r.book||'—')+(r.unit?' · '+r.unit:'')+(r.range?' · <b>'+r.range+'</b>':'')+'</div>'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">'
+        +'<span style="font-size:11px;font-weight:700;color:'+(statusColor[r.status]||'var(--muted)')+';">'+(statusLabel[r.status]||r.status)+'</span>'
+        +(r.memo?'<span style="font-size:11px;color:var(--muted);">'+r.memo+'</span>':'')
+        +'</div>';
+      list.appendChild(card);
+    });
+  }
+
+  panel.style.display = 'block';
+  panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function openProgressModalForDate() {
+  openProgressModal();
+  if(progSelectedDate) {
+    var el = document.getElementById('prog-date');
+    if(el) el.value = progSelectedDate;
+  }
+}
+
+
 // ══ 반별 진도 입력 ══════════════════════════════
 function openGroupProgressModal() {
   var groups = DB.get('groups');
@@ -1854,7 +2085,7 @@ function saveGroupProgress() {
   });
   DB.set('progress', recs);
   closeModal('modal-group-progress');
-  renderProgress();
+  renderProgress(); renderProgCalendar();
   toast(g.name+' '+g.students.length+'명 진도 저장 완료!');
 }
 
