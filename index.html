@@ -975,21 +975,86 @@ function saveAttendance() {
 
 function renderAttendance() {
   var students = DB.get('students');
-  var recs = DB.get('attendance');
-  var tbody = document.getElementById('att-body');
+  var recs     = DB.get('attendance');
+  var tbody    = document.getElementById('att-body');
   if(!tbody) return;
-  if(!students.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px;">학생을 먼저 추가해주세요</td></tr>'; return; }
-  var dotCls = function(s){ return s==='O'?'att-o':s==='X'?'att-x':s==='T'?'att-t':'att-b'; };
-  tbody.innerHTML = students.map(function(s){
-    var sRecs = recs.filter(function(r){ return r.sid===s.id; }).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,10);
-    var total = recs.filter(function(r){ return r.sid===s.id; }).length;
-    var present = recs.filter(function(r){ return r.sid===s.id&&(r.status==='O'||r.status==='B'); }).length;
-    var absent = recs.filter(function(r){ return r.sid===s.id&&r.status==='X'; }).length;
-    var rate = total ? Math.round(present/total*100)+'%' : '—';
-    var dots = sRecs.map(function(r){ return '<span class="att-dot '+dotCls(r.status)+'" title="'+r.date+'">'+r.status+'</span>'; }).join('');
-    var tag = s.class.startsWith('공통')?'ct-1':'ct-2';
-    return '<tr><td class="student-name">'+s.name+'</td><td><span class="class-tag '+tag+'">'+s.class+'</span></td><td><div class="att-row">'+(dots||'<span style="color:var(--muted);font-size:12px;">기록 없음</span>')+'</div></td><td style="font-weight:700;">'+rate+'</td><td style="color:var(--red);font-weight:'+(absent?'700':'400')+';">'+absent+'회</td><td><div class="row-action"><button class="icon-btn" onclick="openAttForStudent(\''+s.id+'\')">+ 입력</button></div></td></tr>';
-  }).join('');
+  tbody.innerHTML = '';
+
+  if(!students.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px;">학생을 먼저 추가해주세요</td></tr>';
+    return;
+  }
+
+  var dotCls = {O:'att-o', X:'att-x', T:'att-t', B:'att-b', E:'att-b'};
+
+  students.forEach(function(s) {
+    var sRecs   = recs.filter(function(r){ return r.sid===s.id; }).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,10);
+    var total   = recs.filter(function(r){ return r.sid===s.id; }).length;
+    var present = recs.filter(function(r){ return r.sid===s.id && (r.status==='O'||r.status==='B'); }).length;
+    var absent  = recs.filter(function(r){ return r.sid===s.id && r.status==='X'; }).length;
+    var rate    = total ? Math.round(present/total*100)+'%' : '—';
+
+    var tr = document.createElement('tr');
+
+    // 이름
+    var nameTd = document.createElement('td');
+    nameTd.className = 'student-name';
+    nameTd.textContent = s.name;
+    tr.appendChild(nameTd);
+
+    // 반
+    var myGroups = getStudentGroups(s.id);
+    var classTd = document.createElement('td');
+    if(myGroups.length) {
+      classTd.innerHTML = '<span class="class-tag ct-1">'+myGroups[0].name+'</span>';
+    } else {
+      classTd.innerHTML = '<span style="color:var(--muted);font-size:11px;">미배정</span>';
+    }
+    tr.appendChild(classTd);
+
+    // 최근 출결 도트
+    var dotTd = document.createElement('td');
+    var dotWrap = document.createElement('div');
+    dotWrap.className = 'att-row';
+    if(sRecs.length) {
+      sRecs.forEach(function(r){
+        var dot = document.createElement('span');
+        dot.className = 'att-dot ' + (dotCls[r.status]||'att-o');
+        dot.title = r.date;
+        dot.textContent = r.status;
+        dotWrap.appendChild(dot);
+      });
+    } else {
+      dotWrap.innerHTML = '<span style="color:var(--muted);font-size:12px;">기록 없음</span>';
+    }
+    dotTd.appendChild(dotWrap);
+    tr.appendChild(dotTd);
+
+    // 출석률
+    var rateTd = document.createElement('td');
+    rateTd.style.fontWeight = '700';
+    rateTd.textContent = rate;
+    tr.appendChild(rateTd);
+
+    // 누적 결석
+    var absTd = document.createElement('td');
+    absTd.style.cssText = 'color:var(--red);font-weight:'+(absent?'700':'400')+';';
+    absTd.textContent = absent+'회';
+    tr.appendChild(absTd);
+
+    // 입력 버튼
+    var btnTd = document.createElement('td');
+    var btn = document.createElement('button');
+    btn.className = 'btn-sm sec';
+    btn.style.cssText = 'white-space:nowrap;font-size:11px;padding:5px 10px;';
+    btn.textContent = '+ 출결 입력';
+    var sid = s.id;
+    btn.onclick = function(){ openAttForStudent(sid); };
+    btnTd.appendChild(btn);
+    tr.appendChild(btnTd);
+
+    tbody.appendChild(tr);
+  });
 }
 
 function openAttForStudent(sid) {
