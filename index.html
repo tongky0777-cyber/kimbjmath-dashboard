@@ -43,9 +43,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .today-badge{background:var(--red-bg);color:var(--red);font-size:11px;font-weight:700;padding:5px 12px;border-radius:100px;}
 .content{padding:24px 28px;flex:1;overflow-y:auto;min-height:0;}
 
-/* 뷰 */
-.view{display:none;}
-.view.on{display:block;}
+/* 뷰 - JS로 제어 */
 
 /* 버튼 */
 .btn-sm{background:var(--red);color:#fff;border:0;font-size:12px;font-weight:700;padding:7px 14px;border-radius:3px;cursor:pointer;font-family:var(--sans);transition:.15s;white-space:nowrap;}
@@ -246,7 +244,7 @@ textarea{resize:vertical;min-height:80px;}
   <div class="content">
 
     <!-- 대시보드 -->
-    <div class="view on" id="view-dashboard">
+    <div class="view on" style="display:block" id="view-dashboard">
       <div class="stat-row">
         <div class="stat-card"><div class="stat-card-top"><div class="stat-label">전체 학생</div><div class="stat-icon">👥</div></div><div class="stat-num" id="dash-total">0</div><div class="stat-sub">명 등록됨</div></div>
         <div class="stat-card"><div class="stat-card-top"><div class="stat-label">이번 주 출석률</div><div class="stat-icon">✅</div></div><div class="stat-num" id="dash-att">—</div><div class="stat-sub">이번 주 기준</div></div>
@@ -266,7 +264,7 @@ textarea{resize:vertical;min-height:80px;}
     </div>
 
     <!-- 학생 목록 -->
-    <div class="view" id="view-students">
+    <div class="view" style="display:none" id="view-students">
       <div class="sec-hd"><h2>👥 학생 목록</h2><div class="actions">
 <select id="filter-class" onchange="renderStudents()" style="font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:3px;background:var(--white);cursor:pointer;font-family:var(--sans);"><option value="">전체 반</option></select>
         <button class="btn-sm" onclick="openStudentModal()">+ 학생 추가</button>
@@ -278,7 +276,7 @@ textarea{resize:vertical;min-height:80px;}
     </div>
 
     <!-- 출결 관리 -->
-    <div class="view" id="view-attendance">
+    <div class="view" style="display:none" id="view-attendance">
       <div class="sec-hd"><h2>✅ 출결 관리</h2><div class="actions">
         <button class="btn-sm sec" onclick="attViewMode='list';renderAttendance()">📋 학생별</button>
         <button class="btn-sm" onclick="openAttModal()">+ 출결 입력</button>
@@ -333,7 +331,7 @@ textarea{resize:vertical;min-height:80px;}
     </div>
 
     <!-- 테스트 결과 -->
-    <div class="view" id="view-tests">
+    <div class="view" style="display:none" id="view-tests">
       <div class="sec-hd"><h2>📝 테스트 결과</h2><div class="actions">
         <select id="test-filter" onchange="renderTests()" style="font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:3px;background:var(--white);cursor:pointer;font-family:var(--sans);"><option value="">전체 테스트</option></select>
         <button class="btn-sm sec" onclick="openGroupTestModal()">👥 반별 입력</button>
@@ -374,7 +372,7 @@ textarea{resize:vertical;min-height:80px;}
     </div>
 
     <!-- 숙제 관리 -->
-    <div class="view" id="view-homework">
+    <div class="view" style="display:none" id="view-homework">
       <div class="sec-hd"><h2>📚 숙제 관리</h2><div class="actions"><button class="btn-sm sec" onclick="openGroupHwModal()">👥 그룹 숙제</button><button class="btn-sm" onclick="openHwModal()">+ 개별 숙제</button></div></div>
 
       <!-- 숙제 달력 (마감일 기준) -->
@@ -413,7 +411,7 @@ textarea{resize:vertical;min-height:80px;}
 
     <!-- 진도 관리 -->
       <!-- 진도 관리 -->
-    <div class="view" id="view-progress">
+    <div class="view" style="display:none" id="view-progress">
       <div class="sec-hd"><h2>📖 진도 관리</h2><div class="actions"><button class="btn-sm sec" onclick="openGroupProgressModal()">👥 반별 진도</button><button class="btn-sm" onclick="openProgressModal()">+ 개별 진도</button></div></div>
 
       <!-- 진도 달력 -->
@@ -456,13 +454,13 @@ textarea{resize:vertical;min-height:80px;}
     </div>
 
     <!-- 반 관리 -->
-    <div class="view" id="view-groups">
+    <div class="view" style="display:none" id="view-groups">
       <div class="sec-hd"><h2>🏫 반 관리</h2><button class="btn-sm" onclick="openGroupModal()">+ 반 만들기</button></div>
       <div id="group-list" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;"></div>
     </div>
 
     <!-- 보강·일정 -->
-    <div class="view" id="view-schedule">
+    <div class="view" style="display:none" id="view-schedule">
       <div class="sec-hd"><h2>📅 보강 · 일정 관리</h2><button class="btn-sm" onclick="openScheduleModal()">+ 일정 추가</button></div>
 
       <!-- 월별 달력 -->
@@ -509,7 +507,7 @@ textarea{resize:vertical;min-height:80px;}
     </div>
 
     <!-- 메모 -->
-    <div class="view" id="view-memo">
+    <div class="view" style="display:none" id="view-memo">
       <div class="sec-hd"><h2>🗒️ 메모</h2><button class="btn-sm" onclick="saveMemo()">저장</button></div>
       <div style="background:var(--white);border-radius:6px;">
         <textarea id="memo-area" style="width:100%;min-height:500px;border:1.5px solid var(--line);border-radius:4px;padding:12px;font-size:14px;color:var(--ink);font-family:var(--sans);resize:vertical;outline:none;line-height:1.8;background:var(--white);" placeholder="자유롭게 메모를 남겨보세요."></textarea>
@@ -861,11 +859,6 @@ window.addEventListener('DOMContentLoaded', function() {
   }
   updateTestFilter();
   renderDashboard();
-  // 초기 뷰 설정
-  document.querySelectorAll('.view').forEach(function(v){
-    if(!v.classList.contains('on')) v.style.display = 'none';
-    else v.style.display = 'block';
-  });
 });
 
 // 뷰 전환
@@ -883,28 +876,35 @@ var viewTitles = {dashboard:'📊 전체 현황',progress:'📖 진도 관리',g
 
 function showView(id, el) {
   // 모든 뷰 숨기기
-  document.querySelectorAll('.view').forEach(function(v){
-    v.classList.remove('on');
+  var allViews = document.querySelectorAll('.view');
+  allViews.forEach(function(v) {
     v.style.display = 'none';
+    v.classList.remove('on');
   });
-  document.querySelectorAll('.sb-item').forEach(function(i){ i.classList.remove('on'); });
+  // 사이드바 선택 해제
+  document.querySelectorAll('.sb-item').forEach(function(i) {
+    i.classList.remove('on');
+  });
   // 선택된 뷰 보이기
-  var target = document.getElementById('view-'+id);
+  var target = document.getElementById('view-' + id);
   if(target) {
-    target.classList.add('on');
     target.style.display = 'block';
+    target.classList.add('on');
   }
+  // 사이드바 선택
   if(el) el.classList.add('on');
-  document.getElementById('page-title').textContent = viewTitles[id]||'';
-  if(id==='students') renderStudents();
+  // 상단 제목
+  document.getElementById('page-title').textContent = viewTitles[id] || '';
+  // 각 뷰별 렌더링
+  if(id==='students')   renderStudents();
   if(id==='attendance') { renderAttendance(); attCalYear=new Date().getFullYear(); attCalMonth=new Date().getMonth(); renderAttCalendar(); }
-  if(id==='tests') { renderTests(); testCalYear=new Date().getFullYear(); testCalMonth=new Date().getMonth(); renderTestCalendar(); }
-  if(id==='homework') { renderHw(); hwCalYear=new Date().getFullYear(); hwCalMonth=new Date().getMonth(); renderHwCalendar(); }
-  if(id==='schedule') { renderSchedule(); }
-  if(id==='memo') activateMemo();
-  if(id==='dashboard') renderDashboard();
-  if(id==='progress') { renderProgress(); progCalYear=new Date().getFullYear(); progCalMonth=new Date().getMonth(); renderProgCalendar(); }
-  if(id==='groups') renderGroups();
+  if(id==='tests')      { renderTests(); testCalYear=new Date().getFullYear(); testCalMonth=new Date().getMonth(); renderTestCalendar(); }
+  if(id==='homework')   { renderHw(); hwCalYear=new Date().getFullYear(); hwCalMonth=new Date().getMonth(); renderHwCalendar(); }
+  if(id==='schedule')   { renderSchedule(); }
+  if(id==='memo')       activateMemo();
+  if(id==='dashboard')  renderDashboard();
+  if(id==='progress')   { renderProgress(); progCalYear=new Date().getFullYear(); progCalMonth=new Date().getMonth(); renderProgCalendar(); }
+  if(id==='groups')     renderGroups();
   updateGroupFilter();
 }
 
