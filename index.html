@@ -841,8 +841,8 @@ function toast(msg) {
 // 학생 선택 셀렉트 채우기
 function populateSel() {
   var students = DB.get('students');
-  var opts = students.length ? students.map(function(s){ return '<option value="'+s.id+'">'+s.name+' ('+s.class+')</option>'; }).join('') : '<option value="">학생 없음</option>';
-  ['att-student','test-student','hw-student'].forEach(function(id){
+  var opts = students.length ? students.map(function(s){ return '<option value="'+s.id+'">'+s.name+' ('+s.grade+')</option>'; }).join('') : '<option value="">학생 없음</option>';
+  ['att-student','test-student','hw-student','prog-student'].forEach(function(id){
     var el = document.getElementById(id);
     if(el) el.innerHTML = opts;
   });
