@@ -1878,7 +1878,7 @@ function renderAttCalendar() {
   var firstDay = new Date(attCalYear, attCalMonth, 1);
   var lastDay  = new Date(attCalYear, attCalMonth+1, 0);
   var startDow = firstDay.getDay();
-  var totalDays= lastDay.getDate();
+  var totalDays = lastDay.getDate();
 
   var titleEl = document.getElementById('att-cal-title');
   if(titleEl) titleEl.textContent = attCalYear+'년 '+(attCalMonth+1)+'월';
@@ -1890,65 +1890,63 @@ function renderAttCalendar() {
   // 이전달 빈칸
   for(var i=0; i<startDow; i++) {
     var cell = document.createElement('div');
-    cell.style.cssText = 'min-height:60px;padding:4px;border:0.5px solid var(--line);opacity:.3;';
+    cell.style.cssText = 'min-height:60px;padding:4px;border:0.5px solid var(--line);opacity:.3;background:var(--bg2);';
     var prev = new Date(attCalYear, attCalMonth, -startDow+i+1);
     cell.innerHTML = '<div style="font-size:11px;text-align:center;color:var(--muted);">'+prev.getDate()+'</div>';
     body.appendChild(cell);
   }
 
-  // 이번달
+  // 이번달 날짜
   for(var d=1; d<=totalDays; d++) {
-    var dateStr = attCalYear+'-'+String(attCalMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    var dow = new Date(attCalYear, attCalMonth, d).getDay();
-    var dayRecs = recs.filter(function(r){ return r.date===dateStr; });
+    (function(day) {
+      var dateStr = attCalYear+'-'+String(attCalMonth+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+      var dow = new Date(attCalYear, attCalMonth, day).getDay();
+      var dayRecs = recs.filter(function(r){ return r.date===dateStr; });
+      var isToday = dateStr === today;
+      var isSel   = dateStr === attSelectedDate;
 
-    var totalStudents = students.length;
-    var present = dayRecs.filter(function(r){ return r.status==='O'||r.status==='B'; }).length;
-    var absent  = dayRecs.filter(function(r){ return r.status==='X'; }).length;
-    var late    = dayRecs.filter(function(r){ return r.status==='T'; }).length;
+      var present = dayRecs.filter(function(r){ return r.status==='O'||r.status==='B'; }).length;
+      var absent  = dayRecs.filter(function(r){ return r.status==='X'; }).length;
+      var late    = dayRecs.filter(function(r){ return r.status==='T'; }).length;
 
-    var isToday    = dateStr===today;
-    var isSelected = dateStr===attSelectedDate;
+      var cell = document.createElement('div');
+      var baseBg = isSel ? 'var(--red-bg)' : isToday ? '#fff5f5' : 'var(--white)';
+      cell.style.cssText = 'min-height:60px;padding:4px;border:0.5px solid var(--line);cursor:pointer;transition:.12s;background:'+baseBg+';'+(isSel?'outline:2px solid var(--red);':'');
 
-    var cell = document.createElement('div');
-    cell.style.cssText = 'min-height:60px;padding:4px;border:0.5px solid var(--line);cursor:pointer;transition:.15s;'
-      +(isToday?'background:#fff5f5;':'')
-      +(isSelected?'outline:2px solid var(--red);background:var(--red-bg);':'');
-    cell.onmouseover = function(){ if(!this.classList.contains('sel')) this.style.background='var(--bg)'; };
-    cell.onmouseout  = function(){ if(!this.classList.contains('sel')) this.style.background= isToday?'#fff5f5':''; };
+      var dateColor = dow===0?'var(--red)':dow===6?'var(--blue)':'var(--ink2)';
+      var dateDiv = document.createElement('div');
+      dateDiv.style.cssText = 'font-size:11px;font-weight:'+(isToday?'700':'500')+';text-align:center;color:'+dateColor+';margin-bottom:3px;';
+      dateDiv.textContent = day;
+      cell.appendChild(dateDiv);
 
-    var dateColor = dow===0?'var(--red)':dow===6?'var(--blue)':'var(--ink)';
-    cell.innerHTML = '<div style="font-size:11px;font-weight:'+(isToday?'700':'500')+';text-align:center;color:'+dateColor+';margin-bottom:3px;">'+d+'</div>';
-
-    if(dayRecs.length) {
       if(present) {
-        var dot = document.createElement('div');
-        dot.style.cssText = 'font-size:9px;background:var(--green-bg);color:var(--green);padding:1px 4px;border-radius:2px;margin-bottom:1px;';
-        dot.textContent = '출석 '+present;
-        cell.appendChild(dot);
+        var d1 = document.createElement('div');
+        d1.style.cssText = 'font-size:9px;background:var(--green-bg);color:var(--green);padding:1px 4px;border-radius:2px;margin-bottom:1px;white-space:nowrap;overflow:hidden;';
+        d1.textContent = '출석 '+present;
+        cell.appendChild(d1);
       }
       if(absent) {
-        var dot2 = document.createElement('div');
-        dot2.style.cssText = 'font-size:9px;background:var(--red-bg);color:var(--red);padding:1px 4px;border-radius:2px;margin-bottom:1px;';
-        dot2.textContent = '결석 '+absent;
-        cell.appendChild(dot2);
+        var d2 = document.createElement('div');
+        d2.style.cssText = 'font-size:9px;background:var(--red-bg);color:var(--red);padding:1px 4px;border-radius:2px;margin-bottom:1px;';
+        d2.textContent = '결석 '+absent;
+        cell.appendChild(d2);
       }
       if(late) {
-        var dot3 = document.createElement('div');
-        dot3.style.cssText = 'font-size:9px;background:var(--gold-bg);color:var(--gold);padding:1px 4px;border-radius:2px;';
-        dot3.textContent = '지각 '+late;
-        cell.appendChild(dot3);
+        var d3 = document.createElement('div');
+        d3.style.cssText = 'font-size:9px;background:var(--gold-bg);color:var(--gold);padding:1px 4px;border-radius:2px;';
+        d3.textContent = '지각 '+late;
+        cell.appendChild(d3);
       }
-    } else if(totalStudents > 0 && dateStr <= today) {
-      var dot4 = document.createElement('div');
-      dot4.style.cssText = 'font-size:9px;color:var(--muted);text-align:center;';
-      dot4.textContent = '미입력';
-      cell.appendChild(dot4);
-    }
+      if(!dayRecs.length && students.length && dateStr<=today) {
+        var d4 = document.createElement('div');
+        d4.style.cssText = 'font-size:9px;color:var(--line);text-align:center;';
+        d4.textContent = '—';
+        cell.appendChild(d4);
+      }
 
-    var ds = dateStr;
-    cell.onclick = function(){ selectAttDay(ds); };
-    body.appendChild(cell);
+      cell.onclick = function(){ selectAttDay(dateStr); };
+      body.appendChild(cell);
+    })(d);
   }
 
   // 다음달 빈칸
@@ -1956,7 +1954,7 @@ function renderAttCalendar() {
   if(rem < 7) {
     for(var j=1; j<=rem; j++) {
       var cell2 = document.createElement('div');
-      cell2.style.cssText = 'min-height:60px;padding:4px;border:0.5px solid var(--line);opacity:.3;';
+      cell2.style.cssText = 'min-height:60px;padding:4px;border:0.5px solid var(--line);opacity:.3;background:var(--bg2);';
       cell2.innerHTML = '<div style="font-size:11px;text-align:center;color:var(--muted);">'+j+'</div>';
       body.appendChild(cell2);
     }
