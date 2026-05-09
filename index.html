@@ -339,6 +339,34 @@ textarea{resize:vertical;min-height:80px;}
         <button class="btn-sm sec" onclick="openGroupTestModal()">👥 반별 입력</button>
         <button class="btn-sm" onclick="openTestModal()">+ 개별 입력</button>
       </div></div>
+
+      <!-- 테스트 달력 -->
+      <div style="background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--line);">
+          <button onclick="changeTestMonth(-1)" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink);padding:0 8px;">‹</button>
+          <div id="test-cal-title" style="font-size:13px;font-weight:700;"></div>
+          <button onclick="changeTestMonth(1)" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink);padding:0 8px;">›</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;border-bottom:1px solid var(--line);">
+          <div style="padding:6px;font-size:10px;font-weight:700;color:var(--red);">일</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">월</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">화</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">수</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">목</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">금</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--blue);">토</div>
+        </div>
+        <div id="test-cal-body" style="display:grid;grid-template-columns:repeat(7,1fr);"></div>
+      </div>
+
+      <!-- 날짜 클릭 패널 -->
+      <div id="test-day-panel" style="display:none;background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:var(--bg2);border-bottom:1px solid var(--line);">
+          <div id="test-day-title" style="font-size:13px;font-weight:700;"></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-sm" onclick="openTestModalForDate()">+ 이 날 입력</button>
+            <button onclick="document.getElementById('test-day-panel').style.display='none'" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;line-height:1;">×</button>
+          </div>
+        </div>
+        <div id="test-day-list" style="padding:14px 20px;display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;"></div>
+      </div>
+
+      <!-- 전체 목록 -->
+      <div class="sec-hd"><h2>📋 전체 테스트 기록</h2></div>
       <div class="tbl-wrap">
         <table><thead><tr><th>이름</th><th>반</th><th>테스트명</th><th>날짜</th><th>점수</th><th>메모</th><th></th></tr></thead>
         <tbody id="test-body"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px;">테스트 결과를 입력해보세요</td></tr></tbody></table>
@@ -348,6 +376,34 @@ textarea{resize:vertical;min-height:80px;}
     <!-- 숙제 관리 -->
     <div class="view" id="view-homework">
       <div class="sec-hd"><h2>📚 숙제 관리</h2><div class="actions"><button class="btn-sm sec" onclick="openGroupHwModal()">👥 그룹 숙제</button><button class="btn-sm" onclick="openHwModal()">+ 개별 숙제</button></div></div>
+
+      <!-- 숙제 달력 (마감일 기준) -->
+      <div style="background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--line);">
+          <button onclick="changeHwMonth(-1)" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink);padding:0 8px;">‹</button>
+          <div id="hw-cal-title" style="font-size:13px;font-weight:700;"></div>
+          <button onclick="changeHwMonth(1)" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink);padding:0 8px;">›</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;border-bottom:1px solid var(--line);">
+          <div style="padding:6px;font-size:10px;font-weight:700;color:var(--red);">일</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">월</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">화</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">수</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">목</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">금</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--blue);">토</div>
+        </div>
+        <div id="hw-cal-body" style="display:grid;grid-template-columns:repeat(7,1fr);"></div>
+      </div>
+
+      <!-- 날짜 클릭 패널 -->
+      <div id="hw-day-panel" style="display:none;background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:var(--bg2);border-bottom:1px solid var(--line);">
+          <div id="hw-day-title" style="font-size:13px;font-weight:700;"></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-sm" onclick="openHwModalForDate()">+ 이 날 마감 추가</button>
+            <button onclick="document.getElementById('hw-day-panel').style.display='none'" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;line-height:1;">×</button>
+          </div>
+        </div>
+        <div id="hw-day-list" style="padding:14px 20px;display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;"></div>
+      </div>
+
+      <!-- 전체 목록 -->
+      <div class="sec-hd"><h2>📋 전체 숙제 목록</h2></div>
       <div class="tbl-wrap">
         <table><thead><tr><th>이름</th><th>반</th><th>과제명</th><th>마감일</th><th>제출 여부</th><th>메모</th><th></th></tr></thead>
         <tbody id="hw-body"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px;">숙제를 추가해보세요</td></tr></tbody></table>
@@ -818,8 +874,8 @@ function showView(id, el) {
   document.getElementById('page-title').textContent = viewTitles[id]||'';
   if(id==='students') renderStudents();
   if(id==='attendance') { renderAttendance(); attCalYear=new Date().getFullYear(); attCalMonth=new Date().getMonth(); renderAttCalendar(); }
-  if(id==='tests') renderTests();
-  if(id==='homework') renderHw();
+  if(id==='tests') { renderTests(); testCalYear=new Date().getFullYear(); testCalMonth=new Date().getMonth(); renderTestCalendar(); }
+  if(id==='homework') { renderHw(); hwCalYear=new Date().getFullYear(); hwCalMonth=new Date().getMonth(); renderHwCalendar(); }
   if(id==='schedule') { renderSchedule(); }
   if(id==='dashboard') renderDashboard();
   if(id==='progress') { renderProgress(); progCalYear=new Date().getFullYear(); progCalMonth=new Date().getMonth(); renderProgCalendar(); }
@@ -1214,7 +1270,8 @@ function saveTest() {
   DB.set('tests', recs);
   updateTestFilter();
   closeModal('modal-test');
-  renderTests(); toast('테스트 결과가 저장되었습니다');
+  renderTests(); renderTestCalendar(); if(testSelectedDate) selectTestDay(testSelectedDate);
+  toast('테스트 결과가 저장되었습니다');
 }
 
 function deleteTest(id) {
@@ -1255,7 +1312,8 @@ function saveHw() {
   recs.push({id:Date.now().toString(), sid:sid, name:name, status:document.getElementById('hw-status').value, due:document.getElementById('hw-due').value, memo:document.getElementById('hw-memo').value});
   DB.set('homework', recs);
   closeModal('modal-hw');
-  renderHw(); renderDashboard(); toast('숙제가 저장되었습니다');
+  renderHw(); renderHwCalendar(); if(hwSelectedDate) selectHwDay(hwSelectedDate);
+  renderDashboard(); toast('숙제가 저장되었습니다');
 }
 
 function updateHwStatus(id, status) {
@@ -1843,6 +1901,215 @@ function calcGtPct(sid) {
   }
 }
 
+
+// ══ 테스트 달력 ══════════════════════════════════
+var testCalYear  = new Date().getFullYear();
+var testCalMonth = new Date().getMonth();
+var testSelectedDate = '';
+
+function changeTestMonth(dir) {
+  testCalMonth += dir;
+  if(testCalMonth>11){testCalMonth=0;testCalYear++;}
+  if(testCalMonth<0){testCalMonth=11;testCalYear--;}
+  renderTestCalendar();
+}
+
+function renderTestCalendar() {
+  var recs = DB.get('tests');
+  var today = new Date().toISOString().slice(0,10);
+  var firstDay = new Date(testCalYear,testCalMonth,1);
+  var lastDay  = new Date(testCalYear,testCalMonth+1,0);
+  var startDow = firstDay.getDay();
+  var totalDays = lastDay.getDate();
+  var titleEl = document.getElementById('test-cal-title');
+  if(titleEl) titleEl.textContent = testCalYear+'년 '+(testCalMonth+1)+'월';
+  var body = document.getElementById('test-cal-body');
+  if(!body) return;
+  body.innerHTML = '';
+  for(var i=0;i<startDow;i++){
+    var c=document.createElement('div');
+    c.style.cssText='min-height:52px;padding:4px;border:0.5px solid var(--line);opacity:.3;background:var(--bg2);';
+    body.appendChild(c);
+  }
+  for(var d=1;d<=totalDays;d++){
+    (function(day){
+      var ds=testCalYear+'-'+String(testCalMonth+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+      var dow=new Date(testCalYear,testCalMonth,day).getDay();
+      var dayRecs=recs.filter(function(r){return r.date===ds;});
+      var isSel=ds===testSelectedDate;
+      var isToday=ds===today;
+      var cell=document.createElement('div');
+      cell.style.cssText='min-height:52px;padding:4px;border:0.5px solid var(--line);cursor:pointer;transition:.12s;background:'+(isSel?'var(--blue-bg)':isToday?'#f0f4ff':'var(--white)')+';'+(isSel?'outline:2px solid var(--blue);':'');
+      var dc=dow===0?'var(--red)':dow===6?'var(--blue)':'var(--ink2)';
+      var dd=document.createElement('div');
+      dd.style.cssText='font-size:11px;font-weight:'+(isToday?'700':'500')+';text-align:center;color:'+dc+';margin-bottom:2px;';
+      dd.textContent=day;
+      cell.appendChild(dd);
+      if(dayRecs.length){
+        // 테스트명별 묶기
+        var names=[...new Set(dayRecs.map(function(r){return r.name;}))];
+        names.slice(0,2).forEach(function(n){
+          var dot=document.createElement('div');
+          dot.style.cssText='font-size:9px;background:var(--blue-bg);color:var(--blue);padding:1px 4px;border-radius:2px;margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+          dot.textContent=n.length>8?n.slice(0,8)+'…':n;
+          cell.appendChild(dot);
+        });
+        if(names.length>2){
+          var more=document.createElement('div');
+          more.style.cssText='font-size:9px;color:var(--muted);text-align:center;';
+          more.textContent='+'+(names.length-2)+'건';
+          cell.appendChild(more);
+        }
+      }
+      cell.onclick=function(){selectTestDay(ds);};
+      body.appendChild(cell);
+    })(d);
+  }
+  var rem=7-((startDow+totalDays)%7);
+  if(rem<7){for(var j=1;j<=rem;j++){var c2=document.createElement('div');c2.style.cssText='min-height:52px;padding:4px;border:0.5px solid var(--line);opacity:.3;background:var(--bg2);';body.appendChild(c2);}}
+}
+
+function selectTestDay(dateStr) {
+  testSelectedDate=dateStr;
+  renderTestCalendar();
+  var students=DB.get('students');
+  var recs=DB.get('tests').filter(function(r){return r.date===dateStr;});
+  var panel=document.getElementById('test-day-panel');
+  var title=document.getElementById('test-day-title');
+  var list=document.getElementById('test-day-list');
+  if(!panel||!title||!list) return;
+  var d=new Date(dateStr);
+  var dow=['일','월','화','수','목','금','토'];
+  title.textContent=(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+dow[d.getDay()]+') · '+recs.length+'건';
+  list.innerHTML='';
+  if(!recs.length){
+    list.innerHTML='<div style="text-align:center;color:var(--muted);padding:20px;font-size:12px;">이 날 테스트 기록이 없습니다</div>';
+  } else {
+    recs.sort(function(a,b){return a.name.localeCompare(b.name);}).forEach(function(r){
+      var s=students.find(function(x){return x.id===r.sid;});
+      var pct=r.score;
+      var color=pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
+      var bg=pct>=90?'var(--green-bg)':pct>=70?'var(--gold-bg)':'var(--red-bg)';
+      var card=document.createElement('div');
+      card.style.cssText='display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 14px;';
+      card.innerHTML='<div style="flex:1;">'
+        +'<div style="font-size:13px;font-weight:700;color:var(--ink);">'+(s?s.name:'—')+'<span style="font-size:11px;color:var(--muted);margin-left:6px;">'+(s?s.grade:'')+'</span></div>'
+        +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+r.name+'</div>'
+        +'</div>'
+        +'<div style="text-align:center;">'
+        +'<div style="background:'+bg+';color:'+color+';font-size:14px;font-weight:700;padding:6px 12px;border-radius:4px;">'
+        +(r.correct!==undefined?r.correct+'/'+r.total+' ('+pct+'%)':pct+'%')
+        +'</div>'
+        +(r.memo?'<div style="font-size:10px;color:var(--muted);margin-top:3px;">'+r.memo+'</div>':'')
+        +'</div>';
+      list.appendChild(card);
+    });
+  }
+  panel.style.display='block';
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function openTestModalForDate() {
+  populateSel(); openModal('modal-test');
+  var el=document.getElementById('test-date-input');
+  if(el&&testSelectedDate) el.value=testSelectedDate;
+}
+
+// ══ 숙제 달력 ════════════════════════════════════
+var hwCalYear  = new Date().getFullYear();
+var hwCalMonth = new Date().getMonth();
+var hwSelectedDate = '';
+
+function changeHwMonth(dir) {
+  hwCalMonth+=dir;
+  if(hwCalMonth>11){hwCalMonth=0;hwCalYear++;}
+  if(hwCalMonth<0){hwCalMonth=11;hwCalYear--;}
+  renderHwCalendar();
+}
+
+function renderHwCalendar() {
+  var recs=DB.get('homework');
+  var today=new Date().toISOString().slice(0,10);
+  var firstDay=new Date(hwCalYear,hwCalMonth,1);
+  var lastDay=new Date(hwCalYear,hwCalMonth+1,0);
+  var startDow=firstDay.getDay();
+  var totalDays=lastDay.getDate();
+  var titleEl=document.getElementById('hw-cal-title');
+  if(titleEl) titleEl.textContent=hwCalYear+'년 '+(hwCalMonth+1)+'월';
+  var body=document.getElementById('hw-cal-body');
+  if(!body) return;
+  body.innerHTML='';
+  for(var i=0;i<startDow;i++){var c=document.createElement('div');c.style.cssText='min-height:52px;padding:4px;border:0.5px solid var(--line);opacity:.3;background:var(--bg2);';body.appendChild(c);}
+  for(var d=1;d<=totalDays;d++){
+    (function(day){
+      var ds=hwCalYear+'-'+String(hwCalMonth+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+      var dow=new Date(hwCalYear,hwCalMonth,day).getDay();
+      var dayRecs=recs.filter(function(r){return r.due===ds;});
+      var pending=dayRecs.filter(function(r){return r.status==='pending';}).length;
+      var done=dayRecs.filter(function(r){return r.status==='done';}).length;
+      var isSel=ds===hwSelectedDate;
+      var isToday=ds===today;
+      var isOverdue=ds<today&&pending>0;
+      var cell=document.createElement('div');
+      cell.style.cssText='min-height:52px;padding:4px;border:0.5px solid var(--line);cursor:pointer;transition:.12s;background:'+(isSel?'var(--gold-bg)':isOverdue?'#fff8f0':isToday?'#fffdf0':'var(--white)')+';'+(isSel?'outline:2px solid var(--gold);':'');
+      var dc=dow===0?'var(--red)':dow===6?'var(--blue)':'var(--ink2)';
+      var dd=document.createElement('div');
+      dd.style.cssText='font-size:11px;font-weight:'+(isToday?'700':'500')+';text-align:center;color:'+dc+';margin-bottom:2px;';
+      dd.textContent=day;
+      cell.appendChild(dd);
+      if(pending){var dot=document.createElement('div');dot.style.cssText='font-size:9px;background:var(--red-bg);color:var(--red);padding:1px 4px;border-radius:2px;margin-bottom:1px;';dot.textContent='미제출 '+pending;cell.appendChild(dot);}
+      if(done){var dot2=document.createElement('div');dot2.style.cssText='font-size:9px;background:var(--green-bg);color:var(--green);padding:1px 4px;border-radius:2px;';dot2.textContent='제출 '+done;cell.appendChild(dot2);}
+      cell.onclick=function(){selectHwDay(ds);};
+      body.appendChild(cell);
+    })(d);
+  }
+  var rem=7-((startDow+totalDays)%7);
+  if(rem<7){for(var j=1;j<=rem;j++){var c2=document.createElement('div');c2.style.cssText='min-height:52px;padding:4px;border:0.5px solid var(--line);opacity:.3;background:var(--bg2);';body.appendChild(c2);}}
+}
+
+function selectHwDay(dateStr) {
+  hwSelectedDate=dateStr;
+  renderHwCalendar();
+  var students=DB.get('students');
+  var recs=DB.get('homework').filter(function(r){return r.due===dateStr;});
+  var panel=document.getElementById('hw-day-panel');
+  var title=document.getElementById('hw-day-title');
+  var list=document.getElementById('hw-day-list');
+  if(!panel||!title||!list) return;
+  var d=new Date(dateStr);
+  var dow=['일','월','화','수','목','금','토'];
+  title.textContent=(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+dow[d.getDay()]+') 마감 · '+recs.length+'건';
+  list.innerHTML='';
+  if(!recs.length){
+    list.innerHTML='<div style="text-align:center;color:var(--muted);padding:20px;font-size:12px;">이 날 마감 숙제가 없습니다</div>';
+  } else {
+    var statusStyle={pending:{bg:'var(--red-bg)',color:'var(--red)',label:'미제출'},done:{bg:'var(--green-bg)',color:'var(--green)',label:'제출'},half:{bg:'var(--gold-bg)',color:'var(--gold)',label:'부분제출'}};
+    recs.forEach(function(r){
+      var s=students.find(function(x){return x.id===r.sid;});
+      var st=statusStyle[r.status]||statusStyle.pending;
+      var card=document.createElement('div');
+      card.style.cssText='display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 14px;';
+      card.innerHTML='<div style="flex:1;">'
+        +'<div style="font-size:13px;font-weight:700;">'+(s?s.name:'—')+'<span style="font-size:11px;color:var(--muted);margin-left:6px;">'+(s?s.grade:'')+'</span></div>'
+        +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+r.name+'</div>'
+        +'</div>'
+        +'<select onchange="updateHwStatus(\''+r.id+'\',this.value);renderHwCalendar();selectHwDay(\''+dateStr+'\')" style="font-size:11px;padding:4px 6px;border:1px solid var(--line);border-radius:3px;background:'+st.bg+';color:'+st.color+';font-weight:700;cursor:pointer;font-family:var(--sans);">'
+        +'<option value="pending"'+(r.status==='pending'?' selected':'')+'>미제출</option>'
+        +'<option value="done"'+(r.status==='done'?' selected':'')+'>제출</option>'
+        +'<option value="half"'+(r.status==='half'?' selected':'')+'>부분제출</option>'
+        +'</select>';
+      list.appendChild(card);
+    });
+  }
+  panel.style.display='block';
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function openHwModalForDate() {
+  populateSel(); openModal('modal-hw');
+  var el=document.getElementById('hw-due');
+  if(el&&hwSelectedDate) el.value=hwSelectedDate;
+}
 
 // ══ 진도 달력 ════════════════════════════════════
 var progCalYear  = new Date().getFullYear();
