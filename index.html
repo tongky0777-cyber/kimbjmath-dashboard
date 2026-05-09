@@ -155,6 +155,27 @@ textarea{resize:vertical;min-height:80px;}
 .att-radio input:checked+label{border-color:var(--red);background:var(--red-bg);color:var(--red);}
 
 /* 토스트 */
+
+/* 달력 */
+.cal-day{
+  min-height:70px;padding:6px 4px;border:0.5px solid var(--line);
+  cursor:pointer;transition:.15s;position:relative;
+}
+.cal-day:hover{background:var(--bg);}
+.cal-day.today{background:var(--red-bg);}
+.cal-day.other-month{opacity:.35;}
+.cal-day.selected{background:var(--blue-bg);outline:2px solid var(--blue);}
+.cal-date{font-size:12px;font-weight:600;margin-bottom:3px;text-align:center;}
+.cal-date.sun{color:var(--red);}
+.cal-date.sat{color:var(--blue);}
+.cal-dot{font-size:9px;padding:1px 4px;border-radius:2px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cal-dot-makeup{background:var(--red-bg);color:var(--red);}
+.cal-dot-exam{background:var(--blue-bg);color:var(--blue);}
+.cal-dot-event{background:var(--gold-bg);color:var(--gold);}
+.cal-dot-task{background:var(--teal-bg);color:var(--teal);}
+.cal-dot-other{background:var(--bg2);color:var(--muted);}
+.cal-more{font-size:9px;color:var(--muted);text-align:center;}
+
 .toast{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--ink);color:#fff;padding:12px 20px;border-radius:5px;font-size:13px;font-weight:500;transform:translateY(60px);opacity:0;transition:.3s;pointer-events:none;}
 .toast.on{transform:none;opacity:1;}
 
@@ -291,6 +312,38 @@ textarea{resize:vertical;min-height:80px;}
     <!-- 보강·일정 -->
     <div class="view" id="view-schedule">
       <div class="sec-hd"><h2>📅 보강 · 일정 관리</h2><button class="btn-sm" onclick="openScheduleModal()">+ 일정 추가</button></div>
+
+      <!-- 월별 달력 -->
+      <div style="background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line);">
+          <button onclick="changeMonth(-1)" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink);padding:0 8px;">‹</button>
+          <div id="cal-title" style="font-size:15px;font-weight:700;color:var(--ink);"></div>
+          <button onclick="changeMonth(1)" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink);padding:0 8px;">›</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;">
+          <div style="padding:8px;font-size:11px;font-weight:700;color:var(--red);">일</div>
+          <div style="padding:8px;font-size:11px;font-weight:700;color:var(--muted);">월</div>
+          <div style="padding:8px;font-size:11px;font-weight:700;color:var(--muted);">화</div>
+          <div style="padding:8px;font-size:11px;font-weight:700;color:var(--muted);">수</div>
+          <div style="padding:8px;font-size:11px;font-weight:700;color:var(--muted);">목</div>
+          <div style="padding:8px;font-size:11px;font-weight:700;color:var(--muted);">금</div>
+          <div style="padding:8px;font-size:11px;font-weight:700;color:var(--blue);">토</div>
+        </div>
+        <div id="cal-body" style="display:grid;grid-template-columns:repeat(7,1fr);"></div>
+      </div>
+
+      <!-- 날짜 클릭시 일정 상세 -->
+      <div id="cal-day-detail" style="display:none;background:var(--white);border:1px solid var(--line);border-radius:6px;padding:16px 20px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div id="cal-day-title" style="font-size:13px;font-weight:700;"></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-sm" onclick="openScheduleModalForDate()">+ 이 날 일정 추가</button>
+            <button class="btn-sm sec" onclick="document.getElementById('cal-day-detail').style.display='none'">닫기</button>
+          </div>
+        </div>
+        <div id="cal-day-list"></div>
+      </div>
+
       <div class="schedule-grid">
         <div class="schedule-card">
           <div class="schedule-card-hd"><span>🔴 이번 주 긴급</span><span id="urgent-count" style="font-size:11px;color:var(--red);">0건</span></div>
@@ -636,7 +689,7 @@ function showView(id, el) {
   if(id==='attendance') renderAttendance();
   if(id==='tests') renderTests();
   if(id==='homework') renderHw();
-  if(id==='schedule') renderSchedule();
+  if(id==='schedule') { renderSchedule(); }
   if(id==='dashboard') renderDashboard();
   if(id==='progress') renderProgress();
   if(id==='groups') renderGroups();
@@ -982,7 +1035,10 @@ function saveSchedule() {
   recs.push({id:Date.now().toString(), date:document.getElementById('sch-date').value, time:document.getElementById('sch-time').value, type:document.getElementById('sch-type').value, target:document.getElementById('sch-target').value, content:content, memo:document.getElementById('sch-memo').value, done:false});
   DB.set('schedules', recs);
   closeModal('modal-schedule');
-  renderSchedule(); renderDashboard(); toast('일정이 추가되었습니다');
+  renderSchedule();
+  // 선택된 날짜 있으면 상세 갱신
+  if(calSelectedDate) { var ds=DB.get('schedules').filter(function(x){return x.date===calSelectedDate;}); selectCalDay(calSelectedDate,ds); }
+  renderDashboard(); toast('일정이 추가되었습니다');
 }
 
 function toggleSchedule(id) {
@@ -998,6 +1054,7 @@ function deleteSchedule(id) {
 }
 
 function renderSchedule() {
+  renderCalendar();
   var recs = DB.get('schedules').sort(function(a,b){ return a.date.localeCompare(b.date); });
   var today = new Date().toISOString().slice(0,10);
   var oneWeek = new Date(Date.now()+7*86400000).toISOString().slice(0,10);
@@ -1409,6 +1466,143 @@ function saveGroupProgress() {
   renderProgress();
   toast(g.name+' '+g.students.length+'명 진도 저장 완료!');
 }
+
+// ══ 달력 ════════════════════════════════════════
+var calYear  = new Date().getFullYear();
+var calMonth = new Date().getMonth(); // 0-based
+var calSelectedDate = '';
+
+function changeMonth(dir) {
+  calMonth += dir;
+  if(calMonth > 11) { calMonth = 0; calYear++; }
+  if(calMonth < 0)  { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  var schedules = DB.get('schedules');
+  var today = new Date().toISOString().slice(0,10);
+  var firstDay = new Date(calYear, calMonth, 1);
+  var lastDay  = new Date(calYear, calMonth+1, 0);
+  var startDow = firstDay.getDay(); // 0=일
+  var totalDays = lastDay.getDate();
+
+  // 제목
+  var el = document.getElementById('cal-title');
+  if(el) el.textContent = calYear+'년 '+(calMonth+1)+'월';
+
+  var body = document.getElementById('cal-body');
+  if(!body) return;
+  body.innerHTML = '';
+
+  var typeClass = {makeup:'cal-dot-makeup',exam:'cal-dot-exam',event:'cal-dot-event',task:'cal-dot-task',other:'cal-dot-other'};
+  var typeLabel = {makeup:'보강',exam:'시험',event:'행사',task:'할일',other:'기타'};
+
+  // 이전달 빈칸
+  for(var i=0; i<startDow; i++) {
+    var prev = new Date(calYear, calMonth, -startDow+i+1);
+    var cell = document.createElement('div');
+    cell.className = 'cal-day other-month';
+    cell.innerHTML = '<div class="cal-date">'+(prev.getDate())+'</div>';
+    body.appendChild(cell);
+  }
+
+  // 이번달 날짜
+  for(var d=1; d<=totalDays; d++) {
+    var dateStr = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var dow = new Date(calYear, calMonth, d).getDay();
+    var dayScheds = schedules.filter(function(s){ return s.date===dateStr; });
+
+    var cell = document.createElement('div');
+    cell.className = 'cal-day'+(dateStr===today?' today':'')+(dateStr===calSelectedDate?' selected':'');
+    cell.onclick = (function(ds, ss){ return function(){ selectCalDay(ds, ss); }; })(dateStr, dayScheds);
+
+    var dateDiv = document.createElement('div');
+    dateDiv.className = 'cal-date'+(dow===0?' sun':dow===6?' sat':'');
+    dateDiv.textContent = d;
+    cell.appendChild(dateDiv);
+
+    // 일정 도트 (최대 2개 + more)
+    var shown = dayScheds.slice(0,2);
+    shown.forEach(function(s){
+      var dot = document.createElement('div');
+      dot.className = 'cal-dot '+(typeClass[s.type]||'cal-dot-other');
+      dot.textContent = (typeLabel[s.type]||'기타')+' '+(s.target?s.target.slice(0,4):'');
+      cell.appendChild(dot);
+    });
+    if(dayScheds.length > 2) {
+      var more = document.createElement('div');
+      more.className = 'cal-more';
+      more.textContent = '+' + (dayScheds.length-2) + '건 더';
+      cell.appendChild(more);
+    }
+
+    body.appendChild(cell);
+  }
+
+  // 다음달 빈칸
+  var remaining = 7 - ((startDow + totalDays) % 7);
+  if(remaining < 7) {
+    for(var j=1; j<=remaining; j++) {
+      var cell2 = document.createElement('div');
+      cell2.className = 'cal-day other-month';
+      cell2.innerHTML = '<div class="cal-date">'+j+'</div>';
+      body.appendChild(cell2);
+    }
+  }
+}
+
+function selectCalDay(dateStr, dayScheds) {
+  calSelectedDate = dateStr;
+  renderCalendar();
+
+  var detail = document.getElementById('cal-day-detail');
+  var title  = document.getElementById('cal-day-title');
+  var list   = document.getElementById('cal-day-list');
+  if(!detail) return;
+
+  var d = new Date(dateStr);
+  var dowNames = ['일','월','화','수','목','금','토'];
+  title.textContent = (d.getMonth()+1)+'월 '+d.getDate()+'일 ('+dowNames[d.getDay()]+') · '+dayScheds.length+'건';
+
+  var typeLabel = {makeup:'보강',exam:'시험',event:'행사',task:'처리할일',other:'기타'};
+  var typeColor = {makeup:'var(--red)',exam:'var(--blue)',event:'var(--gold)',task:'var(--teal)',other:'var(--muted)'};
+  var typeBg    = {makeup:'var(--red-bg)',exam:'var(--blue-bg)',event:'var(--gold-bg)',task:'var(--teal-bg)',other:'var(--bg2)'};
+
+  if(!dayScheds.length) {
+    list.innerHTML = '<div style="text-align:center;color:var(--muted);padding:16px;font-size:12px;">이 날 일정이 없습니다</div>';
+  } else {
+    list.innerHTML = '';
+    dayScheds.forEach(function(s){
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:'+(typeBg[s.type]||'var(--bg2)')+';border-radius:4px;margin-bottom:6px;';
+      row.innerHTML = '<span style="font-size:11px;font-weight:700;color:'+(typeColor[s.type]||'var(--muted)')+';min-width:36px;padding-top:1px;">'+(typeLabel[s.type]||'기타')+'</span>'
+        +'<div style="flex:1;">'
+        +'<div style="font-size:13px;font-weight:600;">'+s.content+(s.target?' <span style="font-size:11px;color:var(--muted);">· '+s.target+'</span>':'')+'</div>'
+        +(s.time?'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+s.time+'</div>':'')
+        +(s.memo?'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+s.memo+'</div>':'')
+        +'</div>'
+        +'<span style="font-size:11px;padding:2px 8px;border-radius:100px;background:'+(s.done?'var(--green-bg)':'rgba(0,0,0,.06)')+';color:'+(s.done?'var(--green)':'var(--muted)')+';">'+(s.done?'완료':'예정')+'</span>';
+
+      var delBtn = document.createElement('button');
+      delBtn.className='icon-btn'; delBtn.textContent='✕'; delBtn.style.flexShrink='0';
+      var sid=s.id;
+      delBtn.onclick=function(){ deleteSchedule(sid); selectCalDay(dateStr, DB.get('schedules').filter(function(x){return x.date===dateStr;})); };
+      row.appendChild(delBtn);
+      list.appendChild(row);
+    });
+  }
+  detail.style.display = 'block';
+}
+
+function openScheduleModalForDate() {
+  openScheduleModal();
+  if(calSelectedDate) {
+    var el = document.getElementById('sch-date');
+    if(el) el.value = calSelectedDate;
+  }
+}
+
 
 // ══ 반별 테스트 입력 ══════════════════════════════
 function openGroupTestModal() {
