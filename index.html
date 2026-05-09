@@ -696,14 +696,73 @@ function getStudentGroups(sid) {
 function renderStudents() {
   var students = DB.get('students');
   var filter = document.getElementById('filter-class') ? document.getElementById('filter-class').value : '';
-  var filtered = filter ? students.filter(function(s){ return s.class===filter; }) : students;
+  var filtered = filter ? students.filter(function(s){
+    return getStudentGroups(s.id).some(function(g){ return g.id===filter; });
+  }) : students;
   var tbody = document.getElementById('student-body');
   if(!tbody) return;
-  if(!filtered.length) { tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">학생을 추가해보세요</td></tr>'; return; }
-  tbody.innerHTML = filtered.map(function(s){
-    var tag = s.class.startsWith('공통') ? 'ct-1' : (s.class==='대수'||s.class==='미적분Ⅰ') ? 'ct-2' : 'ct-s';
-    return '<tr><td class="student-name">'+s.name+'</td><td>'+(s.school||'—')+'</td><td>'+s.grade+'</td><td><span class="class-tag '+tag+'">'+s.class+'</span></td><td>'+(s.phone||'—')+'</td><td>'+(s.parent||'—')+'</td><td style="font-size:11px;color:var(--muted);">'+(s.createdAt||'—')+'</td><td><div class="row-action"><button class="icon-btn" onclick="editStudent(\''+s.id+'\')">✏️</button><button class="icon-btn" onclick="deleteStudent(\''+s.id+'\')">🗑️</button></div></td></tr>';
-  }).join('');
+  tbody.innerHTML = '';
+  if(!filtered.length) {
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">학생을 추가해보세요</td></tr>';
+    return;
+  }
+  filtered.forEach(function(s) {
+    var myGroups = getStudentGroups(s.id);
+    var groupTags = myGroups.length
+      ? myGroups.map(function(g){ return '<span class="class-tag ct-1" style="margin-right:3px;">'+g.name+'</span>'; }).join('')
+      : '<span style="color:var(--muted);font-size:11px;">미배정</span>';
+
+    var tr = document.createElement('tr');
+
+    // 이름 셀 - 클릭하면 상세 팝업
+    var nameTd = document.createElement('td');
+    var nameBtn = document.createElement('button');
+    nameBtn.textContent = s.name;
+    nameBtn.style.cssText = 'background:none;border:none;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;padding:0;font-family:var(--sans);';
+    nameBtn.onmouseover = function(){ this.style.color='var(--red)'; };
+    nameBtn.onmouseout  = function(){ this.style.color='var(--ink)'; };
+    var sid = s.id;
+    nameBtn.onclick = function(){ openStudentDetail(sid); };
+    nameTd.appendChild(nameBtn);
+
+    // 나머지 셀
+    var cells = [
+      s.school||'—',
+      s.grade,
+      null, // groupTags HTML
+      s.phone||'—',
+      s.parent||'—',
+      s.createdAt||'—',
+    ];
+
+    tr.appendChild(nameTd);
+    cells.forEach(function(c, i){
+      var td = document.createElement('td');
+      if(i === 2) { // groupTags
+        td.innerHTML = groupTags;
+      } else if(i === 5) {
+        td.style.cssText = 'font-size:11px;color:var(--muted);';
+        td.textContent = c;
+      } else {
+        td.textContent = c;
+      }
+      tr.appendChild(td);
+    });
+
+    // 삭제 버튼
+    var actionTd = document.createElement('td');
+    var delBtn = document.createElement('button');
+    delBtn.className = 'icon-btn';
+    delBtn.textContent = '🗑️';
+    delBtn.onclick = function(){ deleteStudent(sid); };
+    var rowAction = document.createElement('div');
+    rowAction.className = 'row-action';
+    rowAction.appendChild(delBtn);
+    actionTd.appendChild(rowAction);
+    tr.appendChild(actionTd);
+
+    tbody.appendChild(tr);
+  });
 }
 
 // 출결 저장
