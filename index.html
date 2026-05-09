@@ -514,8 +514,9 @@ textarea{resize:vertical;min-height:80px;}
 <!-- 모달: 진도 입력 -->
 <div class="modal-bg" id="modal-progress">
   <div class="modal">
-    <div class="modal-hd"><h3>📖 진도 입력</h3><button class="modal-close" onclick="closeModal('modal-progress')">×</button></div>
+    <div class="modal-hd"><h3 id="prog-modal-title">📖 진도 입력</h3><button class="modal-close" onclick="closeModal('modal-progress')">×</button></div>
     <div class="modal-body">
+      <input type="hidden" id="prog-id">
       <div class="form-row">
         <div class="form-group"><label>학생</label><select id="prog-student"></select></div>
         <div class="form-group"><label>날짜</label><input type="date" id="prog-date"></div>
@@ -1322,29 +1323,63 @@ function saveGroupHw() {
 // ══ 진도 관리 ════════════════════════════════════
 function openProgressModal() {
   populateSel();
+  document.getElementById('prog-id').value = '';
+  var titleEl = document.getElementById('prog-modal-title');
+  if(titleEl) titleEl.textContent = '📖 진도 입력';
   var progDate = document.getElementById('prog-date');
   if(progDate) progDate.value = new Date().toISOString().slice(0,10);
-  ['prog-book','prog-unit','prog-range','prog-memo'].forEach(function(i){ document.getElementById(i).value=''; });
+  ['prog-book','prog-unit','prog-range','prog-memo'].forEach(function(i){
+    var el = document.getElementById(i);
+    if(el) el.value='';
+  });
+  document.getElementById('prog-status').value = 'done';
+  openModal('modal-progress');
+}
+
+function editProgress(id) {
+  var recs = DB.get('progress');
+  var r = recs.find(function(x){ return x.id===id; });
+  if(!r) return;
+  populateSel();
+  document.getElementById('prog-id').value    = r.id;
+  document.getElementById('prog-student').value = r.sid;
+  document.getElementById('prog-date').value  = r.date || '';
+  document.getElementById('prog-book').value  = r.book || '';
+  document.getElementById('prog-unit').value  = r.unit || '';
+  document.getElementById('prog-range').value = r.range || '';
+  document.getElementById('prog-status').value= r.status || 'done';
+  document.getElementById('prog-memo').value  = r.memo || '';
+  var titleEl = document.getElementById('prog-modal-title');
+  if(titleEl) titleEl.textContent = '📖 진도 수정';
   openModal('modal-progress');
 }
 
 function saveProgress() {
-  var sid = document.getElementById('prog-student').value;
+  var sid  = document.getElementById('prog-student').value;
   var book = document.getElementById('prog-book').value.trim();
   if(!sid||!book) { toast('학생과 교재를 입력해주세요'); return; }
+  var existingId = document.getElementById('prog-id').value;
   var recs = DB.get('progress');
-  recs.push({
-    id:Date.now().toString(), sid:sid,
-    book: book,
-    unit: document.getElementById('prog-unit').value,
-    range: document.getElementById('prog-range').value,
+  var record = {
+    id: existingId || Date.now().toString(),
+    sid: sid, book: book,
+    unit:   document.getElementById('prog-unit').value,
+    range:  document.getElementById('prog-range').value,
     status: document.getElementById('prog-status').value,
-    date: document.getElementById('prog-date').value,
-    memo: document.getElementById('prog-memo').value
-  });
+    date:   document.getElementById('prog-date').value,
+    memo:   document.getElementById('prog-memo').value
+  };
+  if(existingId) {
+    var idx = recs.findIndex(function(x){ return x.id===existingId; });
+    if(idx > -1) recs[idx] = record;
+    else recs.push(record);
+  } else {
+    recs.push(record);
+  }
   DB.set('progress', recs);
   closeModal('modal-progress');
-  renderProgress(); toast('진도가 저장되었습니다');
+  renderProgress();
+  toast(existingId ? '진도가 수정되었습니다' : '진도가 저장되었습니다');
 }
 
 function deleteProgress(id) {
