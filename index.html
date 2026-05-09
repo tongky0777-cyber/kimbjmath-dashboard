@@ -271,10 +271,10 @@ textarea{resize:vertical;min-height:80px;}
 <select id="filter-class" onchange="renderStudents()" style="font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:3px;background:var(--white);cursor:pointer;font-family:var(--sans);"><option value="">전체 반</option></select>
         <button class="btn-sm" onclick="openStudentModal()">+ 학생 추가</button>
       </div></div>
-      <div class="tbl-wrap">
-        <table><thead><tr><th>이름</th><th>학교</th><th>학년</th><th>소속 반</th><th>연락처</th><th>학부모</th><th>등록일</th><th></th></tr></thead>
-        <tbody id="student-body"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">학생을 추가해보세요</td></tr></tbody></table>
+      <div id="students-grade-wrap">
+        <div style="text-align:center;color:var(--muted);padding:32px;background:var(--white);border:1px solid var(--line);border-radius:6px;">학생을 추가해보세요</div>
       </div>
+      <div style="display:none"><table><tbody id="student-body"></tbody></table></div>
     </div>
 
     <!-- 출결 관리 -->
@@ -891,69 +891,122 @@ function renderStudents() {
   var filtered = filter ? students.filter(function(s){
     return getStudentGroups(s.id).some(function(g){ return g.id===filter; });
   }) : students;
-  var tbody = document.getElementById('student-body');
-  if(!tbody) return;
-  tbody.innerHTML = '';
+  var container = document.getElementById('student-body');
+  if(!container) return;
+
+  // tbody가 아닌 테이블 전체를 담는 div로 교체
+  var wrap = document.getElementById('students-grade-wrap');
+  if(!wrap) return;
+  wrap.innerHTML = '';
+
   if(!filtered.length) {
-    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">학생을 추가해보세요</td></tr>';
+    wrap.innerHTML = '<div style="text-align:center;color:var(--muted);padding:32px;background:var(--white);border:1px solid var(--line);border-radius:6px;">학생을 추가해보세요</div>';
     return;
   }
-  filtered.forEach(function(s) {
-    var myGroups = getStudentGroups(s.id);
-    var groupTags = myGroups.length
-      ? myGroups.map(function(g){ return '<span class="class-tag ct-1" style="margin-right:3px;">'+g.name+'</span>'; }).join('')
-      : '<span style="color:var(--muted);font-size:11px;">미배정</span>';
 
-    var tr = document.createElement('tr');
+  // 학년 순서 정의
+  var gradeOrder = ['초5','초6','중1','중2','중3','고1','고2','고3'];
 
-    // 이름 셀 - 클릭하면 상세 팝업
-    var nameTd = document.createElement('td');
-    var nameBtn = document.createElement('button');
-    nameBtn.textContent = s.name;
-    nameBtn.style.cssText = 'background:none;border:none;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;padding:0;font-family:var(--sans);';
-    nameBtn.onmouseover = function(){ this.style.color='var(--red)'; };
-    nameBtn.onmouseout  = function(){ this.style.color='var(--ink)'; };
-    var sid = s.id;
-    nameBtn.onclick = function(){ openStudentDetail(sid); };
-    nameTd.appendChild(nameBtn);
+  // 학년별 그룹핑
+  var gradeMap = {};
+  filtered.forEach(function(s){
+    var g = s.grade || '기타';
+    if(!gradeMap[g]) gradeMap[g] = [];
+    gradeMap[g].push(s);
+  });
 
-    // 나머지 셀
-    var cells = [
-      s.school||'—',
-      s.grade,
-      null, // groupTags HTML
-      s.phone||'—',
-      s.parent||'—',
-      s.createdAt||'—',
-    ];
+  // 학년 순서대로 정렬
+  var grades = Object.keys(gradeMap).sort(function(a,b){
+    var ai = gradeOrder.indexOf(a);
+    var bi = gradeOrder.indexOf(b);
+    if(ai===-1) ai=999;
+    if(bi===-1) bi=999;
+    return ai-bi;
+  });
 
-    tr.appendChild(nameTd);
-    cells.forEach(function(c, i){
-      var td = document.createElement('td');
-      if(i === 2) { // groupTags
-        td.innerHTML = groupTags;
-      } else if(i === 5) {
-        td.style.cssText = 'font-size:11px;color:var(--muted);';
-        td.textContent = c;
-      } else {
-        td.textContent = c;
-      }
-      tr.appendChild(td);
+  grades.forEach(function(grade){
+    var list = gradeMap[grade];
+
+    // 학년 섹션 헤더
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 0 6px;margin-top:12px;';
+    hdr.innerHTML = '<span style="font-size:12px;font-weight:700;color:var(--white);background:var(--red);padding:3px 12px;border-radius:100px;">'+grade+'</span>'
+      +'<span style="font-size:11px;color:var(--muted);">'+list.length+'명</span>'
+      +'<div style="flex:1;height:1px;background:var(--line);"></div>';
+    wrap.appendChild(hdr);
+
+    // 해당 학년 테이블
+    var tbl = document.createElement('div');
+    tbl.style.cssText = 'background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:8px;';
+    var table = document.createElement('table');
+    table.style.width = '100%';
+    table.innerHTML = '<thead><tr>'
+      +'<th>이름</th><th>학교</th><th>소속 반</th>'
+      +'<th>연락처</th><th>학부모</th><th>등록일</th><th></th>'
+      +'</tr></thead>';
+
+    var tbody = document.createElement('tbody');
+    list.forEach(function(s){
+      var myGroups = getStudentGroups(s.id);
+      var groupTags = myGroups.length
+        ? myGroups.map(function(g){ return '<span class="class-tag ct-1" style="margin-right:3px;">'+g.name+'</span>'; }).join('')
+        : '<span style="color:var(--muted);font-size:11px;">미배정</span>';
+
+      var tr = document.createElement('tr');
+
+      // 이름 버튼
+      var nameTd = document.createElement('td');
+      var nameBtn = document.createElement('button');
+      nameBtn.textContent = s.name;
+      nameBtn.style.cssText = 'background:none;border:none;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;padding:0;font-family:var(--sans);';
+      nameBtn.onmouseover = function(){ this.style.color='var(--red)'; };
+      nameBtn.onmouseout  = function(){ this.style.color='var(--ink)'; };
+      var sid = s.id;
+      nameBtn.onclick = function(){ openStudentDetail(sid); };
+      nameTd.appendChild(nameBtn);
+      tr.appendChild(nameTd);
+
+      // 학교
+      var schoolTd = document.createElement('td');
+      schoolTd.textContent = s.school||'—';
+      tr.appendChild(schoolTd);
+
+      // 반
+      var classTd = document.createElement('td');
+      classTd.innerHTML = groupTags;
+      tr.appendChild(classTd);
+
+      // 연락처
+      var phoneTd = document.createElement('td');
+      phoneTd.textContent = s.phone||'—';
+      tr.appendChild(phoneTd);
+
+      // 학부모
+      var parentTd = document.createElement('td');
+      parentTd.textContent = s.parent||'—';
+      tr.appendChild(parentTd);
+
+      // 등록일
+      var dateTd = document.createElement('td');
+      dateTd.style.cssText = 'font-size:11px;color:var(--muted);';
+      dateTd.textContent = s.createdAt||'—';
+      tr.appendChild(dateTd);
+
+      // 삭제 버튼
+      var actionTd = document.createElement('td');
+      var delBtn = document.createElement('button');
+      delBtn.className = 'icon-btn';
+      delBtn.textContent = '🗑️';
+      delBtn.onclick = function(){ deleteStudent(sid); };
+      actionTd.appendChild(delBtn);
+      tr.appendChild(actionTd);
+
+      tbody.appendChild(tr);
     });
 
-    // 삭제 버튼
-    var actionTd = document.createElement('td');
-    var delBtn = document.createElement('button');
-    delBtn.className = 'icon-btn';
-    delBtn.textContent = '🗑️';
-    delBtn.onclick = function(){ deleteStudent(sid); };
-    var rowAction = document.createElement('div');
-    rowAction.className = 'row-action';
-    rowAction.appendChild(delBtn);
-    actionTd.appendChild(rowAction);
-    tr.appendChild(actionTd);
-
-    tbody.appendChild(tr);
+    table.appendChild(tbody);
+    tbl.appendChild(table);
+    wrap.appendChild(tbl);
   });
 }
 
