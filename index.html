@@ -280,14 +280,52 @@ textarea{resize:vertical;min-height:80px;}
     <!-- 출결 관리 -->
     <div class="view" id="view-attendance">
       <div class="sec-hd"><h2>✅ 출결 관리</h2><div class="actions">
+        <button class="btn-sm sec" onclick="attViewMode='list';renderAttendance()">📋 학생별</button>
         <button class="btn-sm" onclick="openAttModal()">+ 출결 입력</button>
       </div></div>
-      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
-        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);"><span class="att-dot att-o">O</span>출석</span>
-        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);"><span class="att-dot att-x">X</span>결석</span>
-        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);"><span class="att-dot att-t">T</span>지각</span>
-        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);"><span class="att-dot att-b">B</span>보강</span>
+
+      <!-- 출결 달력 -->
+      <div style="background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--line);">
+          <button onclick="changeAttMonth(-1)" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink);padding:0 8px;">‹</button>
+          <div id="att-cal-title" style="font-size:14px;font-weight:700;"></div>
+          <button onclick="changeAttMonth(1)" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink);padding:0 8px;">›</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;border-bottom:1px solid var(--line);">
+          <div style="padding:7px;font-size:11px;font-weight:700;color:var(--red);">일</div>
+          <div style="padding:7px;font-size:11px;font-weight:700;color:var(--muted);">월</div>
+          <div style="padding:7px;font-size:11px;font-weight:700;color:var(--muted);">화</div>
+          <div style="padding:7px;font-size:11px;font-weight:700;color:var(--muted);">수</div>
+          <div style="padding:7px;font-size:11px;font-weight:700;color:var(--muted);">목</div>
+          <div style="padding:7px;font-size:11px;font-weight:700;color:var(--muted);">금</div>
+          <div style="padding:7px;font-size:11px;font-weight:700;color:var(--blue);">토</div>
+        </div>
+        <div id="att-cal-body" style="display:grid;grid-template-columns:repeat(7,1fr);"></div>
       </div>
+
+      <!-- 날짜 클릭 시 출결 체크 패널 -->
+      <div id="att-day-panel" style="display:none;background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--bg2);border-bottom:1px solid var(--line);">
+          <div id="att-day-title" style="font-size:13px;font-weight:700;"></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-sm sec" onclick="markAllStatus('O')">전체 출석</button>
+            <button class="btn-sm" onclick="saveAttDay()">저장</button>
+            <button onclick="document.getElementById('att-day-panel').style.display='none'" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;line-height:1;">×</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;padding:10px 20px;background:var(--bg);border-bottom:1px solid var(--line);flex-wrap:wrap;">
+          <span style="font-size:11px;color:var(--muted);">상태 클릭으로 변경:</span>
+          <span style="display:flex;align-items:center;gap:4px;font-size:11px;"><span class="att-dot att-o">O</span>출석</span>
+          <span style="display:flex;align-items:center;gap:4px;font-size:11px;"><span class="att-dot att-x">X</span>결석</span>
+          <span style="display:flex;align-items:center;gap:4px;font-size:11px;"><span class="att-dot att-t">T</span>지각</span>
+          <span style="display:flex;align-items:center;gap:4px;font-size:11px;"><span class="att-dot att-b">B</span>보강</span>
+          <span style="display:flex;align-items:center;gap:4px;font-size:11px;"><span class="att-dot" style="background:var(--bg2);color:var(--muted);">—</span>미입력</span>
+        </div>
+        <div id="att-day-list" style="padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;max-height:360px;overflow-y:auto;"></div>
+      </div>
+
+      <!-- 학생별 출결 현황 -->
+      <div class="sec-hd" style="margin-top:4px;"><h2>👥 학생별 출결 현황</h2></div>
       <div class="tbl-wrap">
         <table><thead><tr><th>이름</th><th>반</th><th>최근 출결</th><th>출석률</th><th>누적 결석</th><th></th></tr></thead>
         <tbody id="att-body"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px;">학생을 추가하고 출결을 입력해보세요</td></tr></tbody></table>
@@ -744,7 +782,7 @@ function showView(id, el) {
   if(el) el.classList.add('on');
   document.getElementById('page-title').textContent = viewTitles[id]||'';
   if(id==='students') renderStudents();
-  if(id==='attendance') renderAttendance();
+  if(id==='attendance') { renderAttendance(); attCalYear=new Date().getFullYear(); attCalMonth=new Date().getMonth(); renderAttCalendar(); }
   if(id==='tests') renderTests();
   if(id==='homework') renderHw();
   if(id==='schedule') { renderSchedule(); }
@@ -1022,7 +1060,7 @@ function saveAttendance() {
   if(existing>-1) recs[existing]=rec; else recs.push(rec);
   DB.set('attendance', recs);
   closeModal('modal-att');
-  renderAttendance(); renderDashboard();
+  renderAttendance(); renderAttCalendar(); renderDashboard();
   toast('출결이 저장되었습니다');
 }
 
@@ -1819,6 +1857,266 @@ function saveGroupProgress() {
   renderProgress();
   toast(g.name+' '+g.students.length+'명 진도 저장 완료!');
 }
+
+// ══ 출결 달력 ════════════════════════════════════
+var attCalYear  = new Date().getFullYear();
+var attCalMonth = new Date().getMonth();
+var attSelectedDate = '';
+var attDayState = {}; // sid -> status (당일 임시 저장)
+
+function changeAttMonth(dir) {
+  attCalMonth += dir;
+  if(attCalMonth > 11) { attCalMonth = 0; attCalYear++; }
+  if(attCalMonth < 0)  { attCalMonth = 11; attCalYear--; }
+  renderAttCalendar();
+}
+
+function renderAttCalendar() {
+  var recs     = DB.get('attendance');
+  var students = DB.get('students');
+  var today    = new Date().toISOString().slice(0,10);
+  var firstDay = new Date(attCalYear, attCalMonth, 1);
+  var lastDay  = new Date(attCalYear, attCalMonth+1, 0);
+  var startDow = firstDay.getDay();
+  var totalDays= lastDay.getDate();
+
+  var titleEl = document.getElementById('att-cal-title');
+  if(titleEl) titleEl.textContent = attCalYear+'년 '+(attCalMonth+1)+'월';
+
+  var body = document.getElementById('att-cal-body');
+  if(!body) return;
+  body.innerHTML = '';
+
+  // 이전달 빈칸
+  for(var i=0; i<startDow; i++) {
+    var cell = document.createElement('div');
+    cell.style.cssText = 'min-height:60px;padding:4px;border:0.5px solid var(--line);opacity:.3;';
+    var prev = new Date(attCalYear, attCalMonth, -startDow+i+1);
+    cell.innerHTML = '<div style="font-size:11px;text-align:center;color:var(--muted);">'+prev.getDate()+'</div>';
+    body.appendChild(cell);
+  }
+
+  // 이번달
+  for(var d=1; d<=totalDays; d++) {
+    var dateStr = attCalYear+'-'+String(attCalMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var dow = new Date(attCalYear, attCalMonth, d).getDay();
+    var dayRecs = recs.filter(function(r){ return r.date===dateStr; });
+
+    var totalStudents = students.length;
+    var present = dayRecs.filter(function(r){ return r.status==='O'||r.status==='B'; }).length;
+    var absent  = dayRecs.filter(function(r){ return r.status==='X'; }).length;
+    var late    = dayRecs.filter(function(r){ return r.status==='T'; }).length;
+
+    var isToday    = dateStr===today;
+    var isSelected = dateStr===attSelectedDate;
+
+    var cell = document.createElement('div');
+    cell.style.cssText = 'min-height:60px;padding:4px;border:0.5px solid var(--line);cursor:pointer;transition:.15s;'
+      +(isToday?'background:#fff5f5;':'')
+      +(isSelected?'outline:2px solid var(--red);background:var(--red-bg);':'');
+    cell.onmouseover = function(){ if(!this.classList.contains('sel')) this.style.background='var(--bg)'; };
+    cell.onmouseout  = function(){ if(!this.classList.contains('sel')) this.style.background= isToday?'#fff5f5':''; };
+
+    var dateColor = dow===0?'var(--red)':dow===6?'var(--blue)':'var(--ink)';
+    cell.innerHTML = '<div style="font-size:11px;font-weight:'+(isToday?'700':'500')+';text-align:center;color:'+dateColor+';margin-bottom:3px;">'+d+'</div>';
+
+    if(dayRecs.length) {
+      if(present) {
+        var dot = document.createElement('div');
+        dot.style.cssText = 'font-size:9px;background:var(--green-bg);color:var(--green);padding:1px 4px;border-radius:2px;margin-bottom:1px;';
+        dot.textContent = '출석 '+present;
+        cell.appendChild(dot);
+      }
+      if(absent) {
+        var dot2 = document.createElement('div');
+        dot2.style.cssText = 'font-size:9px;background:var(--red-bg);color:var(--red);padding:1px 4px;border-radius:2px;margin-bottom:1px;';
+        dot2.textContent = '결석 '+absent;
+        cell.appendChild(dot2);
+      }
+      if(late) {
+        var dot3 = document.createElement('div');
+        dot3.style.cssText = 'font-size:9px;background:var(--gold-bg);color:var(--gold);padding:1px 4px;border-radius:2px;';
+        dot3.textContent = '지각 '+late;
+        cell.appendChild(dot3);
+      }
+    } else if(totalStudents > 0 && dateStr <= today) {
+      var dot4 = document.createElement('div');
+      dot4.style.cssText = 'font-size:9px;color:var(--muted);text-align:center;';
+      dot4.textContent = '미입력';
+      cell.appendChild(dot4);
+    }
+
+    var ds = dateStr;
+    cell.onclick = function(){ selectAttDay(ds); };
+    body.appendChild(cell);
+  }
+
+  // 다음달 빈칸
+  var rem = 7 - ((startDow + totalDays) % 7);
+  if(rem < 7) {
+    for(var j=1; j<=rem; j++) {
+      var cell2 = document.createElement('div');
+      cell2.style.cssText = 'min-height:60px;padding:4px;border:0.5px solid var(--line);opacity:.3;';
+      cell2.innerHTML = '<div style="font-size:11px;text-align:center;color:var(--muted);">'+j+'</div>';
+      body.appendChild(cell2);
+    }
+  }
+}
+
+function selectAttDay(dateStr) {
+  attSelectedDate = dateStr;
+  renderAttCalendar();
+
+  var students = DB.get('students');
+  var recs     = DB.get('attendance');
+  var panel    = document.getElementById('att-day-panel');
+  var title    = document.getElementById('att-day-title');
+  var list     = document.getElementById('att-day-list');
+  if(!panel||!title||!list) return;
+
+  var d = new Date(dateStr);
+  var dowNames = ['일','월','화','수','목','금','토'];
+  title.textContent = (d.getMonth()+1)+'월 '+d.getDate()+'일 ('+dowNames[d.getDay()]+') 출결 체크';
+
+  // 임시 상태 초기화 - 기존 저장된 값 불러오기
+  attDayState = {};
+  students.forEach(function(s){
+    var existing = recs.find(function(r){ return r.sid===s.id && r.date===dateStr; });
+    attDayState[s.id] = existing ? existing.status : '';
+  });
+
+  renderAttDayList(students, dateStr);
+  panel.style.display = 'block';
+  panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function renderAttDayList(students, dateStr) {
+  var list = document.getElementById('att-day-list');
+  if(!list) return;
+  list.innerHTML = '';
+
+  if(!students.length) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px;">등록된 학생이 없습니다</div>';
+    return;
+  }
+
+  var statusCycle = ['', 'O', 'X', 'T', 'B', 'E'];
+  var statusStyle = {
+    'O': {bg:'var(--green-bg)',  color:'var(--green)',  label:'출석'},
+    'X': {bg:'var(--red-bg)',    color:'var(--red)',    label:'결석'},
+    'T': {bg:'var(--gold-bg)',   color:'var(--gold)',   label:'지각'},
+    'B': {bg:'var(--blue-bg)',   color:'var(--blue)',   label:'보강'},
+    'E': {bg:'var(--bg2)',       color:'var(--muted)',  label:'공결'},
+    '':  {bg:'var(--bg2)',       color:'var(--muted)',  label:'미입력'},
+  };
+
+  // 학년 순서
+  var gradeOrder = ['초5','초6','중1','중2','중3','고1','고2','고3'];
+  var sorted = students.slice().sort(function(a,b){
+    return gradeOrder.indexOf(a.grade||'') - gradeOrder.indexOf(b.grade||'');
+  });
+
+  sorted.forEach(function(s) {
+    var card = document.createElement('div');
+    card.style.cssText = 'background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;';
+
+    var nameRow = document.createElement('div');
+    nameRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;';
+
+    var nameEl = document.createElement('div');
+    nameEl.style.cssText = 'font-size:13px;font-weight:700;';
+    nameEl.textContent = s.name;
+
+    var gradeEl = document.createElement('div');
+    gradeEl.style.cssText = 'font-size:10px;color:var(--muted);';
+    gradeEl.textContent = s.grade||'';
+
+    nameRow.appendChild(nameEl);
+    nameRow.appendChild(gradeEl);
+    card.appendChild(nameRow);
+
+    // 상태 버튼들
+    var btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:4px;';
+
+    ['O','X','T','B','E',''].forEach(function(status) {
+      var st = statusStyle[status];
+      var btn = document.createElement('button');
+      var sid = s.id;
+      btn.id = 'att-btn-'+sid+'-'+(status||'none');
+      btn.style.cssText = 'padding:4px 2px;border:1.5px solid var(--line);border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--sans);background:var(--white);color:var(--muted);transition:.15s;';
+      btn.textContent = st.label;
+
+      // 현재 선택된 상태 강조
+      if(attDayState[s.id] === status) {
+        btn.style.background = st.bg;
+        btn.style.color = st.color;
+        btn.style.borderColor = st.color;
+      }
+
+      btn.onclick = function() {
+        attDayState[sid] = status;
+        // 해당 학생 버튼 전체 리셋
+        ['O','X','T','B','E',''].forEach(function(st2) {
+          var b = document.getElementById('att-btn-'+sid+'-'+(st2||'none'));
+          if(b) {
+            var s2 = statusStyle[st2];
+            b.style.background='var(--white)'; b.style.color='var(--muted)'; b.style.borderColor='var(--line)';
+          }
+        });
+        // 선택된 버튼 강조
+        btn.style.background = st.bg;
+        btn.style.color = st.color;
+        btn.style.borderColor = st.color;
+      };
+      btnRow.appendChild(btn);
+    });
+
+    card.appendChild(btnRow);
+    list.appendChild(card);
+  });
+}
+
+function markAllStatus(status) {
+  var students = DB.get('students');
+  var statusStyle = {
+    'O': {bg:'var(--green-bg)', color:'var(--green)', label:'출석'},
+    'X': {bg:'var(--red-bg)',   color:'var(--red)',   label:'결석'},
+    'T': {bg:'var(--gold-bg)',  color:'var(--gold)',  label:'지각'},
+    'B': {bg:'var(--blue-bg)',  color:'var(--blue)',  label:'보강'},
+    'E': {bg:'var(--bg2)',      color:'var(--muted)', label:'공결'},
+    '':  {bg:'var(--bg2)',      color:'var(--muted)', label:'미입력'},
+  };
+  var st = statusStyle[status];
+  students.forEach(function(s){
+    attDayState[s.id] = status;
+    ['O','X','T','B','E',''].forEach(function(st2) {
+      var b = document.getElementById('att-btn-'+s.id+'-'+(st2||'none'));
+      if(b) { b.style.background='var(--white)'; b.style.color='var(--muted)'; b.style.borderColor='var(--line)'; }
+    });
+    var btn = document.getElementById('att-btn-'+s.id+'-'+(status||'none'));
+    if(btn) { btn.style.background=st.bg; btn.style.color=st.color; btn.style.borderColor=st.color; }
+  });
+}
+
+function saveAttDay() {
+  if(!attSelectedDate) { toast('날짜를 선택해주세요'); return; }
+  var recs = DB.get('attendance');
+  var saved = 0;
+  Object.keys(attDayState).forEach(function(sid){
+    var status = attDayState[sid];
+    if(!status) return; // 미입력은 저장 안함
+    var idx = recs.findIndex(function(r){ return r.sid===sid && r.date===attSelectedDate; });
+    var rec = {sid:sid, date:attSelectedDate, status:status, memo:''};
+    if(idx > -1) recs[idx] = rec; else recs.push(rec);
+    saved++;
+  });
+  DB.set('attendance', recs);
+  renderAttCalendar();
+  renderAttendance();
+  toast(attSelectedDate+' 출결 '+saved+'명 저장 완료!');
+}
+
 
 // ══ 달력 ════════════════════════════════════════
 var calYear  = new Date().getFullYear();
