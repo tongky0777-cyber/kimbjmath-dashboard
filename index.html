@@ -375,8 +375,14 @@ textarea{resize:vertical;min-height:80px;}
       </div>
       <div class="form-row">
         <div class="form-group"><label>테스트명</label><input id="test-name" placeholder="5월 2주차 단원 테스트"></div>
-        <div class="form-group"><label>점수 (100점 만점)</label><input type="number" id="test-score" min="0" max="100" placeholder="85"></div>
+        <div class="form-group"></div>
       </div>
+      <div class="form-row">
+        <div class="form-group"><label>맞힌 개수</label><input type="number" id="test-correct" min="0" placeholder="18" oninput="calcTestPct()"></div>
+        <div class="form-group"><label>전체 문항</label><input type="number" id="test-total" min="1" placeholder="20" oninput="calcTestPct()"></div>
+      </div>
+      <div id="test-pct-preview" style="display:none;background:var(--teal-bg);border-radius:4px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--teal);text-align:center;"></div>
+      <input type="hidden" id="test-score">
       <div class="form-group full"><label>메모</label><textarea id="test-memo" placeholder="틀린 유형, 피드백 등"></textarea></div>
     </div>
     <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-test')">취소</button><button class="btn-save" onclick="saveTest()">저장</button></div>
@@ -808,14 +814,17 @@ function openAttForStudent(sid) {
 
 // 테스트 저장
 function saveTest() {
-  var sid = document.getElementById('test-student').value;
-  var name = document.getElementById('test-name').value.trim();
-  var score = document.getElementById('test-score').value;
-  var date = document.getElementById('test-date-input').value;
-  var memo = document.getElementById('test-memo').value;
+  var sid     = document.getElementById('test-student').value;
+  var name    = document.getElementById('test-name').value.trim();
+  var correct = parseInt(document.getElementById('test-correct').value);
+  var total   = parseInt(document.getElementById('test-total').value);
+  var date    = document.getElementById('test-date-input').value;
+  var memo    = document.getElementById('test-memo').value;
   if(!sid||!name) { toast('학생과 테스트명을 입력해주세요'); return; }
+  if(isNaN(correct)||isNaN(total)||total<=0) { toast('맞힌 개수와 전체 문항을 입력해주세요'); return; }
+  var pct = Math.round(correct/total*100);
   var recs = DB.get('tests');
-  recs.push({id:Date.now().toString(), sid:sid, name:name, score:+score, date:date, memo:memo});
+  recs.push({id:Date.now().toString(), sid:sid, name:name, score:pct, correct:correct, total:total, date:date, memo:memo});
   DB.set('tests', recs);
   updateTestFilter();
   closeModal('modal-test');
@@ -1234,6 +1243,38 @@ function renderProgress() {
   }).join('');
 }
 
+
+function calcTestPct() {
+  var correct = parseInt(document.getElementById('test-correct').value);
+  var total   = parseInt(document.getElementById('test-total').value);
+  var preview = document.getElementById('test-pct-preview');
+  var scoreEl = document.getElementById('test-score');
+  if(!isNaN(correct) && !isNaN(total) && total > 0) {
+    var pct = Math.round(correct / total * 100);
+    scoreEl.value = pct;
+    preview.style.display = 'block';
+    preview.style.background = pct>=90?'var(--green-bg)':pct>=70?'var(--gold-bg)':'var(--red-bg)';
+    preview.style.color = pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
+    preview.textContent = correct + ' / ' + total + ' = ' + pct + '%';
+  } else {
+    preview.style.display = 'none';
+    scoreEl.value = '';
+  }
+}
+
+function calcGtPct(sid) {
+  var correct = parseInt(document.getElementById('gt-correct-'+sid).value);
+  var total   = parseInt(document.getElementById('gt-total-'+sid).value);
+  var pctEl   = document.getElementById('gt-pct-'+sid);
+  if(pctEl && !isNaN(correct) && !isNaN(total) && total > 0) {
+    var pct = Math.round(correct / total * 100);
+    pctEl.textContent = pct + '%';
+    pctEl.style.color = pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
+  } else if(pctEl) {
+    pctEl.textContent = '—';
+  }
+}
+
 // ══ 반별 테스트 입력 ══════════════════════════════
 function openGroupTestModal() {
   var groups = DB.get('groups');
@@ -1253,21 +1294,69 @@ function updateGroupTestList() {
   var students = DB.get('students');
   var g = groups.find(function(x){ return x.id===gid; });
   var el = document.getElementById('gt-student-scores');
+  el.innerHTML = '';
   if(!g || !g.students || !g.students.length) {
     el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:16px;font-size:12px;">반에 학생이 없습니다</div>';
     return;
   }
-  el.innerHTML = g.students.map(function(sid){
+  g.students.forEach(function(sid) {
     var s = students.find(function(x){ return x.id===sid; });
-    if(!s) return '';
-    return '<div style="display:flex;align-items:center;gap:12px;background:var(--bg2);padding:8px 12px;border-radius:4px;">'
-      +'<div style="font-size:13px;font-weight:700;min-width:80px;">'+s.name+'</div>'
-      +'<input type="number" id="gt-score-'+sid+'" min="0" max="100" placeholder="점수" '
-      +'style="width:90px;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:13px;font-family:var(--sans);background:var(--white);">'
-      +'<input type="text" id="gt-memo-'+sid+'" placeholder="메모 (선택)" '
-      +'style="flex:1;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:12px;font-family:var(--sans);background:var(--white);">'
-      +'</div>';
-  }).join('');
+    if(!s) return;
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--bg2);padding:8px 12px;border-radius:4px;';
+
+    var nameEl = document.createElement('div');
+    nameEl.style.cssText = 'font-size:13px;font-weight:700;min-width:80px;';
+    nameEl.textContent = s.name;
+    row.appendChild(nameEl);
+
+    var correctEl = document.createElement('input');
+    correctEl.type = 'number'; correctEl.min = '0'; correctEl.placeholder = '맞힌 수';
+    correctEl.id = 'gt-correct-' + sid;
+    correctEl.style.cssText = 'width:80px;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:13px;font-family:var(--sans);background:var(--white);';
+    row.appendChild(correctEl);
+
+    var slash = document.createElement('span');
+    slash.style.cssText = 'color:var(--muted);font-size:13px;';
+    slash.textContent = '/';
+    row.appendChild(slash);
+
+    var totalEl = document.createElement('input');
+    totalEl.type = 'number'; totalEl.min = '1'; totalEl.placeholder = '전체';
+    totalEl.id = 'gt-total-' + sid;
+    totalEl.style.cssText = 'width:70px;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:13px;font-family:var(--sans);background:var(--white);';
+    row.appendChild(totalEl);
+
+    var pctEl = document.createElement('span');
+    pctEl.id = 'gt-pct-' + sid;
+    pctEl.style.cssText = 'width:50px;font-size:12px;font-weight:700;color:var(--teal);text-align:center;';
+    pctEl.textContent = '—';
+    row.appendChild(pctEl);
+
+    // oninput 이벤트 - 클로저로 sid 고정
+    (function(sidVal, pEl) {
+      correctEl.oninput = totalEl.oninput = function() {
+        var c = parseInt(correctEl.value);
+        var t = parseInt(totalEl.value);
+        if(!isNaN(c) && !isNaN(t) && t > 0) {
+          var pct = Math.round(c/t*100);
+          pEl.textContent = pct + '%';
+          pEl.style.color = pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
+        } else {
+          pEl.textContent = '—';
+          pEl.style.color = 'var(--teal)';
+        }
+      };
+    })(sid, pctEl);
+
+    var memoEl = document.createElement('input');
+    memoEl.type = 'text'; memoEl.placeholder = '메모';
+    memoEl.id = 'gt-memo-' + sid;
+    memoEl.style.cssText = 'flex:1;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:12px;font-family:var(--sans);background:var(--white);';
+    row.appendChild(memoEl);
+
+    el.appendChild(row);
+  });
 }
 
 function saveGroupTest() {
@@ -1281,17 +1370,15 @@ function saveGroupTest() {
   var recs = DB.get('tests');
   var saved = 0;
   g.students.forEach(function(sid){
-    var scoreEl = document.getElementById('gt-score-'+sid);
-    var memoEl  = document.getElementById('gt-memo-'+sid);
-    if(!scoreEl || scoreEl.value === '') return;
-    recs.push({
-      id: Date.now().toString()+sid,
-      sid: sid,
-      name: name,
-      score: +scoreEl.value,
-      date: date,
-      memo: memoEl ? memoEl.value : ''
-    });
+    var correctEl = document.getElementById('gt-correct-'+sid);
+    var totalEl   = document.getElementById('gt-total-'+sid);
+    var memoEl    = document.getElementById('gt-memo-'+sid);
+    if(!correctEl || correctEl.value==='') return;
+    var correct = parseInt(correctEl.value);
+    var total   = parseInt(totalEl ? totalEl.value : '0');
+    if(isNaN(correct)||isNaN(total)||total<=0) return;
+    var pct = Math.round(correct/total*100);
+    recs.push({id:Date.now().toString()+sid, sid:sid, name:name, score:pct, correct:correct, total:total, date:date, memo:memoEl?memoEl.value:''});
     saved++;
   });
   DB.set('tests', recs);
@@ -1378,7 +1465,7 @@ function openStudentDetail(sid) {
             tooltip: {callbacks:{label:function(c){return ' '+c.parsed.y+'점';}}}
           },
           scales: {
-            y: {min:0, max:100, ticks:{callback:function(v){return v+'점';}, font:{size:11}}, grid:{color:'#e4e1d8'}},
+            y: {min:0, max:100, ticks:{callback:function(v){return v+'%';}, font:{size:11}}, grid:{color:'#e4e1d8'}},
             x: {ticks:{font:{size:10}, maxRotation:0}, grid:{display:false}}
           }
         }
