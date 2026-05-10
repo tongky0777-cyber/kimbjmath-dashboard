@@ -1294,7 +1294,45 @@ function deleteTest(id) {
   DB.set('tests', DB.get('tests').filter(function(t){ return t.id!==id; }));
   renderTests(); toast('삭제되었습니다');
 }
-
+function editTest(id) {
+  var t = DB.get('tests').find(function(x){ return x.id===id; });
+  if(!t) return;
+  populateSel();
+  document.getElementById('test-student').value = t.sid;
+  document.getElementById('test-name').value = t.name;
+  document.getElementById('test-date-input').value = t.date;
+  document.getElementById('test-correct').value = t.correct||'';
+  document.getElementById('test-total').value = t.total||'';
+  document.getElementById('test-memo').value = t.memo||'';
+  document.getElementById('test-score').value = t.score||'';
+  calcTestPct();
+  var saveBtn = document.querySelector('#modal-test .btn-save');
+  if(saveBtn) {
+    saveBtn.textContent = '수정 저장';
+    saveBtn.onclick = function(){
+      var sid = document.getElementById('test-student').value;
+      var name = document.getElementById('test-name').value.trim();
+      var correct = parseInt(document.getElementById('test-correct').value);
+      var total = parseInt(document.getElementById('test-total').value);
+      var date = document.getElementById('test-date-input').value;
+      var memo = document.getElementById('test-memo').value;
+      if(!sid||!name) { toast('학생과 테스트명을 입력해주세요'); return; }
+      if(isNaN(correct)||isNaN(total)||total<=0) { toast('맞힌 개수와 전체 문항을 입력해주세요'); return; }
+      var pct = Math.round(correct/total*100);
+      var recs = DB.get('tests');
+      var idx = recs.findIndex(function(x){ return x.id===id; });
+      if(idx>-1) recs[idx] = {id:id, sid:sid, name:name, score:pct, correct:correct, total:total, date:date, memo:memo};
+      DB.set('tests', recs);
+      saveBtn.textContent = '저장';
+      saveBtn.onclick = saveTest;
+      updateTestFilter();
+      closeModal('modal-test');
+      renderTests(); renderTestCalendar();
+      toast('테스트가 수정되었습니다');
+    };
+  }
+  openModal('modal-test');
+}
 function renderTests() {
   var students = DB.get('students');
   var tests = DB.get('tests');
@@ -1307,7 +1345,7 @@ function renderTests() {
     var student = students.find(function(s){ return s.id===t.sid; });
     var cls = t.score>=90?'high':t.score>=70?'mid':'low';
     var fillColor = t.score>=90?'var(--green)':t.score>=70?'var(--gold)':'var(--red)';
-    return '<tr><td class="student-name">'+(student?student.name:'—')+'</td><td>'+(student?student.class:'—')+'</td><td style="font-weight:500;">'+t.name+'</td><td style="font-size:12px;color:var(--muted);">'+t.date+'</td><td><span class="score '+cls+'">'+t.score+'점</span><div class="score-bar"><div class="score-fill" style="width:'+t.score+'%;background:'+fillColor+'"></div></div></td><td style="font-size:12px;color:var(--muted);">'+(t.memo||'—')+'</td><td><div class="row-action"><button class="icon-btn" onclick="deleteTest(\''+t.id+'\')">🗑️</button></div></td></tr>';
+    return '<tr><td class="student-name">'+(student?student.name:'—')+'</td><td>'+(student?student.class:'—')+'</td><td style="font-weight:500;">'+t.name+'</td><td style="font-size:12px;color:var(--muted);">'+t.date+'</td><td><span class="score '+cls+'">'+t.score+'점</span><div class="score-bar"><div class="score-fill" style="width:'+t.score+'%;background:'+fillColor+'"></div></div></td><td style="font-size:12px;color:var(--muted);">'+(t.memo||'—')+'</td><td><div class="row-action"><button class="icon-btn" onclick="deleteTest(\''+t.id+'\')">🗑️</button></div><<div class="row-action"><button class="icon-btn" onclick="editTest(\''+t.id+'\')">✏️</button><button class="icon-btn" onclick="deleteTest(\''+t.id+'\')">🗑️</button></div></td></tr>';/td></tr>';
   }).join('');
 }
 
