@@ -41,11 +41,11 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .topbar-title{font-size:15px;font-weight:700;color:var(--ink);}
 .topbar-right{display:flex;align-items:center;gap:10px;}
 .today-badge{background:var(--red-bg);color:var(--red);font-size:11px;font-weight:700;padding:5px 12px;border-radius:100px;}
-.content{padding:24px 28px;flex:1;overflow-y:auto;}
+.content{padding:0;flex:1;overflow-y:auto;position:relative;}
 
 /* 뷰 */
-.view{display:none !important;}
-.view.on{display:block !important;}
+.view{display:none;width:100%;box-sizing:border-box;padding:24px 28px;}
+.view.on{display:block;}
 
 /* 버튼 */
 .btn-sm{background:var(--red);color:#fff;border:0;font-size:12px;font-weight:700;padding:7px 14px;border-radius:3px;cursor:pointer;font-family:var(--sans);transition:.15s;white-space:nowrap;}
@@ -129,8 +129,8 @@ tr:hover td{background:#fafaf8;}
 .sch-done-badge{background:var(--green-bg);color:var(--green);}
 
 /* 모달 */
-.modal-bg{display:none !important;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center;}
-.modal-bg.on{display:flex !important;}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center;}
+.modal-bg.on{display:flex;}
 .modal{background:var(--white);border-radius:8px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.18);}
 .modal-hd{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;}
 .modal-hd h3{font-size:15px;font-weight:700;}
@@ -877,16 +877,10 @@ function activateMemo() {
 var viewTitles = {dashboard:'📊 전체 현황',progress:'📖 진도 관리',groups:'🏫 반 관리',students:'👥 학생 목록',attendance:'✅ 출결 관리',tests:'📝 테스트 결과',homework:'📚 숙제 관리',schedule:'📅 보강 · 일정',memo:'🗒️ 메모'};
 
 function showView(id, el) {
-  document.querySelectorAll('.view').forEach(function(v){
-    v.classList.remove('on');
-    v.style.setProperty('display','none','important');
-  });
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('on'); });
   document.querySelectorAll('.sb-item').forEach(function(i){ i.classList.remove('on'); });
   var target = document.getElementById('view-'+id);
-  if(target) {
-    target.classList.add('on');
-    target.style.setProperty('display','block','important');
-  }
+  if(target) target.classList.add('on');
   if(el) el.classList.add('on');
   document.getElementById('page-title').textContent = viewTitles[id]||'';
   if(id==='students')   renderStudents();
@@ -902,20 +896,8 @@ function showView(id, el) {
 }
 
 // 모달
-function openModal(id) {
-  var el = document.getElementById(id);
-  if(el) {
-    el.classList.add('on');
-    el.style.setProperty('display','flex','important');
-  }
-}
-function closeModal(id) {
-  var el = document.getElementById(id);
-  if(el) {
-    el.classList.remove('on');
-    el.style.setProperty('display','none','important');
-  }
-}
+function openModal(id) { document.getElementById(id).classList.add('on'); }
+function closeModal(id) { document.getElementById(id).classList.remove('on'); }
 window.addEventListener('click', function(e){ if(e.target.classList.contains('modal-bg')) closeModal(e.target.id); });
 
 
