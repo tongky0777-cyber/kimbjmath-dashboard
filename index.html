@@ -3157,6 +3157,71 @@ function openGroupDetail(gid) {
     }).join('');
   }
   openModal('modal-group-detail');
+
+  // 그래프 렌더링
+  function renderGroupCharts() {
+    sIds.forEach(function(sid){
+      var sTests = tests.filter(function(t){ return t.sid===sid; }).sort(function(a,b){ return a.date.localeCompare(b.date); }).slice(-15);
+      if(!sTests.length) return;
+      var canvas = document.getElementById('gd-chart-'+sid);
+      if(!canvas) return;
+      var labels = sTests.map(function(t){ return t.date.slice(5)+'\n'+(t.name.length>6?t.name.slice(0,6)+'…':t.name); });
+      var scores = sTests.map(function(t){ return t.score; });
+      var colors = scores.map(function(sc){ return sc>=90?'#1a6b3a':sc>=70?'#8a6820':'#b4281e'; });
+      new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: scores,
+            borderColor: '#b4281e',
+            borderWidth: 2,
+            pointBackgroundColor: colors,
+            pointBorderColor: colors,
+            pointRadius: 5,
+            fill: false,
+            tension: 0.3,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {display:false},
+            datalabels: {display:false},
+            tooltip: {callbacks:{label:function(c){return c.parsed.y+'점';}}}
+          },
+          scales: {
+            y: {min:0, max:100, ticks:{callback:function(v){return v+'점';}, font:{size:10}}, grid:{color:'#e4e1d8'}},
+            x: {ticks:{font:{size:9}, maxRotation:0}, grid:{display:false}}
+          },
+          animation: {onComplete: function(ctx){
+            var chart = ctx.chart;
+            var meta = chart.getDatasetMeta(0);
+            var cctx = chart.ctx;
+            cctx.save();
+            cctx.font = 'bold 10px Pretendard, sans-serif';
+            cctx.textAlign = 'center';
+            cctx.textBaseline = 'bottom';
+            meta.data.forEach(function(pt, i){
+              var val = scores[i];
+              cctx.fillStyle = val>=90?'#1a6b3a':val>=70?'#8a6820':'#b4281e';
+              cctx.fillText(val+'점', pt.x, pt.y - 4);
+            });
+            cctx.restore();
+          }}
+        }
+      });
+    });
+  }
+
+  if(window.Chart) {
+    renderGroupCharts();
+  } else {
+    var sc = document.createElement('script');
+    sc.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+    sc.onload = renderGroupCharts;
+    document.head.appendChild(sc);
+  }
 }
 
 // 메모 저장
