@@ -3163,6 +3163,8 @@ sIds.forEach(function(sid){
       if(!sTests.length) return;
       var canvas = document.getElementById('chart-'+sid);
       if(!canvas) return;
+      var existing = Chart.getChart(canvas);
+      if(existing) existing.destroy();
       var labels = sTests.map(function(t){ return t.date.slice(5)+'\n'+(t.name.length>6?t.name.slice(0,6)+'…':t.name); });
       var scores = sTests.map(function(t){ return t.score; });
       var colors = scores.map(function(sc){ return sc>=90?'#1a6b3a':sc>=70?'#8a6820':'#b4281e'; });
