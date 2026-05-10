@@ -765,6 +765,16 @@ textarea{resize:vertical;min-height:80px;}
         <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;">📚 미제출 숙제</div>
         <div id="detail-hw" style="font-size:12px;color:var(--muted);"></div>
       </div>
+      <!-- 등록된 반 -->
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;">🏫 등록된 반</div>
+        <div id="detail-groups"></div>
+      </div>
+      <!-- 최근 진도 -->
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;">📖 최근 진도</div>
+        <div id="detail-progress"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -3024,6 +3034,34 @@ function openStudentDetail(sid) {
   hwEl.innerHTML = hw.length
     ? hw.map(function(h){ return '<span style="background:var(--red-bg);color:var(--red);padding:3px 8px;border-radius:100px;margin-right:4px;margin-bottom:4px;display:inline-block;">'+h.name+(h.due?' (~'+h.due+')':'')+'</span>'; }).join('')
     : '<span style="color:var(--green);">미제출 숙제 없음 👍</span>';
+
+  // 등록된 반
+  var groupEl = document.getElementById('detail-groups');
+  if(groupEl) {
+    groupEl.innerHTML = myGroups.length
+      ? myGroups.map(function(g){
+          return '<span style="background:var(--red-bg);color:var(--red);padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;margin-right:4px;">'+g.name+'</span>';
+        }).join('')
+      : '<span style="color:var(--muted);font-size:12px;">배정된 반 없음</span>';
+  }
+
+  // 최근 진도
+  var progEl = document.getElementById('detail-progress');
+  if(progEl) {
+    var progRecs = DB.get('progress').filter(function(p){ return p.sid===sid; }).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,3);
+    progEl.innerHTML = progRecs.length
+      ? progRecs.map(function(p){
+          var statusLabel = {'done':'✅ 완료','ing':'🔄 진행 중','review':'⚠️ 복습 필요'};
+          return '<div style="background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:6px;">'
+            +'<div style="font-size:12px;font-weight:700;color:var(--ink);">'+p.book+(p.unit?' · '+p.unit:'')+'</div>'
+            +'<div style="display:flex;justify-content:space-between;margin-top:4px;">'
+            +'<span style="font-size:11px;color:var(--muted);">'+p.date+'</span>'
+            +'<span style="font-size:11px;font-weight:700;">'+( statusLabel[p.status]||p.status)+'</span>'
+            +'</div>'
+            +'</div>';
+        }).join('')
+      : '<span style="color:var(--muted);font-size:12px;">진도 기록 없음</span>';
+  }
 
   openModal('modal-student-detail');
 }
