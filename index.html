@@ -1655,6 +1655,14 @@ card.onclick = function(){ openGroupDetail(gid); };
     delBtn.onclick = function(){ deleteGroup(gid); };
     btnWrap.appendChild(delBtn);
 
+    var quickIconBtn = document.createElement('button');
+    quickIconBtn.className = 'icon-btn';
+    quickIconBtn.style.cssText = 'background:rgba(255,255,255,.15);color:#fff;';
+    quickIconBtn.textContent = '⚡';
+    quickIconBtn.title = '빠른 입력';
+    quickIconBtn.onclick = function(e){ e.stopPropagation(); openQuickInput(gid); };
+    btnWrap.appendChild(quickIconBtn);
+
     hdr.appendChild(btnWrap);
     card.appendChild(hdr);
 
@@ -1689,12 +1697,7 @@ card.onclick = function(){ openGroupDetail(gid); };
     };
     foot.appendChild(testBtn);
 
-    var quickBtn = document.createElement('button');
-    quickBtn.className = 'btn-sm';
-    quickBtn.style.cssText = 'flex:1;font-size:11px;background:var(--navy);color:#fff;';
-    quickBtn.textContent = '⚡ 빠른 입력';
-    quickBtn.onclick = function(){ openQuickInput(gid); };
-    foot.appendChild(quickBtn);
+    
 
     card.appendChild(foot);
     el.appendChild(card);
