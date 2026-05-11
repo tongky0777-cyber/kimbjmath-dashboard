@@ -647,6 +647,29 @@ textarea{resize:vertical;min-height:80px;}
 </div>
 
 
+<!-- 모달: 빠른 입력 -->
+<div class="modal-bg" id="modal-quick-input">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-hd">
+      <h3>⚡ 빠른 입력</h3>
+      <button class="modal-close" onclick="closeModal('modal-quick-input')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row" style="margin-bottom:12px;">
+        <div class="form-group">
+          <label>날짜</label>
+          <input type="date" id="qi-date">
+        </div>
+      </div>
+      <div id="qi-students"></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-cancel" onclick="closeModal('modal-quick-input')">취소</button>
+      <button class="btn-primary" onclick="saveQuickInput()">저장</button>
+    </div>
+  </div>
+</div>
+
 <!-- 모달: 그룹 숙제 -->
 <div class="modal-bg" id="modal-group-hw">
   <div class="modal">
@@ -1665,6 +1688,13 @@ card.onclick = function(){ openGroupDetail(gid); };
       }, 50);
     };
     foot.appendChild(testBtn);
+
+    var quickBtn = document.createElement('button');
+    quickBtn.className = 'btn-sm';
+    quickBtn.style.cssText = 'flex:1;font-size:11px;background:var(--navy);color:#fff;';
+    quickBtn.textContent = '⚡ 빠른 입력';
+    quickBtn.onclick = function(){ openQuickInput(gid); };
+    foot.appendChild(quickBtn);
 
     card.appendChild(foot);
     el.appendChild(card);
@@ -3156,7 +3186,62 @@ sIds.forEach(function(sid){
   openModal('modal-group-detail');
     setTimeout(function(){ renderGroupCharts(); }, 100);
 
-  // 그래프 렌더링
+  // 빠른 입력
+var quickGid = null;
+function openQuickInput(gid) {
+  quickGid = gid;
+  var g = DB.get('groups').find(function(x){ return x.id===gid; });
+  var today = new Date().toISOString().slice(0,10);
+  document.getElementById('qi-date').value = today;
+  var sIds = g.students || [];
+  var students = DB.get('students') || [];
+  var html = sIds.map(function(sid){
+    var s = students.find(function(x){ return x.id===sid; });
+    if(!s) return '';
+    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);">'
+      +'<div style="width:80px;font-size:13px;font-weight:700;">'+s.name+'</div>'
+      +'<div style="display:flex;gap:4px;">'
+      +'<button class="btn-sm" id="att-o-'+sid+'" onclick="setAtt(\''+sid+'\',\'O\')" style="font-size:11px;padding:4px 10px;">O</button>'
+      +'<button class="btn-sm sec" id="att-x-'+sid+'" onclick="setAtt(\''+sid+'\',\'X\')" style="font-size:11px;padding:4px 10px;">X</button>'
+      +'</div>'
+      +'<input type="number" id="score-'+sid+'" placeholder="점수" min="0" max="100" style="width:70px;padding:4px 8px;border:1px solid var(--line);border-radius:4px;font-size:12px;">'
+      +'</div>';
+  }).join('');
+  document.getElementById('qi-students').innerHTML = html || '<span style="color:var(--muted);font-size:12px;">등록된 학생 없음</span>';
+  openModal('modal-quick-input');
+}
+var attMap = {};
+function setAtt(sid, val) {
+  attMap[sid] = val;
+  document.getElementById('att-o-'+sid).style.background = val==='O' ? 'var(--green)' : '';
+  document.getElementById('att-o-'+sid).style.color = val==='O' ? '#fff' : '';
+  document.getElementById('att-x-'+sid).style.background = val==='X' ? 'var(--red)' : '';
+  document.getElementById('att-x-'+sid).style.color = val==='X' ? '#fff' : '';
+}
+function saveQuickInput() {
+  var date = document.getElementById('qi-date').value;
+  if(!date) { alert('날짜를 입력해줘요.'); return; }
+  var g = DB.get('groups').find(function(x){ return x.id===quickGid; });
+  var sIds = g.students || [];
+  var atts = DB.get('attendance') || [];
+  var tests = DB.get('tests') || [];
+  sIds.forEach(function(sid){
+    if(attMap[sid]) {
+      atts.push({ id: Date.now()+'a'+sid, sid:sid, gid:quickGid, date:date, status:attMap[sid] });
+    }
+    var sc = document.getElementById('score-'+sid).value;
+    if(sc !== '') {
+      tests.push({ id: Date.now()+'t'+sid, sid:sid, gid:quickGid, date:date, score:parseInt(sc), name:g.name });
+    }
+  });
+  DB.set('attendance', atts);
+  DB.set('tests', tests);
+  attMap = {};
+  closeModal('modal-quick-input');
+  alert('저장됐어요!');
+}
+
+// 그래프 렌더링
   function renderGroupCharts() {
     sIds.forEach(function(sid){
       var sTests = tests.filter(function(t){ return t.sid===sid; }).sort(function(a,b){ return a.date.localeCompare(b.date); }).slice(-15);
