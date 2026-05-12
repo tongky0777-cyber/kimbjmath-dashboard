@@ -268,6 +268,9 @@ textarea{resize:vertical;min-height:80px;}
     <!-- 학생 목록 -->
     <div class="view" id="view-students">
       <div class="sec-hd"><h2>👥 학생 목록</h2><div class="actions">
+        <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;">
+          <input type="checkbox" id="show-withdrawn" onchange="renderStudents()"> 퇴원생 보기
+        </label>
 <select id="filter-class" onchange="renderStudents()" style="font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:3px;background:var(--white);cursor:pointer;font-family:var(--sans);"><option value="">전체 반</option></select>
         <button class="btn-sm" onclick="openStudentModal()">+ 학생 추가</button>
       </div></div>
@@ -1068,6 +1071,18 @@ function deleteStudent(id) {
   renderStudents(); renderDashboard(); toast('삭제되었습니다');
 }
 
+function withdrawStudent(id) {
+  if(!confirm('퇴원 처리할까요?')) return;
+  var students = DB.get('students');
+  var s = students.find(function(x){ return x.id===id; });
+  if(!s) return;
+  s.status = 'withdrawn';
+  DB.set('students', students);
+  renderStudents();
+  renderDashboard();
+  toast(s.name+' 학생이 퇴원 처리되었습니다');
+}
+
 function editStudent(id) {
   var s = DB.get('students').find(function(x){ return x.id===id; });
   if(!s) return;
@@ -1101,9 +1116,11 @@ function getStudentGroups(sid) {
 function renderStudents() {
   var students = DB.get('students');
   var filter = document.getElementById('filter-class') ? document.getElementById('filter-class').value : '';
-  var filtered = filter ? students.filter(function(s){
+  var showWithdrawn = document.getElementById('show-withdrawn') && document.getElementById('show-withdrawn').checked;
+  var active = students.filter(function(s){ return showWithdrawn ? s.status==='withdrawn' : s.status!=='withdrawn'; });
+  var filtered = filter ? active.filter(function(s){
     return getStudentGroups(s.id).some(function(g){ return g.id===filter; });
-  }) : students;
+  }) : active;
   var container = document.getElementById('student-body');
   if(!container) return;
 
@@ -1211,6 +1228,25 @@ function renderStudents() {
       delBtn.className = 'icon-btn';
       delBtn.textContent = '🗑️';
       delBtn.onclick = function(){ deleteStudent(sid); };
+      var wdBtn = document.createElement('button');
+      wdBtn.className = 'btn-sm';
+      wdBtn.style.cssText = 'font-size:10px;padding:2px 8px;margin-right:4px;background:var(--navy);color:#fff;';
+      wdBtn.textContent = s.status==='withdrawn' ? '재원 복귀' : '퇴원';
+      wdBtn.onclick = function(){ 
+        if(s.status==='withdrawn') {
+          if(!confirm('재원 복귀할까요?')) return;
+          s.status = 'active';
+          var students = DB.get('students');
+          var idx = students.findIndex(function(x){ return x.id===s.id; });
+          if(idx>-1) students[idx] = s;
+          DB.set('students', students);
+          renderStudents(); renderDashboard();
+          toast(s.name+' 학생이 재원 복귀되었습니다');
+        } else {
+          withdrawStudent(s.id);
+        }
+      };
+      actionTd.appendChild(wdBtn);
       actionTd.appendChild(delBtn);
       tr.appendChild(actionTd);
 
