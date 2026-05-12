@@ -3267,6 +3267,8 @@ function saveQuickInput() {
 
 // 그래프 렌더링
 function renderGroupCharts() {
+var g = DB.get('groups').find(function(x){ return x.id===quickGid; });
+var sIds = g ? g.students || [] : [];
   sIds.forEach(function(sid){
       var sTests = tests.filter(function(t){ return t.sid===sid; }).sort(function(a,b){ return a.date.localeCompare(b.date); }).slice(-15);
       if(!sTests.length) return;
