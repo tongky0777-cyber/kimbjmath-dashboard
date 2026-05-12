@@ -1227,7 +1227,7 @@ var showWithdrawn = document.getElementById('show-withdrawn') && document.getEle
       delBtn.onclick = function(){ deleteStudent(sid); };
       var wdBtn = document.createElement('button');
       wdBtn.className = 'btn-sm';
-      wdBtn.style.cssText = 'font-size:10px;padding:2px 8px;margin-right:4px;background:var(--navy);color:#fff;';
+      wdBtn.style.cssText = 'font-size:10px;padding:2px 8px;margin-right:4px;background:#1a1a2e;color:#fff;border:none;border-radius:4px;cursor:pointer;';
       wdBtn.textContent = s.status==='withdrawn' ? '재원 복귀' : '퇴원';
       wdBtn.onclick = function(){ withdrawStudent(s.id); };
       actionTd.appendChild(wdBtn);
