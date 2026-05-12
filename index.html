@@ -3246,8 +3246,8 @@ function saveQuickInput() {
 }
 
 // 그래프 렌더링
-  function renderGroupCharts() {
-    sIds.forEach(function(sid){
+function renderGroupCharts() {
+  sIds.forEach(function(sid){
       var sTests = tests.filter(function(t){ return t.sid===sid; }).sort(function(a,b){ return a.date.localeCompare(b.date); }).slice(-15);
       if(!sTests.length) return;
       var canvas = document.getElementById('chart-'+sid);
