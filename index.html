@@ -1454,6 +1454,21 @@ function updateHwStatus(id, status) {
   renderHw(); renderDashboard();
 }
 
+function editHw(id) {
+  var recs = DB.get('homework');
+  var r = recs.find(function(x){ return x.id===id; });
+  if(!r) return;
+  var newName = prompt('과제명 수정:', r.name);
+  if(newName===null) return;
+  var newDue = prompt('마감일 수정 (YYYY-MM-DD):', r.due);
+  if(newDue===null) return;
+  r.name = newName.trim()||r.name;
+  r.due = newDue.trim()||r.due;
+  DB.set('homework', recs);
+  renderHw(); renderDashboard();
+  if(hwSelectedDate) selectHwDay(hwSelectedDate);
+  toast('수정되었습니다');
+}
 function deleteHw(id) {
   DB.set('homework', DB.get('homework').filter(function(h){ return h.id!==id; }));
   renderHw(); renderDashboard(); toast('삭제되었습니다');
@@ -2239,7 +2254,9 @@ function selectHwDay(dateStr) {
         +'<option value="pending"'+(r.status==='pending'?' selected':'')+'>미제출</option>'
         +'<option value="done"'+(r.status==='done'?' selected':'')+'>제출</option>'
         +'<option value="half"'+(r.status==='half'?' selected':'')+'>부분제출</option>'
-        +'</select>';
+        +'</select>'
+        +'<button onclick="editHw(\''+r.id+'\')" style="font-size:11px;padding:4px 8px;border:1px solid var(--line);border-radius:3px;background:var(--white);color:var(--ink);cursor:pointer;margin-left:4px;">✏️</button>'
+        +'<button onclick="deleteHw(\''+r.id+'\')" style="font-size:11px;padding:4px 8px;border:1px solid var(--line);border-radius:3px;background:var(--red-bg);color:var(--red);cursor:pointer;margin-left:4px;">🗑</button>';
       list.appendChild(card);
     });
   }
