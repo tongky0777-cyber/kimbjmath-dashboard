@@ -2232,7 +2232,7 @@ function selectHwDay(dateStr) {
       var card=document.createElement('div');
       card.style.cssText='display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 14px;';
       card.innerHTML='<div style="flex:1;">'
-        +'<div style="font-size:13px;font-weight:700;">'+(s?s.name:'—')+'<span style="font-size:11px;color:var(--muted);margin-left:6px;">'+(s?s.grade:'')+'</span></div>'
+        +'<div style="font-size:13px;font-weight:700;white-space:nowrap;">'+(s?s.name:'—')+'<span style="font-size:11px;color:var(--muted);margin-left:6px;">'+(s?s.grade:'')+'</span></div>'
         +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+r.name+'</div>'
         +'</div>'
         +'<select onchange="updateHwStatus(\''+r.id+'\',this.value);renderHwCalendar();selectHwDay(\''+dateStr+'\')" style="font-size:11px;padding:4px 6px;border:1px solid var(--line);border-radius:3px;background:'+st.bg+';color:'+st.color+';font-weight:700;cursor:pointer;font-family:var(--sans);">'
