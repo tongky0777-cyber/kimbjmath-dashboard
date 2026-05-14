@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>김병진 수학연구소 · 학부모 확인</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --ink:#1a1a2e;
+  --ink2:#3a3a5c;
+  --muted:#888;
+  --bg:#f7f7fa;
+  --white:#fff;
+  --line:#e8e8f0;
+  --red:#c0392b;
+  --red-bg:#fdf0ef;
+  --green:#1a6b3a;
+  --green-bg:#edf7f1;
+  --gold:#8a6820;
+  --gold-bg:#fdf8ee;
+  --blue:#1c3c6e;
+  --blue-bg:#eef3fb;
+  --navy:#1a1a2e;
+  --sans:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;}
+.top-bar{background:var(--navy);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:10px;}
+.top-bar .logo{font-size:13px;font-weight:700;opacity:.9;}
+.top-bar .badge{font-size:10px;background:rgba(255,255,255,.15);padding:2px 8px;border-radius:100px;margin-left:auto;}
+.wrap{max-width:640px;margin:0 auto;padding:20px 16px 60px;}
+.student-card{background:var(--white);border-radius:12px;padding:20px;margin-bottom:16px;border:1px solid var(--line);}
+.student-name{font-size:20px;font-weight:700;color:var(--ink);}
+.student-meta{font-size:12px;color:var(--muted);margin-top:4px;}
+.section{background:var(--white);border-radius:12px;padding:20px;margin-bottom:12px;border:1px solid var(--line);}
+.section-title{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+.section-title::before{content:'';display:inline-block;width:3px;height:12px;background:var(--navy);border-radius:2px;}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.stat-box{background:var(--bg);border-radius:8px;padding:12px;text-align:center;}
+.stat-val{font-size:22px;font-weight:700;color:var(--ink);}
+.stat-label{font-size:11px;color:var(--muted);margin-top:2px;}
+.hw-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);}
+.hw-item:last-child{border-bottom:none;}
+.hw-name{flex:1;font-size:13px;color:var(--ink2);}
+.hw-due{font-size:11px;color:var(--muted);white-space:nowrap;}
+.tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:100px;white-space:nowrap;}
+.tag-pending{background:var(--red-bg);color:var(--red);}
+.tag-done{background:var(--green-bg);color:var(--green);}
+.tag-half{background:var(--gold-bg);color:var(--gold);}
+.test-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);}
+.test-item:last-child{border-bottom:none;}
+.test-name{flex:1;font-size:13px;color:var(--ink2);}
+.test-score{font-size:16px;font-weight:700;color:var(--ink);}
+.test-date{font-size:11px;color:var(--muted);}
+.att-grid{display:flex;flex-wrap:wrap;gap:5px;}
+.att-dot{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+.att-o{background:var(--green-bg);color:var(--green);}
+.att-x{background:var(--red-bg);color:var(--red);}
+.att-e{background:var(--blue-bg);color:var(--blue);}
+.att-t{background:var(--gold-bg);color:var(--gold);}
+.att-date{font-size:9px;text-align:center;color:var(--muted);margin-top:1px;}
+.att-wrap{display:flex;flex-direction:column;align-items:center;}
+.empty{text-align:center;color:var(--muted);padding:20px;font-size:13px;}
+.error-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;text-align:center;padding:20px;}
+.error-screen h2{font-size:18px;color:var(--ink);margin-bottom:8px;}
+.error-screen p{font-size:13px;color:var(--muted);}
+.loading{text-align:center;padding:60px 20px;color:var(--muted);font-size:13px;}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo">🧮 김병진 수학연구소</div>
+  <div class="badge">학부모 전용</div>
+</div>
+
+<div class="wrap" id="app">
+  <div class="loading">불러오는 중...</div>
+</div>
+
+<script>
+// localStorage는 대시보드와 동일한 도메인에서만 접근 가능
+// parent.html을 kimbjmath-dashboard.vercel.app/parent.html 에 배포해야 함
+
+var DB = {
+  get: function(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch(e){ return null; } }
+};
+
+function getParam(name){
+  var url = new URLSearchParams(window.location.search);
+  return url.get(name);
+}
+
+function render(){
+  var sid = getParam('id');
+  var app = document.getElementById('app');
+
+  if(!sid){
+    app.innerHTML = '<div class="error-screen"><h2>잘못된 접근입니다</h2><p>학부모 링크를 통해 접속해주세요.</p></div>';
+    return;
+  }
+
+  var students = DB.get('students') || [];
+  var student = students.find(function(s){ return s.id === sid; });
+
+  if(!student){
+    app.innerHTML = '<div class="error-screen"><h2>학생 정보를 찾을 수 없습니다</h2><p>링크가 올바른지 확인해주세요.</p></div>';
+    return;
+  }
+
+  var attendance = (DB.get('attendance') || []).filter(function(a){ return a.sid === sid; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
+  var homework = (DB.get('homework') || []).filter(function(h){ return h.sid === sid; }).sort(function(a,b){ return b.due.localeCompare(a.due); });
+  var tests = (DB.get('tests') || []).filter(function(t){ return t.sid === sid; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
+
+  // 출결 통계
+  var attO = attendance.filter(function(a){ return a.status==='O'; }).length;
+  var attX = attendance.filter(function(a){ return a.status==='X'; }).length;
+  var attE = attendance.filter(function(a){ return a.status==='E'; }).length;
+
+  // 숙제 통계
+  var hwPending = homework.filter(function(h){ return h.status==='pending'; }).length;
+  var hwDone = homework.filter(function(h){ return h.status==='done'; }).length;
+
+  // 테스트 평균
+  var testAvg = tests.length ? Math.round(tests.reduce(function(s,t){ return s+t.score; },0)/tests.length) : null;
+
+  var attStatusLabel = {O:'출석',X:'결석',E:'조퇴',T:'지각',B:'보강'};
+  var attStatusClass = {O:'att-o',X:'att-x',E:'att-e',T:'att-t',B:'att-t'};
+  var hwStatusLabel = {pending:'미제출',done:'제출',half:'부분제출'};
+  var hwStatusClass = {pending:'tag-pending',done:'tag-done',half:'tag-half'};
+
+  var html = '';
+
+  // 학생 카드
+  html += '<div class="student-card">'
+    + '<div class="student-name">'+student.name+'</div>'
+    + '<div class="student-meta">'+student.grade+' · '+(student.school||'')+(student.class?' · '+student.class:'')+'</div>'
+    + '</div>';
+
+  // 요약 통계
+  html += '<div class="section">'
+    + '<div class="section-title">요약</div>'
+    + '<div class="stat-row">'
+    + '<div class="stat-box"><div class="stat-val">'+attO+'</div><div class="stat-label">출석</div></div>'
+    + '<div class="stat-box"><div class="stat-val">'+hwDone+'</div><div class="stat-label">제출 숙제</div></div>'
+    + '<div class="stat-box"><div class="stat-val">'+(testAvg!==null?testAvg+'점':'—')+'</div><div class="stat-label">평균 점수</div></div>'
+    + '</div>'
+    + '</div>';
+
+  // 출결
+  html += '<div class="section"><div class="section-title">출결 현황</div>';
+  if(!attendance.length){
+    html += '<div class="empty">출결 데이터가 없습니다</div>';
+  } else {
+    html += '<div class="att-grid">';
+    attendance.slice(0,30).forEach(function(a){
+      html += '<div class="att-wrap">'
+        + '<div class="att-dot '+(attStatusClass[a.status]||'att-o')+'">'+(attStatusLabel[a.status]||a.status)+'</div>'
+        + '<div class="att-date">'+a.date.slice(5)+'</div>'
+        + '</div>';
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // 숙제
+  html += '<div class="section"><div class="section-title">숙제 현황</div>';
+  if(!homework.length){
+    html += '<div class="empty">숙제 데이터가 없습니다</div>';
+  } else {
+    homework.slice(0,10).forEach(function(h){
+      html += '<div class="hw-item">'
+        + '<div class="hw-name">'+h.name+'</div>'
+        + '<div class="hw-due">마감 '+h.due.slice(5)+'</div>'
+        + '<span class="tag '+(hwStatusClass[h.status]||'tag-pending')+'">'+(hwStatusLabel[h.status]||'미제출')+'</span>'
+        + '</div>';
+    });
+  }
+  html += '</div>';
+
+  // 테스트
+  html += '<div class="section"><div class="section-title">테스트 결과</div>';
+  if(!tests.length){
+    html += '<div class="empty">테스트 데이터가 없습니다</div>';
+  } else {
+    tests.slice(0,10).forEach(function(t){
+      var scoreColor = t.score>=90?'var(--green)':t.score>=70?'var(--gold)':'var(--red)';
+      html += '<div class="test-item">'
+        + '<div class="test-name">'+t.name+'</div>'
+        + '<div style="text-align:right;">'
+        + '<div class="test-score" style="color:'+scoreColor+'">'+t.score+'점</div>'
+        + '<div class="test-date">'+t.date+'</div>'
+        + '</div>'
+        + '</div>';
+    });
+  }
+  html += '</div>';
+
+  app.innerHTML = html;
+}
+
+render();
+</script>
+</body>
+</html>
