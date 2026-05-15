@@ -2666,6 +2666,7 @@ function selectAttDay(dateStr) {
 
   // 임시 상태 초기화 - 기존 저장된 값 불러오기
   attDayState = {};
+  students = students.filter(function(s){ return s.status!=='withdrawn'; });
   students.forEach(function(s){
     var existing = recs.find(function(r){ return r.sid===s.id && r.date===dateStr; });
     attDayState[s.id] = existing ? existing.status : '';
