@@ -2425,6 +2425,17 @@ function selectProgDay(dateStr) {
       var gData = g;
       gEditBtn.onclick = function(){ editGroupProgress(gData); };
       card.appendChild(gEditBtn);
+      var gDelBtn = document.createElement('button');
+      gDelBtn.style.cssText='margin-top:8px;margin-left:6px;font-size:11px;padding:3px 10px;border:1px solid var(--line);border-radius:4px;background:var(--red-bg);color:var(--red);cursor:pointer;';
+      gDelBtn.textContent='🗑 삭제';
+      var gIds = g.ids;
+      gDelBtn.onclick = function(){
+        if(!confirm('반 전체 진도를 삭제할까요?')) return;
+        var all = DB.get('progress');
+        DB.set('progress', all.filter(function(x){ return !gIds.includes(x.id); }));
+        renderProgress(); selectProgDay(progSelectedDate); toast('삭제되었습니다');
+      };
+      card.appendChild(gDelBtn);
       list.appendChild(card);
     });
 
@@ -2449,6 +2460,16 @@ function selectProgDay(dateStr) {
       var rId = r.id;
       rEditBtn.onclick = function(){ editProgress(rId); };
       card.appendChild(rEditBtn);
+      var rDelBtn = document.createElement('button');
+      rDelBtn.style.cssText='margin-top:8px;margin-left:6px;font-size:11px;padding:3px 10px;border:1px solid var(--line);border-radius:4px;background:var(--red-bg);color:var(--red);cursor:pointer;';
+      rDelBtn.textContent='🗑 삭제';
+      var rDelId = r.id;
+      rDelBtn.onclick = function(){
+        if(!confirm('진도를 삭제할까요?')) return;
+        deleteProgress(rDelId);
+        selectProgDay(progSelectedDate);
+      };
+      card.appendChild(rDelBtn);
       list.appendChild(card);
     });
   }
