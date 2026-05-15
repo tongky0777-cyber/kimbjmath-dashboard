@@ -2419,6 +2419,12 @@ function selectProgDay(dateStr) {
         +'<span style="font-size:11px;font-weight:700;color:'+(statusColor[g.status]||'var(--muted)')+';">'+(statusLabel[g.status]||g.status)+'</span>'
         +(g.memo?'<span style="font-size:11px;color:var(--muted);">'+g.memo+'</span>':'')
         +'</div>';
+      var gEditBtn = document.createElement('button');
+      gEditBtn.style.cssText='margin-top:8px;font-size:11px;padding:3px 10px;border:1px solid var(--line);border-radius:4px;background:var(--white);color:var(--ink);cursor:pointer;';
+      gEditBtn.textContent='✏️ 수정';
+      var gData = g;
+      gEditBtn.onclick = function(){ editGroupProgress(gData); };
+      card.appendChild(gEditBtn);
       list.appendChild(card);
     });
 
@@ -2437,6 +2443,12 @@ function selectProgDay(dateStr) {
         +'<span style="font-size:11px;font-weight:700;color:'+(statusColor[r.status]||'var(--muted)')+';">'+(statusLabel[r.status]||r.status)+'</span>'
         +(r.memo?'<span style="font-size:11px;color:var(--muted);">'+r.memo+'</span>':'')
         +'</div>';
+      var rEditBtn = document.createElement('button');
+      rEditBtn.style.cssText='margin-top:8px;font-size:11px;padding:3px 10px;border:1px solid var(--line);border-radius:4px;background:var(--white);color:var(--ink);cursor:pointer;';
+      rEditBtn.textContent='✏️ 수정';
+      var rId = r.id;
+      rEditBtn.onclick = function(){ editProgress(rId); };
+      card.appendChild(rEditBtn);
       list.appendChild(card);
     });
   }
