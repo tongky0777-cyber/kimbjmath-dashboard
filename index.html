@@ -2372,8 +2372,6 @@ function renderProgCalendar() {
 
 function selectProgDay(dateStr) {
   progSelectedDate = dateStr;
-  renderProgCalendar();
-
   var students = DB.get('students');
   var recs     = DB.get('progress');
   var panel    = document.getElementById('prog-day-panel');
