@@ -1272,7 +1272,7 @@ function renderAttendance() {
 
   var dotCls = {O:'att-o', X:'att-x', T:'att-t', B:'att-b', E:'att-b'};
 
-  students.forEach(function(s) {
+  students.filter(function(s){ return s.status!=='withdrawn'; }).forEach(function(s) {
     var sRecs   = recs.filter(function(r){ return r.sid===s.id; }).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,10);
     var total   = recs.filter(function(r){ return r.sid===s.id; }).length;
     var present = recs.filter(function(r){ return r.sid===s.id && (r.status==='O'||r.status==='B'); }).length;
