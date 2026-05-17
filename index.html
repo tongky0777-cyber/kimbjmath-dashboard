@@ -547,6 +547,10 @@ textarea{resize:vertical;min-height:80px;}
       <div class="form-group full"><label>반 배정 (복수 선택 가능)</label>
         <div id="s-group-list" style="display:flex;flex-wrap:wrap;gap:8px;padding:12px;background:var(--bg2);border-radius:4px;min-height:48px;font-size:12px;color:var(--muted);">반 관리에서 반을 먼저 만들어주세요</div>
       </div>
+      <div class="form-row">
+        <div class="form-group"><label>입학날짜</label><input type="date" id="s-created-at"></div>
+        <div class="form-group"><label>퇴원날짜</label><input type="date" id="s-withdrawn-at"></div>
+      </div>
       <div class="form-group full"><label>메모</label><textarea id="s-memo" placeholder="특이사항, 취약 단원 등"></textarea></div>
     </div>
     <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-student')">취소</button><button class="btn-save" onclick="saveStudent()">저장</button></div>
@@ -1039,7 +1043,9 @@ function saveStudent() {
     phone: document.getElementById('s-phone').value,
     parent: document.getElementById('s-parent').value,
     memo: document.getElementById('s-memo').value,
-    createdAt: idx===-1 ? new Date().toLocaleDateString('ko-KR') : students[idx].createdAt
+    createdAt: document.getElementById('s-created-at').value || (idx===-1 ? new Date().toISOString().slice(0,10) : students[idx].createdAt),
+    withdrawnAt: document.getElementById('s-withdrawn-at').value || (idx!==-1 ? students[idx].withdrawnAt : ''),
+    status: document.getElementById('s-withdrawn-at').value ? 'withdrawn' : (idx!==-1 ? students[idx].status : '')
   };
   if(idx===-1) students.push(student); else students[idx]=student;
   DB.set('students', students);
@@ -1094,6 +1100,8 @@ function editStudent(id) {
   document.getElementById('s-parent').value= s.parent || '';
   document.getElementById('s-memo').value  = s.memo || '';
   document.getElementById('s-class').value = s.class || '';
+  document.getElementById('s-created-at').value = s.createdAt ? s.createdAt.replace(/\. /g,'-').replace(/\./g,'').trim() : new Date().toISOString().slice(0,10);
+  document.getElementById('s-withdrawn-at').value = s.withdrawnAt || '';
   populateStudentGroupList(s.id);
   openModal('modal-student');
 }
@@ -1218,7 +1226,7 @@ var showWithdrawn = document.getElementById('show-withdrawn') && document.getEle
       // 등록일
       var dateTd = document.createElement('td');
       dateTd.style.cssText = 'font-size:11px;color:var(--muted);';
-      dateTd.textContent = s.createdAt||'—';
+      dateTd.textContent = (s.createdAt||'—') + (s.withdrawnAt ? ' / 퇴원 '+s.withdrawnAt : '');
       tr.appendChild(dateTd);
 
       // 삭제 버튼
