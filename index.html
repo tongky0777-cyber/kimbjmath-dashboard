@@ -251,6 +251,8 @@ textarea{resize:vertical;min-height:80px;}
         <div class="stat-card"><div class="stat-card-top"><div class="stat-label">이번 주 출석률</div><div class="stat-icon">✅</div></div><div class="stat-num" id="dash-att">—</div><div class="stat-sub">이번 주 기준</div></div>
         <div class="stat-card"><div class="stat-card-top"><div class="stat-label">숙제 미제출</div><div class="stat-icon">📚</div></div><div class="stat-num" id="dash-hw">0</div><div class="stat-sub">명 미제출</div></div>
         <div class="stat-card"><div class="stat-card-top"><div class="stat-label">이번 달 보강</div><div class="stat-icon">📅</div></div><div class="stat-num" id="dash-sch">0</div><div class="stat-sub">건 예정</div></div>
+        <div class="stat-card"><div class="stat-card-top"><div class="stat-label">이번 달 신규</div><div class="stat-icon">🆕</div></div><div class="stat-num" id="dash-new">0</div><div class="stat-sub">명 입학</div></div>
+        <div class="stat-card"><div class="stat-card-top"><div class="stat-label">이번 달 퇴원</div><div class="stat-icon">👋</div></div><div class="stat-num" id="dash-withdrawn">0</div><div class="stat-sub">명 퇴원</div></div>
       </div>
       <div class="sec-hd"><h2>📅 다가오는 일정</h2><div class="actions"><button class="btn-sm sec" onclick="showView('schedule',null)">전체 보기</button><button class="btn-sm" onclick="openScheduleModal()">+ 일정 추가</button></div></div>
       <div class="tbl-wrap" style="margin-bottom:24px;">
@@ -1073,6 +1075,7 @@ function withdrawStudent(id) {
   var s = students.find(function(x){ return x.id===id; });
   if(!s) return;
   s.status = 'withdrawn';
+  s.withdrawnAt = new Date().toISOString().slice(0,10);
   DB.set('students', students);
   renderStudents();
   renderDashboard();
@@ -1562,6 +1565,12 @@ function renderDashboard() {
   var thisMonth = today.toISOString().slice(0,7);
   var schCount = schedules.filter(function(s){ return s.date.startsWith(thisMonth)&&!s.done; }).length;
   if(el('dash-sch')) el('dash-sch').textContent = schCount;
+
+  var newCount = students.filter(function(s){ return s.createdAt && s.createdAt.replace(/\./g,'-').replace(/ /g,'').slice(0,7)===thisMonth; }).length;
+  if(el('dash-new')) el('dash-new').textContent = newCount;
+
+  var withdrawnCount = students.filter(function(s){ return s.withdrawnAt && s.withdrawnAt.slice(0,7)===thisMonth; }).length;
+  if(el('dash-withdrawn')) el('dash-withdrawn').textContent = withdrawnCount;
 
   // 일정 테이블
   var dbody = el('dash-schedule-body');
