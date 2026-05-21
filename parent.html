@@ -3,26 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>김병진 수학연구소 · 학부모 확인</title>
+<title>수경수학학원 김병진T 학부모 확인</title>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --ink:#1a1a2e;
-  --ink2:#3a3a5c;
-  --muted:#888;
-  --bg:#f7f7fa;
-  --white:#fff;
-  --line:#e8e8f0;
-  --red:#c0392b;
-  --red-bg:#fdf0ef;
-  --green:#1a6b3a;
-  --green-bg:#edf7f1;
-  --gold:#8a6820;
-  --gold-bg:#fdf8ee;
-  --blue:#1c3c6e;
-  --blue-bg:#eef3fb;
-  --navy:#1a1a2e;
-  --sans:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --ink:#1a1a2e;--ink2:#3a3a5c;--muted:#888;--bg:#f7f7fa;--white:#fff;--line:#e8e8f0;
+  --red:#c0392b;--red-bg:#fdf0ef;--green:#1a6b3a;--green-bg:#edf7f1;
+  --gold:#8a6820;--gold-bg:#fdf8ee;--blue:#1c3c6e;--blue-bg:#eef3fb;
+  --navy:#1a1a2e;--sans:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
 }
 body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;}
 .top-bar{background:var(--navy);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:10px;}
@@ -50,7 +38,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .test-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);}
 .test-item:last-child{border-bottom:none;}
 .test-name{flex:1;font-size:13px;color:var(--ink2);}
-.test-score{font-size:16px;font-weight:700;color:var(--ink);}
+.test-score{font-size:16px;font-weight:700;}
 .test-date{font-size:11px;color:var(--muted);}
 .att-grid{display:flex;flex-wrap:wrap;gap:5px;}
 .att-dot{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
@@ -66,29 +54,38 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .error-screen p{font-size:13px;color:var(--muted);}
 .loading{text-align:center;padding:60px 20px;color:var(--muted);font-size:13px;}
 </style>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
 <div class="top-bar">
-  <div class="logo">🧮 김병진 수학연구소</div>
+  <div class="logo">수경수학학원 김병진T</div>
   <div class="badge">학부모 전용</div>
 </div>
 
 <div class="wrap" id="app">
-  <div class="loading">불러오는 중...</div>
+  <div class="loading">불러오는 중..</div>
 </div>
 
 <script>
-// localStorage는 대시보드와 동일한 도메인에서만 접근 가능
-// parent.html을 kimbjmath-dashboard.vercel.app/parent.html 에 배포해야 함
-
-var DB = {
-  get: function(key){ try{ return JSON.parse(localStorage.getItem('bjm_'+key)||'null'); }catch(e){ return null; } }
+// Firebase 초기화
+var firebaseConfig = {
+  apiKey: "AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",
+  authDomain: "kimbjmath.firebaseapp.com",
+  databaseURL: "https://kimbjmath-default-rtdb.firebaseio.com",
+  projectId: "kimbjmath",
+  storageBucket: "kimbjmath.firebasestorage.app",
+  messagingSenderId: "664889936709",
+  appId: "1:664889936709:web:2df1494b0cd978c64e4c2c"
 };
+firebase.initializeApp(firebaseConfig);
+var rtdb = firebase.database();
 
 function getParam(name){
-  var url = new URLSearchParams(window.location.search);
-  return url.get(name);
+  return new URLSearchParams(window.location.search).get(name);
 }
 
 function render(){
@@ -96,12 +93,37 @@ function render(){
   var app = document.getElementById('app');
 
   if(!sid){
-    app.innerHTML = '<div class="error-screen"><h2>잘못된 접근입니다</h2><p>학부모 링크를 통해 접속해주세요.</p></div>';
+    app.innerHTML = '<div class="error-screen"><h2>학생이 없습니다</h2><p>학부모 링크를 다시 확인해주세요.</p></div>';
     return;
   }
 
-  var students = DB.get('students') || [];
-  var student = students.find(function(s){ return s.id === sid; });
+  // Firebase에서 데이터 읽기
+  var keys = ['students','attendance','homework','tests'];
+  var data = {};
+  var loaded = 0;
+
+  keys.forEach(function(key){
+    rtdb.ref('bjm_' + key).once('value', function(snap){
+      var val = snap.val();
+      // Firebase에 배열이 객체로 저장될 수 있으므로 변환
+      if(val && typeof val === 'object' && !Array.isArray(val)){
+        data[key] = Object.values(val);
+      } else {
+        data[key] = val || [];
+      }
+      loaded++;
+      if(loaded === keys.length) renderData(sid, data, app);
+    }, function(err){
+      data[key] = [];
+      loaded++;
+      if(loaded === keys.length) renderData(sid, data, app);
+    });
+  });
+}
+
+function renderData(sid, data, app){
+  var students = data.students || [];
+  var student = students.find(function(s){ return s && s.id === sid; });
 
   if(!student){
     app.innerHTML = '<div class="error-screen"><h2>학생 정보를 찾을 수 없습니다</h2><p>링크가 올바른지 확인해주세요.</p></div>';
@@ -111,25 +133,20 @@ function render(){
   var threeMonthsAgo = new Date();
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
   var threeMonthsAgoStr = threeMonthsAgo.toISOString().slice(0,10);
-  var attendance = (DB.get('attendance') || []).filter(function(a){ return a.sid === sid && a.date >= threeMonthsAgoStr; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
-  var homework = (DB.get('homework') || []).filter(function(h){ return h.sid === sid; }).sort(function(a,b){ return b.due.localeCompare(a.due); });
-  var tests = (DB.get('tests') || []).filter(function(t){ return t.sid === sid; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
 
-  // 출결 통계
+  var attendance = (data.attendance || []).filter(function(a){ return a && a.sid === sid && a.date >= threeMonthsAgoStr; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
+  var homework = (data.homework || []).filter(function(h){ return h && h.sid === sid; }).sort(function(a,b){ return b.due.localeCompare(a.due); });
+  var tests = (data.tests || []).filter(function(t){ return t && t.sid === sid; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
+
   var attO = attendance.filter(function(a){ return a.status==='O'; }).length;
   var attX = attendance.filter(function(a){ return a.status==='X'; }).length;
   var attE = attendance.filter(function(a){ return a.status==='E'; }).length;
-
-  // 숙제 통계
-  var hwPending = homework.filter(function(h){ return h.status==='pending'; }).length;
   var hwDone = homework.filter(function(h){ return h.status==='done'; }).length;
-
-  // 테스트 평균
   var testAvg = tests.length ? Math.round(tests.reduce(function(s,t){ return s+t.score; },0)/tests.length) : null;
 
   var attStatusLabel = {O:'출석',X:'결석',E:'조퇴',T:'지각',B:'보강'};
   var attStatusClass = {O:'att-o',X:'att-x',E:'att-e',T:'att-t',B:'att-t'};
-  var hwStatusLabel = {pending:'미제출',done:'제출',half:'부분제출'};
+  var hwStatusLabel = {pending:'미제출',done:'제출',half:'일부제출'};
   var hwStatusClass = {pending:'tag-pending',done:'tag-done',half:'tag-half'};
 
   var html = '';
@@ -144,9 +161,9 @@ function render(){
   html += '<div class="section">'
     + '<div class="section-title">요약</div>'
     + '<div class="stat-row">'
-    + '<div class="stat-box"><div class="stat-val">'+attO+'</div><div class="stat-label">출석</div></div>'
+    + '<div class="stat-box"><div class="stat-val">'+attO+'</div><div class="stat-label">출석 (3개월)</div></div>'
     + '<div class="stat-box"><div class="stat-val">'+hwDone+'</div><div class="stat-label">제출 숙제</div></div>'
-    + '<div class="stat-box"><div class="stat-val">'+(testAvg!==null?testAvg+'점':'—')+'</div><div class="stat-label">평균 점수</div></div>'
+    + '<div class="stat-box"><div class="stat-val">'+(testAvg!==null?testAvg+'점':'–')+'</div><div class="stat-label">평균 점수</div></div>'
     + '</div>'
     + '</div>';
 

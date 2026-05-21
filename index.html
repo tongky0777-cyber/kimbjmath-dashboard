@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -867,6 +867,23 @@ textarea{resize:vertical;min-height:80px;}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+// ===== Firebase Sync =====
+(function(){
+  var FBCONFIG={apiKey:"AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",databaseURL:"https://kimbjmath-default-rtdb.firebaseio.com",projectId:"kimbjmath",appId:"1:664889936709:web:2df1494b0cd978c64e4c2c"};
+  function loadFB(cb){
+    var s1=document.createElement("script");
+    s1.src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js";
+    s1.onload=function(){var s2=document.createElement("script");s2.src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js";s2.onload=function(){if(!firebase.apps.length)firebase.initializeApp(FBCONFIG);cb(firebase.database());};document.head.appendChild(s2);};
+    document.head.appendChild(s1);
+  }
+  loadFB(function(db){
+    window._fbDb=db;
+    var _orig=localStorage.setItem.bind(localStorage);
+    localStorage.setItem=function(key,value){_orig(key,value);if(key.startsWith("bjm_")){try{db.ref(key).set(JSON.parse(value));}catch(e){}}};
+    ["bjm_students","bjm_attendance","bjm_homework","bjm_tests","bjm_progress","bjm_groups"].forEach(function(k){var v=localStorage.getItem(k);if(v){try{db.ref(k).set(JSON.parse(v));}catch(e){}}});
+  });
+})();
+// ===== Firebase Sync End =====
 
 // 로그인
 var LOGIN_PW = 'tongky07';
