@@ -10,6 +10,7 @@
   --ink:#1a1a2e;--ink2:#3a3a5c;--muted:#888;--bg:#f7f7fa;--white:#fff;--line:#e8e8f0;
   --red:#c0392b;--red-bg:#fdf0ef;--green:#1a6b3a;--green-bg:#edf7f1;
   --gold:#8a6820;--gold-bg:#fdf8ee;--blue:#1c3c6e;--blue-bg:#eef3fb;
+  --purple:#5b2d8e;--purple-bg:#f3eefb;
   --navy:#1a1a2e;--sans:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
 }
 body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;}
@@ -48,6 +49,14 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .att-t{background:var(--gold-bg);color:var(--gold);}
 .att-date{font-size:9px;text-align:center;color:var(--muted);margin-top:1px;}
 .att-wrap{display:flex;flex-direction:column;align-items:center;}
+.schedule-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);}
+.schedule-item:last-child{border-bottom:none;}
+.schedule-date{font-size:12px;font-weight:700;color:var(--purple);white-space:nowrap;min-width:52px;}
+.schedule-info{flex:1;}
+.schedule-content{font-size:13px;color:var(--ink2);}
+.schedule-time{font-size:11px;color:var(--muted);margin-top:2px;}
+.schedule-done{font-size:11px;font-weight:700;padding:2px 7px;border-radius:100px;white-space:nowrap;background:var(--green-bg);color:var(--green);}
+.schedule-upcoming{font-size:11px;font-weight:700;padding:2px 7px;border-radius:100px;white-space:nowrap;background:var(--purple-bg);color:var(--purple);}
 .empty{text-align:center;color:var(--muted);padding:20px;font-size:13px;}
 .error-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;text-align:center;padding:20px;}
 .error-screen h2{font-size:18px;color:var(--ink);margin-bottom:8px;}
@@ -71,7 +80,6 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 </div>
 
 <script>
-// Firebase 초기화
 var firebaseConfig = {
   apiKey: "AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",
   authDomain: "kimbjmath.firebaseapp.com",
@@ -97,15 +105,13 @@ function render(){
     return;
   }
 
-  // Firebase에서 데이터 읽기
-  var keys = ['students','attendance','homework','tests'];
+  var keys = ['students','attendance','homework','tests','schedules'];
   var data = {};
   var loaded = 0;
 
   keys.forEach(function(key){
     rtdb.ref('bjm_' + key).once('value', function(snap){
       var val = snap.val();
-      // Firebase에 배열이 객체로 저장될 수 있으므로 변환
       if(val && typeof val === 'object' && !Array.isArray(val)){
         data[key] = Object.values(val);
       } else {
@@ -133,14 +139,18 @@ function renderData(sid, data, app){
   var threeMonthsAgo = new Date();
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
   var threeMonthsAgoStr = threeMonthsAgo.toISOString().slice(0,10);
+  var today = new Date().toISOString().slice(0,10);
 
   var attendance = (data.attendance || []).filter(function(a){ return a && a.sid === sid && a.date >= threeMonthsAgoStr; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
   var homework = (data.homework || []).filter(function(h){ return h && h.sid === sid; }).sort(function(a,b){ return b.due.localeCompare(a.due); });
   var tests = (data.tests || []).filter(function(t){ return t && t.sid === sid; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
 
+  // 보강 일정: target이 학생 이름과 일치하는 것
+  var schedules = (data.schedules || []).filter(function(s){
+    return s && s.target && s.target.indexOf(student.name) !== -1;
+  }).sort(function(a,b){ return b.date.localeCompare(a.date); });
+
   var attO = attendance.filter(function(a){ return a.status==='O'; }).length;
-  var attX = attendance.filter(function(a){ return a.status==='X'; }).length;
-  var attE = attendance.filter(function(a){ return a.status==='E'; }).length;
   var hwDone = homework.filter(function(h){ return h.status==='done'; }).length;
   var testAvg = tests.length ? Math.round(tests.reduce(function(s,t){ return s+t.score; },0)/tests.length) : null;
 
@@ -166,6 +176,28 @@ function renderData(sid, data, app){
     + '<div class="stat-box"><div class="stat-val">'+(testAvg!==null?testAvg+'점':'–')+'</div><div class="stat-label">평균 점수</div></div>'
     + '</div>'
     + '</div>';
+
+  // 보강 일정
+  html += '<div class="section"><div class="section-title">보강 일정</div>';
+  if(!schedules.length){
+    html += '<div class="empty">보강 일정이 없습니다</div>';
+  } else {
+    schedules.slice(0,10).forEach(function(s){
+      var isDone = s.done || s.date < today;
+      var statusTag = isDone
+        ? '<span class="schedule-done">완료</span>'
+        : '<span class="schedule-upcoming">예정</span>';
+      html += '<div class="schedule-item">'
+        + '<div class="schedule-date">'+s.date.slice(5)+'</div>'
+        + '<div class="schedule-info">'
+        + '<div class="schedule-content">'+(s.content||'보강')+'</div>'
+        + (s.time ? '<div class="schedule-time">'+s.time+'</div>' : '')
+        + '</div>'
+        + statusTag
+        + '</div>';
+    });
+  }
+  html += '</div>';
 
   // 출결
   html += '<div class="section"><div class="section-title">출결 현황</div>';
