@@ -1014,7 +1014,7 @@ function openStudentModal() {
 function openAttModal() { populateSel(); openModal('modal-att'); }
 function openTestModal() { populateSel(); openModal('modal-test'); }
 function openHwModal() { populateSel(); openModal('modal-hw'); }
-function openScheduleModal() { openModal('modal-schedule'); ['sch-content','sch-target','sch-memo'].forEach(function(id){ document.getElementById(id).value=''; }); }
+function updateSchTarget(){ var sel=document.getElementById('sch-target-sel'); var inp=document.getElementById('sch-target'); if(sel.value&&sel.value!=='전체') inp.value=sel.value; else inp.value=''; } function openScheduleModal() { openModal('modal-schedule'); ['sch-content','sch-target','sch-memo'].forEach(function(id){ document.getElementById(id).value=''; }); document.getElementById('sch-target-sel').value=''; }
 
 // 토스트
 function toast(msg) {
@@ -1036,7 +1036,7 @@ function populateSel() {
   var opts = sorted.length
     ? sorted.map(function(s){ return '<option value="'+s.id+'">'+s.name+' ('+s.grade+')</option>'; }).join('')
     : '<option value="">학생 없음</option>';
-  ['att-student','test-student','hw-student','prog-student'].forEach(function(id){
+  ['att-student','test-student','hw-student','prog-student','sch-target-sel'].forEach(function(id){
     var el = document.getElementById(id);
     if(el) el.innerHTML = opts;
   });
@@ -3419,3 +3419,5 @@ function saveMemo() {
 </script>
 </body>
 </html>
+
+
