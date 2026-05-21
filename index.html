@@ -1014,7 +1014,7 @@ function openStudentModal() {
 function openAttModal() { populateSel(); openModal('modal-att'); }
 function openTestModal() { populateSel(); openModal('modal-test'); }
 function openHwModal() { populateSel(); openModal('modal-hw'); }
-function updateSchTarget(){ var sel=document.getElementById('sch-target-sel'); var inp=document.getElementById('sch-target'); if(sel.value&&sel.value!=='전체') inp.value=sel.value; else inp.value=''; } function openScheduleModal() { openModal('modal-schedule'); ['sch-content','sch-target','sch-memo'].forEach(function(id){ document.getElementById(id).value=''; }); document.getElementById('sch-target-sel').value=''; }
+function updateSchTarget(){ var sel=document.getElementById('sch-target-sel'); var inp=document.getElementById('sch-target'); var sid=sel.value; if(sid&&sid!=='전체'){ var st=(DB.get('students')||[]).find(function(s){return s.id===sid;}); inp.value=st?st.name:sid; } else { inp.value=''; } } function openScheduleModal() { openModal('modal-schedule'); ['sch-content','sch-target','sch-memo'].forEach(function(id){ document.getElementById(id).value=''; }); var sel=document.getElementById('sch-target-sel'); sel.value=''; var students=(DB.get('students')||[]).filter(function(s){return !s.withdrawn;}); sel.innerHTML='<option value="">-- 학생 선택 --</option><option value="전체">전체</option>'+students.sort(function(a,b){return a.name.localeCompare(b.name);}).map(function(s){return '<option value="'+s.id+'">('+s.grade+') '+s.name+'</option>';}).join(''); }
 
 // 토스트
 function toast(msg) {
@@ -3419,5 +3419,6 @@ function saveMemo() {
 </script>
 </body>
 </html>
+
 
 
