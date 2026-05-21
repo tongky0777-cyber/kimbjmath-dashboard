@@ -117,10 +117,14 @@ function render(){
   keys.forEach(function(key){
     rtdb.ref('bjm_' + key).once('value', function(snap){
       var val = snap.val();
-      if(val && typeof val === 'object' && !Array.isArray(val)){
+      if(!val){
+        data[key] = [];
+      } else if(Array.isArray(val)){
+        data[key] = val;
+      } else if(typeof val === 'object'){
         data[key] = Object.values(val);
       } else {
-        data[key] = val || [];
+        data[key] = [];
       }
       loaded++;
       if(loaded === keys.length) renderData(sid, data, app);
