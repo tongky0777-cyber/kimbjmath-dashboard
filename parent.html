@@ -49,6 +49,11 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .att-t{background:var(--gold-bg);color:var(--gold);}
 .att-date{font-size:9px;text-align:center;color:var(--muted);margin-top:1px;}
 .att-wrap{display:flex;flex-direction:column;align-items:center;}
+.prog-item{padding:10px 0;border-bottom:1px solid var(--line);}
+.prog-item:last-child{border-bottom:none;}
+.prog-book{font-size:13px;font-weight:700;color:var(--ink);}
+.prog-unit{font-size:12px;color:var(--ink2);margin-top:2px;}
+.prog-meta{font-size:11px;color:var(--muted);margin-top:3px;}
 .schedule-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);}
 .schedule-item:last-child{border-bottom:none;}
 .schedule-date{font-size:12px;font-weight:700;color:var(--purple);white-space:nowrap;min-width:52px;}
@@ -105,7 +110,7 @@ function render(){
     return;
   }
 
-  var keys = ['students','attendance','homework','tests','schedules'];
+  var keys = ['students','attendance','homework','tests','schedules','progress'];
   var data = {};
   var loaded = 0;
 
@@ -144,6 +149,26 @@ function renderData(sid, data, app){
   var attendance = (data.attendance || []).filter(function(a){ return a && a.sid === sid && a.date >= threeMonthsAgoStr; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
   var homework = (data.homework || []).filter(function(h){ return h && h.sid === sid; }).sort(function(a,b){ return b.due.localeCompare(a.due); });
   var tests = (data.tests || []).filter(function(t){ return t && t.sid === sid; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
+
+  // 최근 진도 2개
+  var progress = (data.progress || []).filter(function(p){
+    return p && p.sid === sid;
+  }).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,2);
+
+  // 최근 진도
+  html += '<div class="section"><div class="section-title">최근 진도</div>';
+  if(!progress.length){
+    html += '<div class="empty">진도 데이터가 없습니다</div>';
+  } else {
+    progress.forEach(function(p){
+      html += '<div class="prog-item">'
+        + '<div class="prog-book">'+p.book+(p.unit?' · '+p.unit:'')+'</div>'
+        + (p.range?'<div class="prog-unit">범위: '+p.range+'</div>':'')
+        + '<div class="prog-meta">'+p.date+(p.groupName?' · '+p.groupName:'')+'</div>'
+        + '</div>';
+    });
+  }
+  html += '</div>';
 
   // 보강 일정: target이 학생 이름과 일치하는 것
   var schedules = (data.schedules || []).filter(function(s){
