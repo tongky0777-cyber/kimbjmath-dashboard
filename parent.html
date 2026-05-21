@@ -83,7 +83,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 // parent.html을 kimbjmath-dashboard.vercel.app/parent.html 에 배포해야 함
 
 var DB = {
-  get: function(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch(e){ return null; } }
+  get: function(key){ try{ return JSON.parse(localStorage.getItem('bjm_'+key)||'null'); }catch(e){ return null; } }
 };
 
 function getParam(name){
