@@ -159,21 +159,6 @@ function renderData(sid, data, app){
     return p && p.sid === sid;
   }).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,2);
 
-  // 최근 진도
-  html += '<div class="section"><div class="section-title">최근 진도</div>';
-  if(!progress.length){
-    html += '<div class="empty">진도 데이터가 없습니다</div>';
-  } else {
-    progress.forEach(function(p){
-      html += '<div class="prog-item">'
-        + '<div class="prog-book">'+p.book+(p.unit?' · '+p.unit:'')+'</div>'
-        + (p.range?'<div class="prog-unit">범위: '+p.range+'</div>':'')
-        + '<div class="prog-meta">'+p.date+(p.groupName?' · '+p.groupName:'')+'</div>'
-        + '</div>';
-    });
-  }
-  html += '</div>';
-
   // 보강 일정: target이 학생 이름과 일치하는 것
   var schedules = (data.schedules || []).filter(function(s){
     return s && s.target && s.target.indexOf(student.name) !== -1;
@@ -205,6 +190,21 @@ function renderData(sid, data, app){
     + '<div class="stat-box"><div class="stat-val">'+(testAvg!==null?testAvg+'점':'–')+'</div><div class="stat-label">평균 점수</div></div>'
     + '</div>'
     + '</div>';
+
+  // 최근 진도
+  html += '<div class="section"><div class="section-title">최근 진도</div>';
+  if(!progress.length){
+    html += '<div class="empty">진도 데이터가 없습니다</div>';
+  } else {
+    progress.forEach(function(p){
+      html += '<div class="prog-item">'
+        + '<div class="prog-book">'+p.book+(p.unit?' · '+p.unit:'')+'</div>'
+        + (p.range?'<div class="prog-unit">범위: '+p.range+'</div>':'')
+        + '<div class="prog-meta">'+p.date+(p.groupName?' · '+p.groupName:'')+'</div>'
+        + '</div>';
+    });
+  }
+  html += '</div>';
 
   // 보강 일정
   html += '<div class="section"><div class="section-title">보강 일정</div>';
