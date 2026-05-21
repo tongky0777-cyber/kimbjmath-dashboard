@@ -108,7 +108,10 @@ function render(){
     return;
   }
 
-  var attendance = (DB.get('attendance') || []).filter(function(a){ return a.sid === sid; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
+  var threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+  var threeMonthsAgoStr = threeMonthsAgo.toISOString().slice(0,10);
+  var attendance = (DB.get('attendance') || []).filter(function(a){ return a.sid === sid && a.date >= threeMonthsAgoStr; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
   var homework = (DB.get('homework') || []).filter(function(h){ return h.sid === sid; }).sort(function(a,b){ return b.due.localeCompare(a.due); });
   var tests = (DB.get('tests') || []).filter(function(t){ return t.sid === sid; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
 
@@ -183,7 +186,7 @@ function render(){
   if(!tests.length){
     html += '<div class="empty">테스트 데이터가 없습니다</div>';
   } else {
-    tests.slice(0,10).forEach(function(t){
+    tests.forEach(function(t){
       var scoreColor = t.score>=90?'var(--green)':t.score>=70?'var(--gold)':'var(--red)';
       html += '<div class="test-item">'
         + '<div class="test-name">'+t.name+'</div>'
