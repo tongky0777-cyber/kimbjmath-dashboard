@@ -459,6 +459,7 @@ textarea{resize:vertical;min-height:80px;}
       </div>
     </div>
 
+    <div class="view" id="view-exam"><div class="sec-hd"><h2>📝 학교 시험 일정</h2><div class="actions"><button class="btn-sm" onclick="openExamModal()">+ 시험 추가</button></div></div><div id="exam-calendar" style="margin-bottom:20px;"></div><div class="sec-hd" style="margin-top:8px;"><h2 style="font-size:14px;">전체 목록</h2></div><div id="exam-list"></div></div>
     <!-- 반 관리 -->
     
   
@@ -621,7 +622,6 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>제출 여부</label><select id="hw-status"><option value="pending">미제출</option><option value="done">제출 완료</option><option value="half">부분 제출</option></select></div>
       </div>
       <div class="form-group full"><label>메모</label><input id="hw-memo" placeholder="특이사항"></div>
-    </div>
 <div class="view" id="view-exam"><div class="sec-hd"><h2>&#x1F4DD; &#xD559;&#xAD50; &#xC2DC;&#xD5D8; &#xC77C;&#xC815;</h2><div class="actions"><button class="btn-sm" onclick="openExamModal()">+ &#xC2DC;&#xD5D8; &#xCD94;&#xAC00;</button></div></div><div id="exam-calendar" style="margin-bottom:20px;"></div><div class="sec-hd" style="margin-top:8px;"><h2 style="font-size:14px;">&#xC804;&#xCCB4; &#xBAA9;&#xB85D;</h2></div><div id="exam-list"></div></div>
     <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-hw')">취소</button><button class="btn-save" onclick="saveHw()">저장</button></div>
   </div>
