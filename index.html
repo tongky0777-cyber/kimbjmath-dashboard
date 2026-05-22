@@ -1592,7 +1592,7 @@ function saveHw() {
   var name = document.getElementById('hw-name').value.trim();
   if(!sid||!name) { toast('학생과 과제명을 입력해주세요'); return; }
   var recs = DB.get('homework');
-  recs.push({id:Date.now().toString(), sid:sid, name:name, status:document.getElementById('hw-status').value, due:document.getElementById('hw-due').value, memo:document.getElementById('hw-memo').value});
+  recs.push({id:Date.now().toString(), sid:sid, name:name, status:document.getElementById('hw-status').value, due:document.getElementById('hw-due').value, memo:''});
   DB.set('homework', recs);
   closeModal('modal-hw');
   renderHw(); renderHwCalendar(); if(hwSelectedDate) selectHwDay(hwSelectedDate);
