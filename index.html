@@ -1058,11 +1058,10 @@ function renderExam() {
       var ds=year+'-'+(month+1<10?'0':'')+(month+1)+'-'+(day<10?'0':'')+day;
       var ex=exams.filter(function(e){return ds>=e.startDate&&ds<=e.endDate;});
       var isToday=ds===todayStr;
-      var exColor=ex.length?(schoolMap[ex[0].school]||'#ccc'):'';
-      var bg=ex.length?exColor+'22':'transparent';
-      var border=ex.length?'2px solid '+exColor:'';;
-      var dot=ex.length?'<div style="width:6px;height:6px;border-radius:50%;background:'+exColor+';margin:2px auto 0;"></div>':'';
-      calHtml+='<div style="font-size:12px;padding:4px 2px;border-radius:5px;background:'+bg+';border:'+border+';'+(isToday?'font-weight:700;outline:2px solid var(--navy);outline-offset:1px;':'')+'">'+day+dot+'</div>';
+      var dots=ex.map(function(e){return '<div style="width:6px;height:6px;border-radius:50%;background:'+(schoolMap[e.school]||'#ccc')+';display:inline-block;margin:0 1px;"></div>';}).join('');
+      var bg=ex.length?'#f8f8f8':'transparent';
+      var border=ex.length?'1px solid #ddd':'';
+      calHtml+='<div style="font-size:12px;padding:4px 2px;border-radius:5px;background:'+bg+';border:'+border+';'+(isToday?'font-weight:700;outline:2px solid var(--navy);outline-offset:1px;':'')+'">'+day+'<div style="display:flex;justify-content:center;flex-wrap:wrap;min-height:8px;margin-top:1px;">'+dots+'</div></div>';
     }
     calHtml+='</div></div>';
   }
