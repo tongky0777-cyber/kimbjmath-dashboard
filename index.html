@@ -1025,14 +1025,29 @@ function renderExam() {
   // 달력 3개월
   var cal=document.getElementById('exam-calendar');
   if(!cal)return;
-  var calHtml='<div style="display:flex;gap:12px;flex-wrap:wrap;">';
+  // 학교별 고유 색상 배정
+  var schoolColors=['#e74c3c','#2980b9','#27ae60','#8e44ad','#e67e22','#16a085','#c0392b','#1a5276'];
+  var schoolMap={};
+  var schoolIdx=0;
+  exams.forEach(function(e){
+    if(!schoolMap[e.school]){schoolMap[e.school]=schoolColors[schoolIdx%schoolColors.length];schoolIdx++;}
+  });
+
+  // 범례
+  var legendHtml='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">';
+  Object.keys(schoolMap).forEach(function(s){
+    legendHtml+='<div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;"><div style="width:12px;height:12px;border-radius:3px;background:'+schoolMap[s]+';"></div>'+s+'</div>';
+  });
+  legendHtml+='</div>';
+
+  var calHtml=legendHtml+'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">';
   for(var m=0;m<3;m++){
     var d=new Date(today.getFullYear(),today.getMonth()+m,1);
     var year=d.getFullYear();
     var month=d.getMonth();
     var firstDay=new Date(year,month,1).getDay();
     var lastDate=new Date(year,month+1,0).getDate();
-    calHtml+='<div style="flex:1;min-width:220px;background:var(--white);border:1px solid var(--line);border-radius:10px;padding:14px;">';
+    calHtml+='<div style="background:var(--white);border:1px solid var(--line);border-radius:10px;padding:18px;">';
     calHtml+='<div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--ink);">'+(month+1)+'월 '+year+'</div>';
     calHtml+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;">';
     ['일','월','화','수','목','금','토'].forEach(function(day,i){
@@ -1043,9 +1058,11 @@ function renderExam() {
       var ds=year+'-'+(month+1<10?'0':'')+(month+1)+'-'+(day<10?'0':'')+day;
       var ex=exams.filter(function(e){return ds>=e.startDate&&ds<=e.endDate;});
       var isToday=ds===todayStr;
-      var dot=ex.length?'<div style="width:5px;height:5px;border-radius:50%;background:'+typeColor[ex[0].type]+';margin:1px auto 0;"></div>':'';
-      var bg=ex.length?typeBg[ex[0].type]:'transparent';
-      calHtml+='<div style="font-size:11px;padding:3px 1px;border-radius:4px;background:'+bg+';'+(isToday?'font-weight:700;outline:2px solid var(--navy);':'')+'">'+day+dot+'</div>';
+      var exColor=ex.length?(schoolMap[ex[0].school]||'#ccc'):'';
+      var bg=ex.length?exColor+'22':'transparent';
+      var border=ex.length?'2px solid '+exColor:'';;
+      var dot=ex.length?'<div style="width:6px;height:6px;border-radius:50%;background:'+exColor+';margin:2px auto 0;"></div>':'';
+      calHtml+='<div style="font-size:12px;padding:4px 2px;border-radius:5px;background:'+bg+';border:'+border+';'+(isToday?'font-weight:700;outline:2px solid var(--navy);outline-offset:1px;':'')+'">'+day+dot+'</div>';
     }
     calHtml+='</div></div>';
   }
