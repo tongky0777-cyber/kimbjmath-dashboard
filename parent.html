@@ -67,6 +67,22 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .error-screen h2{font-size:18px;color:var(--ink);margin-bottom:8px;}
 .error-screen p{font-size:13px;color:var(--muted);}
 .loading{text-align:center;padding:60px 20px;color:var(--muted);font-size:13px;}
+
+/* ── AI 리포트 섹션 ── */
+.ai-report-section{background:var(--navy);border-radius:12px;padding:18px;margin-bottom:12px;}
+.ai-report-header{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.ai-report-icon{width:26px;height:26px;border-radius:50%;background:#2D7A4F;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+.ai-report-title{color:#fff;font-size:13px;font-weight:700;flex:1;}
+.ai-report-badge{background:rgba(255,255,255,.12);color:rgba(255,255,255,.65);font-size:10px;padding:2px 8px;border-radius:99px;}
+.ai-period{color:rgba(255,255,255,.45);font-size:11px;margin-bottom:14px;}
+.ai-report-text{color:rgba(255,255,255,.85);font-size:13px;line-height:1.95;min-height:48px;}
+.ai-gen-btn{width:100%;margin-top:14px;background:#2D7A4F;color:#fff;border:none;border-radius:8px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--sans);transition:opacity .2s;}
+.ai-gen-btn:hover{opacity:.88;}
+.ai-gen-btn:disabled{opacity:.45;cursor:not-allowed;}
+.ai-loading span{animation:aiDot 1.2s infinite;display:inline-block;}
+.ai-loading span:nth-child(2){animation-delay:.2s;}
+.ai-loading span:nth-child(3){animation-delay:.4s;}
+@keyframes aiDot{0%,80%,100%{opacity:.2}40%{opacity:1}}
 </style>
 
 <!-- Firebase SDK -->
@@ -173,6 +189,37 @@ function renderData(sid, data, app){
   var hwStatusLabel = {pending:'미제출',done:'제출',half:'일부제출'};
   var hwStatusClass = {pending:'tag-pending',done:'tag-done',half:'tag-half'};
 
+  // ── 격주 리포트 기간 계산
+  function getBiweeklyPeriod() {
+    var now = new Date();
+    var d = now.getDate();
+    var y = now.getFullYear(), m = now.getMonth();
+    var s, e;
+    if (d <= 14) { s = new Date(y,m,1); e = new Date(y,m,14); }
+    else { s = new Date(y,m,15); e = new Date(y,m+1,0); }
+    var fmt = function(dt){ return (dt.getMonth()+1)+'.'+(dt.getDate()<10?'0':'')+dt.getDate(); };
+    return fmt(s)+' ~ '+fmt(e);
+  }
+  var reportPeriod = getBiweeklyPeriod();
+  var totalAtt = attendance.length;
+  var attRate = totalAtt ? Math.round(attO/totalAtt*100) : 0;
+  var totalHw = homework.length;
+  var hwDone2 = homework.filter(function(h){return h.status==='done';}).length;
+  var hwRate = totalHw ? Math.round(hwDone2/totalHw*100) : 0;
+  var makeupCount = schedules.filter(function(s){return s.done||s.date<today;}).length;
+  var reportPayload = {
+    이름: student.name,
+    학년: student.grade,
+    학교: student.school||'',
+    리포트기간: reportPeriod,
+    출석률: attRate+'% ('+attO+'/'+totalAtt+'회)',
+    숙제완성도: hwRate+'% ('+hwDone2+'/'+totalHw+'회)',
+    최근테스트: tests.slice(0,3).map(function(t){return t.name+' '+t.score+'점('+t.date+')';}),
+    최근진도: progress.map(function(p){return p.book+(p.unit?' '+p.unit:'')+(p.range?' '+p.range:'');}),
+    보강완료: makeupCount+'회',
+    테스트평균: testAvg!==null?testAvg+'점':'없음'
+  };
+
   var html = '';
 
   // 학생 카드
@@ -180,6 +227,21 @@ function renderData(sid, data, app){
     + '<div class="student-name">'+student.name+'</div>'
     + '<div class="student-meta">'+student.grade+' · '+(student.school||'')+(student.class?' · '+student.class:'')+'</div>'
     + '</div>';
+
+  // AI 격주 리포트 섹션
+  html += '<div class="ai-report-section">'
+    + '<div class="ai-report-header">'
+    + '<div class="ai-report-icon">✦</div>'
+    + '<span class="ai-report-title">격주 학습 리포트</span>'
+    + '<span class="ai-report-badge">AI 분석</span>'
+    + '</div>'
+    + '<div class="ai-period">📅 '+reportPeriod+'</div>'
+    + '<div class="ai-report-text" id="aiReportText">버튼을 눌러 이번 기간 리포트를 생성해주세요.</div>'
+    + '<button class="ai-gen-btn" id="aiGenBtn">✦ AI 리포트 생성하기</button>'
+    + '</div>';
+
+  // 이벤트 바인딩 (innerHTML 세팅 후 처리)
+  window._reportPayload = reportPayload;
 
   // 요약 통계
   html += '<div class="section">'
@@ -281,6 +343,60 @@ function renderData(sid, data, app){
 }
 
 render();
+
+// ── AI 리포트 생성 함수
+document.addEventListener('click', function(e){
+  if(e.target && e.target.id === 'aiGenBtn') generateAIReport();
+});
+
+async function generateAIReport(){
+  var btn = document.getElementById('aiGenBtn');
+  var textEl = document.getElementById('aiReportText');
+  if(!btn || !textEl) return;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="ai-loading"><span>●</span><span>●</span><span>●</span></span> 분석 중...';
+  textEl.textContent = '';
+
+  var payload = window._reportPayload || {};
+  var prompt = '당신은 20년 경력의 고등수학 강사 김병진T입니다.\n'
+    + '아래 학생 데이터를 바탕으로 학부모에게 전달할 격주 학습 리포트 코멘트를 작성해주세요.\n\n'
+    + '학생 데이터:\n' + JSON.stringify(payload, null, 2) + '\n\n'
+    + '작성 규칙:\n'
+    + '- 따뜻하고 전문적인 톤으로 학부모에게 직접 말하듯 작성\n'
+    + '- 300자 내외, 3~4문장\n'
+    + '- 잘한 점 먼저, 개선점 후에\n'
+    + '- 출석률, 숙제완성도, 테스트점수 데이터를 자연스럽게 녹여서 언급\n'
+    + '- 앞으로의 방향 한 문장으로 마무리\n'
+    + '- 존댓말, 마크다운 기호 없이 순수 텍스트로만';
+
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{role:'user', content: prompt}]
+      })
+    });
+    var data = await res.json();
+    var text = (data.content && data.content[0] && data.content[0].text) || '생성에 실패했습니다.';
+    var i = 0;
+    textEl.textContent = '';
+    var iv = setInterval(function(){
+      if(i < text.length){ textEl.textContent += text[i++]; }
+      else {
+        clearInterval(iv);
+        btn.innerHTML = '✦ 다시 생성하기';
+        btn.disabled = false;
+      }
+    }, 16);
+  } catch(err) {
+    textEl.textContent = '생성 중 오류가 발생했습니다. 다시 시도해주세요.';
+    btn.innerHTML = '✦ AI 리포트 생성하기';
+    btn.disabled = false;
+  }
+}
 </script>
 </body>
 </html>

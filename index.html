@@ -776,6 +776,7 @@ textarea{resize:vertical;min-height:80px;}
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
         <button class="btn-sm sec" id="detail-edit-btn" onclick="">✏️ 수정</button>
+        <button class="btn-sm" id="detail-copy-btn" onclick="" style="background:#1a6b3a;">📋 리포트 복사</button>
         <button class="modal-close" onclick="closeModal('modal-student-detail')">×</button>
       </div>
     </div>
@@ -3216,7 +3217,113 @@ function saveGroupTest() {
 // ══ 학생 상세 (꺾은선 그래프) ════════════════════
 var detailChartInstance = null;
 
+function copyReportData(sid) {
+  var students = DB.get('students');
+  var s = students.find(function(x){ return x.id===sid; });
+  if(!s) return;
+
+  var today = new Date();
+  var d = today.getDate();
+  var y = today.getFullYear(), m = today.getMonth();
+  var ps, pe;
+  if(d<=14){ps=new Date(y,m,1);pe=new Date(y,m,14);}
+  else{ps=new Date(y,m,15);pe=new Date(y,m+1,0);}
+  var fmt=function(dt){return (dt.getMonth()+1)+'.'+(dt.getDate()<10?'0':'')+dt.getDate();};
+  var period = fmt(ps)+' ~ '+fmt(pe);
+
+  var threeMonthsAgo = new Date(); threeMonthsAgo.setMonth(threeMonthsAgo.getMonth()-3);
+  var tmaStr = threeMonthsAgo.toISOString().slice(0,10);
+  var todayStr = today.toISOString().slice(0,10);
+
+  var att  = DB.get('attendance').filter(function(r){ return r.sid===sid && r.date>=tmaStr; }).sort(function(a,b){return b.date.localeCompare(a.date);});
+  var hw   = DB.get('homework').filter(function(h){ return h.sid===sid; }).sort(function(a,b){return b.due.localeCompare(a.due);}).slice(0,10);
+  var tests= DB.get('tests').filter(function(t){ return t.sid===sid; }).sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,5);
+  var prog = DB.get('progress').filter(function(p){ return p.sid===sid; }).sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,3);
+  var sch  = DB.get('schedules').filter(function(x){ return x.target&&x.target.indexOf(s.name)!==-1; }).sort(function(a,b){return b.date.localeCompare(a.date);});
+
+  var attO    = att.filter(function(r){return r.status==='O';}).length;
+  var attRate = att.length ? Math.round(attO/att.length*100) : 0;
+  var hwDone  = hw.filter(function(h){return h.status==='done';}).length;
+  var hwRate  = hw.length ? Math.round(hwDone/hw.length*100) : 0;
+  var testAvg = tests.length ? Math.round(tests.reduce(function(s,t){return s+t.score;},0)/tests.length) : 0;
+  var makeup  = sch.filter(function(x){return x.done||x.date<todayStr;}).length;
+
+  var attStatusMap = {O:'출석',X:'결석',E:'조퇴',T:'지각',B:'보강'};
+  var hwStatusMap  = {pending:'미제출',done:'제출',half:'일부제출'};
+
+  var lines = [];
+  lines.push('===== 학부모 리포트 데이터 =====');
+  lines.push('학생: '+s.name);
+  lines.push('학년/학교: '+s.grade+' / '+(s.school||''));
+  lines.push('리포트 기간: '+period);
+  lines.push('');
+  lines.push('[출결]');
+  lines.push('출석률: '+attRate+'% ('+attO+'/'+att.length+'회)');
+  att.slice(0,10).forEach(function(r){
+    lines.push('  '+r.date+' '+( attStatusMap[r.status]||r.status )+(r.memo?' ('+r.memo+')':''));
+  });
+  lines.push('');
+  lines.push('[숙제]');
+  lines.push('완성도: '+hwRate+'% ('+hwDone+'/'+hw.length+'회)');
+  hw.forEach(function(h){
+    lines.push('  '+h.due+' '+h.name+' → '+(hwStatusMap[h.status]||h.status));
+  });
+  lines.push('');
+  lines.push('[테스트]');
+  lines.push('평균: '+(tests.length?testAvg+'점':'없음'));
+  tests.forEach(function(t){
+    lines.push('  '+t.date+' '+t.name+' '+t.score+'점');
+  });
+  lines.push('');
+  lines.push('[진도]');
+  prog.forEach(function(p){
+    lines.push('  '+p.date+' '+p.book+(p.unit?' '+p.unit:'')+(p.range?' '+p.range:''));
+  });
+  lines.push('');
+  lines.push('[보강]');
+  lines.push('완료: '+makeup+'회');
+  sch.slice(0,5).forEach(function(x){
+    lines.push('  '+x.date+' '+(x.content||'보강')+' → '+(x.done||x.date<todayStr?'완료':'예정'));
+  });
+  lines.push('');
+  lines.push('================================');
+  lines.push('위 데이터를 바탕으로 학부모에게 전달할 격주 리포트 코멘트를 작성해주세요.');
+
+  var text = lines.join('\n');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){
+      toast('📋 리포트 데이터가 복사되었습니다!');
+    }).catch(function(){
+      fallbackCopy(text);
+    });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function saveReportToFirebase(sid) {
+  if (!sid) return;
+  var text = document.getElementById('detail-report-text').value;
+  if (!text.trim()) { toast('리포트 내용을 입력해주세요'); return; }
+  firebase.database().ref('bjm_report_' + sid).set(text)
+    .then(function() { toast('✅ 리포트가 저장되었습니다'); })
+    .catch(function(e) { toast('저장 실패: ' + e.message); });
+}
+
+function fallbackCopy(text){
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);
+  ta.select();
+  try{ document.execCommand('copy'); toast('📋 리포트 데이터가 복사되었습니다!'); }
+  catch(e){ toast('복사 실패 - 수동으로 선택해주세요'); }
+  document.body.removeChild(ta);
+}
+
+var currentDetailSid = null;
 function openStudentDetail(sid) {
+  currentDetailSid = sid;
   var students = DB.get('students');
   var s = students.find(function(x){ return x.id===sid; });
   if(!s) return;
@@ -3230,6 +3337,8 @@ function openStudentDetail(sid) {
   // 수정 버튼 연결
   var editBtn2 = document.getElementById('detail-edit-btn');
   if(editBtn2) editBtn2.onclick = function(){ closeModal('modal-student-detail'); editStudent(sid); };
+  var copyBtn = document.getElementById('detail-copy-btn');
+  if(copyBtn) copyBtn.onclick = function(){ copyReportData(sid); };
 
   document.getElementById('detail-name').textContent = s.name;
   document.getElementById('detail-info').textContent = s.grade + ' · ' + (s.school||'') + (myGroups.length ? ' · '+myGroups.map(function(g){return g.name;}).join(', ') : '');
