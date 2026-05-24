@@ -177,8 +177,24 @@ var DAY_ORDER = ['월','화','수','목','금','토','일'];
 document.getElementById('today-label').textContent =
   today.getFullYear()+'년 '+(today.getMonth()+1)+'월 '+today.getDate()+'일 '+DAYS[today.getDay()]+'요일';
 
-function get(key){ try{ return JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){ return []; } }
-function fmt(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+var _cache={};
+function get(key){ return _cache[key]||[]; }
+function loadFromFirebase(){
+  var FBCONFIG={apiKey:"AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",databaseURL:"https://kimbjmath-default-rtdb.firebaseio.com",projectId:"kimbjmath",appId:"1:664889936709:web:2df1494b0cd978c64e4c2c"};
+  if(!firebase.apps.length)firebase.initializeApp(FBCONFIG);
+  var db=firebase.database();
+  var keys=["bjm_students","bjm_attendance","bjm_homework","bjm_tests","bjm_progress","bjm_groups","bjm_schedules","bjm_exams"];
+  var loaded=0;
+  keys.forEach(function(k){
+    db.ref(k).once('value',function(snap){
+      var val=snap.val();
+      _cache[k]=val?Object.values(val):[];
+      loaded++;
+      if(loaded===keys.length) renderStudents('');
+    });
+  });
+}
+  function fmt(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 
 function switchTab(name, el){
   document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
