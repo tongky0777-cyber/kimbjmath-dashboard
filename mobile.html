@@ -317,8 +317,8 @@ function renderTimetable(){
 function renderExam(){
   var exams = get('bjm_exams');
   var today = fmt(new Date());
-  exams = exams.filter(function(e){ return e && e.start; });
-  exams.sort(function(a,b){ return a.start.localeCompare(b.start); });
+  exams = exams.filter(function(e){ return e && (e.start||e.startDate); });
+  exams.sort(function(a,b){ return (a.start||a.startDate).localeCompare(b.start||b.startDate); });
   var typeMap = {mid:'중간고사',final:'기말고사',mock:'모의고사',other:'기타'};
   var el = document.getElementById('exam-list');
   if(!exams.length){ el.innerHTML='<div class="empty">등록된 시험 일정이 없습니다</div>'; return; }
@@ -326,7 +326,7 @@ function renderExam(){
     var isPast = e.end < today;
     return '<div class="exam-item" style="opacity:'+(isPast?.5:1)+'">'+
       '<div class="exam-school">'+e.school+'</div>'+
-      '<div class="exam-date">'+e.start+(e.end&&e.end!==e.start?' ~ '+e.end:'')+'</div>'+
+      '<div class="exam-date">'+(e.start||e.startDate)+((e.end||e.endDate)&&(e.end||e.endDate)!==(e.start||e.startDate)?' ~ '+(e.end||e.endDate):'')+'</div>'+
       '<span class="exam-type" style="background:var(--blue-bg);color:var(--blue);">'+(typeMap[e.type]||e.type||'시험')+'</span>'+
       (e.memo?'<div style="font-size:11px;color:var(--muted);margin-top:4px;">'+e.memo+'</div>':'')+
       '</div>';
