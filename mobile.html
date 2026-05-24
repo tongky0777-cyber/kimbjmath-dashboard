@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>김병진 수학연구소 · 모바일</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#1a1a2e;--red:#c0392b;--red-bg:#fdf0ef;
+  --ink:#1a1a2e;--ink2:#3a3a5c;--muted:#888;--bg:#f7f7fa;--white:#fff;--line:#e8e8f0;
+  --green:#1a6b3a;--green-bg:#edf7f1;--blue:#1c3c6e;--blue-bg:#eef3fb;
+  --gold:#8a6820;--gold-bg:#fdf8ee;
+  --sans:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;padding-bottom:80px;}
+
+/* 상단 헤더 */
+.header{background:var(--navy);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.header-title{font-size:15px;font-weight:700;}
+.header-date{font-size:11px;opacity:.6;}
+
+/* 하단 탭바 */
+.tab-bar{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--line);display:flex;z-index:100;}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 4px;cursor:pointer;color:var(--muted);font-size:10px;gap:3px;transition:.15s;}
+.tab-item.active{color:var(--navy);}
+.tab-item .icon{font-size:20px;}
+
+/* 뷰 */
+.view{display:none;padding:16px;}
+.view.active{display:block;}
+
+/* 카드 */
+.card{background:var(--white);border-radius:10px;border:1px solid var(--line);margin-bottom:12px;overflow:hidden;}
+.card-header{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:13px;font-weight:700;}
+.card-body{padding:12px 14px;}
+
+/* 검색 */
+.search-box{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:10px 14px;width:100%;font-size:13px;font-family:var(--sans);outline:none;margin-bottom:12px;}
+.search-box:focus{border-color:var(--navy);}
+
+/* 학생 카드 */
+.student-item{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:8px;cursor:pointer;}
+.student-item:active{background:var(--bg);}
+.student-name{font-size:14px;font-weight:700;margin-bottom:4px;}
+.student-meta{font-size:12px;color:var(--muted);}
+.student-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.tag{font-size:11px;padding:2px 8px;border-radius:3px;font-weight:700;}
+.tag-red{background:var(--red-bg);color:var(--red);}
+.tag-green{background:var(--green-bg);color:var(--green);}
+.tag-blue{background:var(--blue-bg);color:var(--blue);}
+
+/* 보강 */
+.makeup-item{padding:12px 0;border-bottom:1px solid var(--line);}
+.makeup-item:last-child{border-bottom:none;}
+.makeup-date{font-size:12px;color:var(--muted);margin-bottom:4px;}
+.makeup-name{font-size:13px;font-weight:700;}
+.makeup-status{font-size:11px;padding:2px 8px;border-radius:3px;font-weight:700;}
+.status-done{background:var(--green-bg);color:var(--green);}
+.status-plan{background:var(--blue-bg);color:var(--blue);}
+
+/* 시간표 */
+.tt-day{margin-bottom:14px;}
+.tt-day-title{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;padding:4px 0;border-bottom:1px solid var(--line);}
+.tt-class-card{border-radius:8px;padding:10px 12px;margin-bottom:6px;border-left:4px solid;}
+.tt-class-name{font-size:13px;font-weight:700;}
+.tt-class-info{font-size:11px;margin-top:3px;opacity:.8;}
+
+/* 시험일정 */
+.exam-item{padding:12px 0;border-bottom:1px solid var(--line);}
+.exam-item:last-child{border-bottom:none;}
+.exam-school{font-size:13px;font-weight:700;margin-bottom:3px;}
+.exam-date{font-size:12px;color:var(--muted);}
+.exam-type{font-size:11px;padding:2px 8px;border-radius:3px;font-weight:700;display:inline-block;margin-top:4px;}
+
+/* 플래너 */
+.planner-day{margin-bottom:14px;}
+.planner-day-title{font-size:13px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.planner-day-date{font-size:11px;color:var(--muted);font-weight:400;}
+.planner-event{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:6px;border-left:4px solid var(--navy);}
+.planner-event-title{font-size:13px;font-weight:700;}
+.planner-event-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+
+/* 모달 */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:.2s;}
+.modal-bg.open{opacity:1;pointer-events:all;}
+.modal{background:var(--white);border-radius:16px 16px 0 0;padding:20px 16px;width:100%;max-height:80vh;overflow-y:auto;}
+.modal-handle{width:40px;height:4px;background:var(--line);border-radius:2px;margin:0 auto 16px;}
+.modal-name{font-size:17px;font-weight:700;margin-bottom:6px;}
+.modal-meta{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.8;}
+.modal-section{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;margin-top:12px;text-transform:uppercase;letter-spacing:.05em;}
+.modal-close{width:100%;background:var(--bg);border:none;border-radius:8px;padding:12px;font-size:13px;font-family:var(--sans);cursor:pointer;margin-top:16px;color:var(--ink);}
+
+.empty{text-align:center;color:var(--muted);font-size:13px;padding:40px 0;}
+.section-title{font-size:13px;font-weight:700;margin-bottom:10px;color:var(--ink2);}
+.badge{background:var(--navy);color:#fff;font-size:11px;padding:2px 8px;border-radius:10px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">🧮 김병진 수학연구소</div>
+    <div class="header-date" id="today-label"></div>
+  </div>
+</div>
+
+<!-- 학생 조회 -->
+<div class="view active" id="view-students">
+  <input class="search-box" type="text" placeholder="학생 이름 검색..." oninput="searchStudents(this.value)">
+  <div id="student-list"></div>
+</div>
+
+<!-- 보강 -->
+<div class="view" id="view-makeup">
+  <div class="section-title">예정된 보강</div>
+  <div class="card">
+    <div class="card-body" id="makeup-plan-list"></div>
+  </div>
+  <div class="section-title">완료된 보강</div>
+  <div class="card">
+    <div class="card-body" id="makeup-done-list"></div>
+  </div>
+</div>
+
+<!-- 시간표 -->
+<div class="view" id="view-timetable">
+  <div id="tt-list"></div>
+</div>
+
+<!-- 시험일정 -->
+<div class="view" id="view-exam">
+  <div class="card">
+    <div class="card-header"><span class="card-title">📅 시험 일정</span></div>
+    <div class="card-body" id="exam-list"></div>
+  </div>
+</div>
+
+<!-- 플래너 -->
+<div class="view" id="view-planner">
+  <div id="planner-list"></div>
+</div>
+
+<!-- 하단 탭바 -->
+<div class="tab-bar">
+  <div class="tab-item active" onclick="switchTab('students',this)"><div class="icon">👥</div>학생조회</div>
+  <div class="tab-item" onclick="switchTab('makeup',this)"><div class="icon">🔧</div>보강</div>
+  <div class="tab-item" onclick="switchTab('timetable',this)"><div class="icon">📋</div>시간표</div>
+  <div class="tab-item" onclick="switchTab('exam',this)"><div class="icon">📅</div>시험일정</div>
+  <div class="tab-item" onclick="switchTab('planner',this)"><div class="icon">🗓️</div>플래너</div>
+</div>
+
+<!-- 학생 상세 모달 -->
+<div class="modal-bg" id="student-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-name" id="m-name"></div>
+    <div class="modal-meta" id="m-meta"></div>
+    <div class="modal-section">소속 반</div>
+    <div id="m-groups"></div>
+    <div class="modal-section">최근 출결</div>
+    <div id="m-att"></div>
+    <div class="modal-section">미제출 숙제</div>
+    <div id="m-hw"></div>
+    <button class="modal-close" onclick="closeModal()">닫기</button>
+  </div>
+</div>
+
+<script>
+var today = new Date();
+var DAYS = ['일','월','화','수','목','금','토'];
+var DAY_ORDER = ['월','화','수','목','금','토','일'];
+
+document.getElementById('today-label').textContent =
+  today.getFullYear()+'년 '+(today.getMonth()+1)+'월 '+today.getDate()+'일 '+DAYS[today.getDay()]+'요일';
+
+function get(key){ try{ return JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){ return []; } }
+function fmt(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+function switchTab(name, el){
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  document.querySelectorAll('.tab-item').forEach(function(t){ t.classList.remove('active'); });
+  document.getElementById('view-'+name).classList.add('active');
+  el.classList.add('active');
+  if(name==='students') renderStudents('');
+  if(name==='makeup') renderMakeup();
+  if(name==='timetable') renderTimetable();
+  if(name==='exam') renderExam();
+  if(name==='planner') renderPlanner();
+}
+
+// 학생 조회
+function renderStudents(query){
+  var students = get('bjm_students').filter(function(s){ return !s.left; });
+  var groups = get('bjm_groups');
+  if(query) students = students.filter(function(s){ return s.name.includes(query); });
+  var el = document.getElementById('student-list');
+  if(!students.length){ el.innerHTML='<div class="empty">학생이 없습니다</div>'; return; }
+  el.innerHTML = students.map(function(s){
+    var myGroups = groups.filter(function(g){ return (g.students||[]).includes(s.id); });
+    return '<div class="student-item" onclick="showStudent(\''+s.id+'\')">'+
+      '<div class="student-name">'+s.name+'</div>'+
+      '<div class="student-meta">'+(s.grade||'')+(s.school?' · '+s.school:'')+'</div>'+
+      '<div class="student-tags">'+
+      myGroups.map(function(g){ return '<span class="tag tag-red">'+g.name+'</span>'; }).join('')+
+      '</div></div>';
+  }).join('');
+}
+
+function searchStudents(q){ renderStudents(q); }
+
+function showStudent(sid){
+  var students = get('bjm_students');
+  var groups = get('bjm_groups');
+  var att = get('bjm_attendance').filter(function(r){ return r.sid===sid; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
+  var hw = get('bjm_homework').filter(function(h){ return h.sid===sid && h.status==='pending'; });
+  var s = students.find(function(x){ return x.id===sid; });
+  if(!s) return;
+  var myGroups = groups.filter(function(g){ return (g.students||[]).includes(sid); });
+  document.getElementById('m-name').textContent = s.name;
+  document.getElementById('m-meta').innerHTML = (s.grade||'')+(s.school?' · '+s.school:'')+'<br>'+(s.phone?'📞 '+s.phone:'');
+  document.getElementById('m-groups').innerHTML = myGroups.length
+    ? myGroups.map(function(g){ return '<span class="tag tag-red" style="margin-right:6px;margin-bottom:4px;display:inline-block;">'+g.name+'</span>'; }).join('')
+    : '<span style="color:var(--muted);font-size:12px;">소속 반 없음</span>';
+  var statusMap={'O':'출석','X':'결석','T':'지각','B':'보강','E':'조퇴'};
+  document.getElementById('m-att').innerHTML = att.slice(0,5).map(function(r){
+    return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);font-size:12px;">'+
+      '<span>'+r.date+'</span><span style="font-weight:700;color:'+(r.status==='O'?'var(--green)':r.status==='X'?'var(--red)':'var(--gold)')+'">'+( statusMap[r.status]||r.status)+'</span></div>';
+  }).join('') || '<div style="color:var(--muted);font-size:12px;padding:8px 0;">출결 기록 없음</div>';
+  document.getElementById('m-hw').innerHTML = hw.length
+    ? hw.map(function(h){ return '<div style="font-size:12px;padding:6px 0;border-bottom:1px solid var(--line);">'+h.name+(h.due?' (~'+h.due+')':'')+'</div>'; }).join('')
+    : '<div style="color:var(--green);font-size:12px;padding:8px 0;">미제출 숙제 없음 🔥</div>';
+  document.getElementById('student-modal').classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('student-modal').classList.remove('open');
+}
+
+// 보강
+function renderMakeup(){
+  var schedules = get('bjm_schedules').filter(function(s){ return s.type==='보강'||s.content&&s.content.includes('보강'); });
+  var today = fmt(new Date());
+  var plan = schedules.filter(function(s){ return !s.done && s.date>=today; }).sort(function(a,b){ return a.date.localeCompare(b.date); });
+  var done = schedules.filter(function(s){ return s.done || s.date<today; }).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,10);
+  var planEl = document.getElementById('makeup-plan-list');
+  var doneEl = document.getElementById('makeup-done-list');
+  planEl.innerHTML = plan.length ? plan.map(function(s){
+    return '<div class="makeup-item">'+
+      '<div class="makeup-date">'+s.date+(s.time?' '+s.time:'')+'</div>'+
+      '<div class="makeup-name">'+(s.content||s.name||'보강')+'</div>'+
+      '<span class="makeup-status status-plan">예정</span></div>';
+  }).join('') : '<div class="empty" style="padding:20px 0;">예정된 보강이 없습니다</div>';
+  doneEl.innerHTML = done.length ? done.map(function(s){
+    return '<div class="makeup-item">'+
+      '<div class="makeup-date">'+s.date+(s.time?' '+s.time:'')+'</div>'+
+      '<div class="makeup-name">'+(s.content||s.name||'보강')+'</div>'+
+      '<span class="makeup-status status-done">완료</span></div>';
+  }).join('') : '<div class="empty" style="padding:20px 0;">완료된 보강이 없습니다</div>';
+}
+
+// 시간표
+function renderTimetable(){
+  var classes = get('tt_classes');
+  var el = document.getElementById('tt-list');
+  if(!classes.length){ el.innerHTML='<div class="empty">시간표가 없습니다<br><small>수업 시간표 페이지에서 추가해주세요</small></div>'; return; }
+  var byDay = {};
+  ['월','화','수','목','금','토','일'].forEach(function(d){ byDay[d]=[]; });
+  classes.forEach(function(c){
+    (c.days||[]).forEach(function(d){ if(byDay[d]) byDay[d].push(c); });
+  });
+  el.innerHTML = ['월','화','수','목','금','토','일'].map(function(d){
+    if(!byDay[d].length) return '';
+    var sorted = byDay[d].sort(function(a,b){ return a.start.localeCompare(b.start); });
+    return '<div class="tt-day">'+
+      '<div class="tt-day-title">'+d+'요일</div>'+
+      sorted.map(function(c){
+        var bg = c.color ? c.color+'22' : 'var(--blue-bg)';
+        var col = c.color||'var(--blue)';
+        return '<div class="tt-class-card" style="background:'+bg+';border-left-color:'+col+';">'+
+          '<div class="tt-class-name" style="color:'+col+'">'+c.name+'</div>'+
+          '<div class="tt-class-info" style="color:'+col+'">'+c.start+' ~ '+c.end+(c.subject?' · '+c.subject:'')+'</div>'+
+          (c.students&&c.students.length?'<div class="tt-class-info" style="color:'+col+'">'+c.students.join(', ')+'</div>':'')+
+          '</div>';
+      }).join('')+'</div>';
+  }).join('');
+}
+
+// 시험일정
+function renderExam(){
+  var exams = get('bjm_exams');
+  var today = fmt(new Date());
+  exams.sort(function(a,b){ return a.start.localeCompare(b.start); });
+  var typeMap = {mid:'중간고사',final:'기말고사',mock:'모의고사',other:'기타'};
+  var el = document.getElementById('exam-list');
+  if(!exams.length){ el.innerHTML='<div class="empty">등록된 시험 일정이 없습니다</div>'; return; }
+  el.innerHTML = exams.map(function(e){
+    var isPast = e.end < today;
+    return '<div class="exam-item" style="opacity:'+(isPast?.5:1)+'">'+
+      '<div class="exam-school">'+e.school+'</div>'+
+      '<div class="exam-date">'+e.start+(e.end&&e.end!==e.start?' ~ '+e.end:'')+'</div>'+
+      '<span class="exam-type" style="background:var(--blue-bg);color:var(--blue);">'+(typeMap[e.type]||e.type||'시험')+'</span>'+
+      (e.memo?'<div style="font-size:11px;color:var(--muted);margin-top:4px;">'+e.memo+'</div>':'')+
+      '</div>';
+  }).join('');
+}
+
+// 플래너
+function renderPlanner(){
+  var events = get('planner_events');
+  var el = document.getElementById('planner-list');
+  if(!events.length){ el.innerHTML='<div class="empty">등록된 일정이 없습니다<br><small>플래너 페이지에서 추가해주세요</small></div>'; return; }
+  var today = fmt(new Date());
+  var upcoming = events.filter(function(e){ return e.date>=today; }).sort(function(a,b){ return a.date.localeCompare(b.date)||a.time.localeCompare(b.time); });
+  var past = events.filter(function(e){ return e.date<today; }).sort(function(a,b){ return b.date.localeCompare(a.date)||b.time.localeCompare(a.time); }).slice(0,10);
+  var TYPE_COLOR={'study':'var(--blue)','class':'var(--green)','admin':'var(--gold)','personal':'var(--pink-bg)','prep':'var(--red)'};
+  var TYPE_LABEL={'study':'스터디','class':'수업','admin':'행정','personal':'개인','prep':'수업준비'};
+  function renderEvents(evs){
+    var grouped = {};
+    evs.forEach(function(e){
+      if(!grouped[e.date]) grouped[e.date]=[];
+      grouped[e.date].push(e);
+    });
+    return Object.keys(grouped).map(function(date){
+      var d = new Date(date);
+      var dayStr = date+' ('+DAYS[d.getDay()]+')';
+      return '<div class="planner-day">'+
+        '<div class="planner-day-title">'+dayStr+'</div>'+
+        grouped[date].map(function(e){
+          var col = TYPE_COLOR[e.type]||'var(--navy)';
+          return '<div class="planner-event" style="border-left-color:'+col+';">'+
+            '<div class="planner-event-title">'+e.title+'</div>'+
+            '<div class="planner-event-meta">'+e.time+' · '+(TYPE_LABEL[e.type]||e.type)+(e.memo?' · '+e.memo.slice(0,20):'')+' </div>'+
+            '</div>';
+        }).join('')+'</div>';
+    }).join('');
+  }
+  el.innerHTML = '<div class="section-title">다가오는 일정</div>'+
+    (upcoming.length ? renderEvents(upcoming) : '<div class="empty">다가오는 일정이 없습니다</div>')+
+    '<div class="section-title" style="margin-top:8px;">지난 일정</div>'+
+    (past.length ? renderEvents(past) : '<div class="empty">지난 일정이 없습니다</div>');
+}
+
+renderStudents('');
+</script>
+</body>
+</html>
