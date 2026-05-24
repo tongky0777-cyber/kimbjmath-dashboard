@@ -1850,7 +1850,7 @@ card.onclick = function(){ openGroupDetail(gid); };
     var hdr = document.createElement('div');
     hdr.style.cssText = 'background:var(--red);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;';
     hdr.innerHTML = '<div><div style="font-size:13px;font-weight:700;color:#fff;">'+g.name+'</div>'
-      +'<div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;">'+(g.subject||'')+' '+(g.type||'')+' · '+(g.time||'시간 미정')+'</div></div>';
+      +'<div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;">'+(g.subject||'')+' '+(g.type||'')+' · '+(g.startTime&&g.endTime ? g.startTime+'~'+g.endTime : g.time||'시간 미정')+'</div></div>';
 
     var btnWrap = document.createElement('div');
     btnWrap.style.cssText = 'display:flex;gap:6px;';
@@ -3490,7 +3490,7 @@ function openGroupDetail(gid) {
   if(!g) return;
 
   document.getElementById('gd-name').textContent = g.name;
-  document.getElementById('gd-info').textContent = (g.subject||'') + ' ' + (g.type||'') + ' · ' + (g.time||'시간 미정');
+  document.getElementById('gd-info').textContent = (g.subject||'') + ' ' + (g.type||'') + ' · ' + (g.startTime&&g.endTime ? g.startTime+'~'+g.endTime : g.time||'시간 미정');
 
   // 반 진도 현황 (최근 3개)
   var gProgRecs = progress.filter(function(p){ return p.groupName===g.name; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
