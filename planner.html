@@ -280,6 +280,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
     <div id="d-memo" class="detail-memo"></div>
     <div class="modal-btns">
       <button class="btn-del" onclick="deleteEvent()">삭제</button>
+      <button class="btn-cancel" onclick="editEvent()">수정</button>
       <button class="btn-cancel" onclick="closeModal()">닫기</button>
     </div>
   </div>
@@ -452,6 +453,19 @@ function saveEvent(){
   selectedDate=e.date;
   selectDate(e.date);
   if(currentView==='week')renderWeek();
+}
+
+function editEvent(){
+  let e=events.find(x=>x.id===deleteId);
+  if(!e)return;
+  closeModal();
+  document.getElementById('f-date').value=e.date;
+  document.getElementById('f-time').value=e.time;
+  document.getElementById('f-title').value=e.title;
+  document.getElementById('f-type').value=e.type;
+  document.getElementById('f-memo').value=e.memo||'';
+  events=events.filter(x=>x.id!==deleteId);
+  document.getElementById('add-modal').classList.add('open');
 }
 
 function deleteEvent(){
