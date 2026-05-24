@@ -209,7 +209,9 @@ function renderTimetable(){
         var col=c.color||'#1c3c6e';
         return '<div class="tt-class" style="background:'+bg+';border-left:3px solid '+col+';height:'+(span*60-4)+'px;top:2px;" onclick="showDetail('+c.id+',event)">'+
           '<div class="tt-class-name" style="color:'+col+'">'+c.name+'</div>'+
-          '<div class="tt-class-time" style="color:'+col+'">'+c.start+'~'+c.end+'</div></div>';
+          '<div class="tt-class-time" style="color:'+col+'">'+c.start+'~'+c.end+'</div>'+
+          (c.students&&c.students.length?'<div style="font-size:10px;color:'+col+';opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+c.students.join(', ')+'</div>':'')+
+          '</div>';
       }).join('');
       return '<div class="tt-cell" onclick="openAddClassAtDay(\''+d+'\',\''+String(h).padStart(2,'0')+':00\')">'+evHtml+'</div>';
     }).join('');
@@ -317,7 +319,8 @@ function syncFromGroups(){
       added++;
       return;
     }
-    classes.push({id:nextId++,name:g.name,subject:g.subject||'',type:g.type||'',days:g.days,start:g.startTime,end:g.endTime,book:'',color:COLORS[added%COLORS.length],memo:''});
+    var studentNames=(g.students||[]).map(function(sid){var raw=localStorage.getItem('bjm_students');var sts=raw?JSON.parse(raw):[];var st=sts.find(function(s){return s.id===sid;});return st?st.name:'';}).filter(Boolean);
+    classes.push({id:nextId++,name:g.name,subject:g.subject||'',type:g.type||'',days:g.days,start:g.startTime,end:g.endTime,book:'',color:COLORS[added%COLORS.length],memo:'',students:studentNames});
     added++;
   });
   if(added===0){alert('새로 불러올 반이 없습니다.\n이미 등록됐거나 반 관리에서 요일/시간을 먼저 입력해주세요.');return;}
