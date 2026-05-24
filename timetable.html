@@ -311,11 +311,13 @@ function syncFromGroups(){
     if(!g.days||!g.days.length||!g.startTime||!g.endTime)return;
     var existsIdx=classes.findIndex(function(c){return c.name===g.name;});
     if(existsIdx!==-1){
+      var studentNames2=(g.students||[]).map(function(sid){var raw=localStorage.getItem('bjm_students');var sts=raw?JSON.parse(raw):[];var st=sts.find(function(s){return s.id===sid;});return st?st.name:'';}).filter(Boolean);
       classes[existsIdx].days=g.days;
       classes[existsIdx].start=g.startTime;
       classes[existsIdx].end=g.endTime;
       classes[existsIdx].subject=g.subject||classes[existsIdx].subject;
       classes[existsIdx].type=g.type||classes[existsIdx].type;
+      classes[existsIdx].students=studentNames2;
       added++;
       return;
     }
