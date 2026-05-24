@@ -319,6 +319,7 @@ function syncFromGroups(){
       classes[existsIdx].type=g.type||classes[existsIdx].type;
       classes[existsIdx].students=studentNames2;
       added++;
+      saveTT();
       return;
     }
     var studentNames=(g.students||[]).map(function(sid){var raw=localStorage.getItem('bjm_students');var sts=raw?JSON.parse(raw):[];var st=sts.find(function(s){return s.id===sid;});return st?st.name:'';}).filter(Boolean);
