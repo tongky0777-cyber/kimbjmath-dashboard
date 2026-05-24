@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>김병진 수학연구소 · 모바일</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -183,7 +185,7 @@ function switchTab(name, el){
   document.querySelectorAll('.tab-item').forEach(function(t){ t.classList.remove('active'); });
   document.getElementById('view-'+name).classList.add('active');
   el.classList.add('active');
-  if(name==='students') renderStudents('');
+  if(name==='students') loadFromFirebase();
   if(name==='makeup') renderMakeup();
   if(name==='timetable') renderTimetable();
   if(name==='exam') renderExam();
