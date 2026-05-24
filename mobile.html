@@ -183,14 +183,22 @@ function loadFromFirebase(){
   var FBCONFIG={apiKey:"AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",databaseURL:"https://kimbjmath-default-rtdb.firebaseio.com",projectId:"kimbjmath",appId:"1:664889936709:web:2df1494b0cd978c64e4c2c"};
   if(!firebase.apps.length)firebase.initializeApp(FBCONFIG);
   var db=firebase.database();
-  var keys=["bjm_students","bjm_attendance","bjm_homework","bjm_tests","bjm_progress","bjm_groups","bjm_schedules","bjm_exams"];
+  var keys=["bjm_students","bjm_attendance","bjm_homework","bjm_tests","bjm_progress","bjm_groups","bjm_schedules","bjm_exams","tt_classes","planner_events"];
   var loaded=0;
   keys.forEach(function(k){
     db.ref(k).once('value',function(snap){
       var val=snap.val();
-      _cache[k]=val?Object.values(val):[];
+      if(val && !Array.isArray(val)) _cache[k]=Object.values(val).filter(Boolean);
+      else if(Array.isArray(val)) _cache[k]=val.filter(Boolean);
+      else _cache[k]=[];
       loaded++;
-      if(loaded===keys.length) renderStudents('');
+      if(loaded===keys.length){
+        renderStudents('');
+        renderMakeup();
+        renderTimetable();
+        renderExam();
+        renderPlanner();
+      }
     });
   });
 }
