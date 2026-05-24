@@ -188,8 +188,8 @@ function loadFromFirebase(){
   keys.forEach(function(k){
     db.ref(k).once('value',function(snap){
       var val=snap.val();
-      if(val && !Array.isArray(val)) _cache[k]=Object.values(val).filter(Boolean);
-      else if(Array.isArray(val)) _cache[k]=val.filter(Boolean);
+      if(Array.isArray(val)) _cache[k]=val.filter(Boolean);
+      else if(val && typeof val==='object') _cache[k]=Object.values(val).filter(Boolean);
       else _cache[k]=[];
       loaded++;
       if(loaded===keys.length){
