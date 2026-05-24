@@ -317,6 +317,7 @@ function renderTimetable(){
 function renderExam(){
   var exams = get('bjm_exams');
   var today = fmt(new Date());
+  exams = exams.filter(function(e){ return e && e.start; });
   exams.sort(function(a,b){ return a.start.localeCompare(b.start); });
   var typeMap = {mid:'중간고사',final:'기말고사',mock:'모의고사',other:'기타'};
   var el = document.getElementById('exam-list');
