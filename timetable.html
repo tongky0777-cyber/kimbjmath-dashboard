@@ -307,8 +307,16 @@ function syncFromGroups(){
   var added=0;
   groups.forEach(function(g){
     if(!g.days||!g.days.length||!g.startTime||!g.endTime)return;
-    var exists=classes.find(function(c){return c.name===g.name;});
-    if(exists)return;
+    var existsIdx=classes.findIndex(function(c){return c.name===g.name;});
+    if(existsIdx!==-1){
+      classes[existsIdx].days=g.days;
+      classes[existsIdx].start=g.startTime;
+      classes[existsIdx].end=g.endTime;
+      classes[existsIdx].subject=g.subject||classes[existsIdx].subject;
+      classes[existsIdx].type=g.type||classes[existsIdx].type;
+      added++;
+      return;
+    }
     classes.push({id:nextId++,name:g.name,subject:g.subject||'',type:g.type||'',days:g.days,start:g.startTime,end:g.endTime,book:'',color:COLORS[added%COLORS.length],memo:''});
     added++;
   });
