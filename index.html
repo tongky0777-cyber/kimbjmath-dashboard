@@ -734,7 +734,19 @@ textarea{resize:vertical;min-height:80px;}
       </div>
       <div class="form-row">
         <div class="form-group"><label>수업 유형</label><select id="g-type"><option value="">선택없음</option><option>개념</option><option>문풀</option><option>심화</option></select></div>
-        <div class="form-group"><label>수업 시간</label><input id="g-time" placeholder="화·금 6:10~8:00"></div>
+        <div class="form-group"><label>수업 요일</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+            <label style="display:flex;align-items:center;gap:3px;font-size:12px;"><input type="checkbox" id="g-day-mon" value="월"> 월</label>
+            <label style="display:flex;align-items:center;gap:3px;font-size:12px;"><input type="checkbox" id="g-day-tue" value="화"> 화</label>
+            <label style="display:flex;align-items:center;gap:3px;font-size:12px;"><input type="checkbox" id="g-day-wed" value="수"> 수</label>
+            <label style="display:flex;align-items:center;gap:3px;font-size:12px;"><input type="checkbox" id="g-day-thu" value="목"> 목</label>
+            <label style="display:flex;align-items:center;gap:3px;font-size:12px;"><input type="checkbox" id="g-day-fri" value="금"> 금</label>
+            <label style="display:flex;align-items:center;gap:3px;font-size:12px;"><input type="checkbox" id="g-day-sat" value="토"> 토</label>
+            <label style="display:flex;align-items:center;gap:3px;font-size:12px;"><input type="checkbox" id="g-day-sun" value="일"> 일</label>
+          </div>
+        </div>
+        <div class="form-group"><label>시작 시간</label><input type="time" id="g-start" value="18:00"></div>
+        <div class="form-group"><label>종료 시간</label><input type="time" id="g-end" value="20:00"></div>
       </div>
       <div class="form-group full"><label>학생 선택 (복수 선택 가능)</label>
         <div id="g-students-list" style="display:flex;flex-wrap:wrap;gap:8px;padding:12px;background:var(--bg2);border-radius:4px;min-height:60px;"></div>
@@ -1753,15 +1765,21 @@ function openGroupModal(id) {
   var students = DB.get('students');
   var groups = DB.get('groups');
   document.getElementById('g-id').value = id || '';
+  var dayIds = ['mon','tue','wed','thu','fri','sat','sun'];
+  dayIds.forEach(function(d){ document.getElementById('g-day-'+d).checked=false; });
   if(!id) {
-    ['g-name','g-time'].forEach(function(i){ document.getElementById(i).value=''; });
+    document.getElementById('g-name').value='';
+    document.getElementById('g-start').value='18:00';
+    document.getElementById('g-end').value='20:00';
   } else {
     var g = groups.find(function(x){ return x.id===id; });
     if(g) {
       document.getElementById('g-name').value = g.name;
       document.getElementById('g-subject').value = g.subject||'공통수학1';
       document.getElementById('g-type').value = g.type||'개념';
-      document.getElementById('g-time').value = g.time||'';
+      document.getElementById('g-start').value = g.startTime||'18:00';
+      document.getElementById('g-end').value = g.endTime||'20:00';
+      if(g.days) g.days.forEach(function(day){ var el=document.getElementById('g-day-'+{월:'mon',화:'tue',수:'wed',목:'thu',금:'fri',토:'sat',일:'sun'}[day]); if(el)el.checked=true; });
     }
   }
   // 학생 체크박스 생성
@@ -1786,7 +1804,9 @@ function saveGroup() {
     id:id, name:name,
     subject: document.getElementById('g-subject').value,
     type: document.getElementById('g-type').value,
-    time: document.getElementById('g-time').value,
+    days: ['mon','tue','wed','thu','fri','sat','sun'].filter(function(d){ return document.getElementById('g-day-'+d).checked; }).map(function(d){ return document.getElementById('g-day-'+d).value; }),
+    startTime: document.getElementById('g-start').value,
+    endTime: document.getElementById('g-end').value,
     students: selected
   };
   if(idx===-1) groups.push(group); else groups[idx]=group;
