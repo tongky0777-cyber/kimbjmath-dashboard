@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>시험지 관리 · 김병진 수학연구소</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#1a1a2e;--red:#c0392b;--red-bg:#fdf0ef;
+  --ink:#1a1a2e;--ink2:#3a3a5c;--muted:#888;--bg:#f7f7fa;--white:#fff;--line:#e8e8f0;
+  --green:#1a6b3a;--green-bg:#edf7f1;--blue:#1c3c6e;--blue-bg:#eef3fb;
+  --gold:#8a6820;--gold-bg:#fdf8ee;
+  --sans:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;}
+.sb{position:fixed;top:0;left:0;width:180px;height:100vh;background:var(--navy);display:flex;flex-direction:column;z-index:100;}
+.sb-logo{padding:20px 16px 12px;font-size:13px;font-weight:700;color:#fff;opacity:.9;border-bottom:1px solid rgba(255,255,255,.1);}
+.sb-menu{flex:1;padding:12px 0;overflow-y:auto;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:rgba(255,255,255,.65);font-size:13px;cursor:pointer;transition:.15s;text-decoration:none;}
+.sb-item:hover{background:rgba(255,255,255,.08);color:#fff;}
+.sb-item.active{background:rgba(255,255,255,.12);color:#fff;}
+.sb-item .icon{font-size:16px;width:18px;text-align:center;}
+.sb-section{padding:8px 16px 4px;font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.08em;text-transform:uppercase;margin-top:4px;}
+.sb-footer{padding:12px 16px;font-size:11px;color:rgba(255,255,255,.35);border-top:1px solid rgba(255,255,255,.08);}
+.main{margin-left:180px;min-height:100vh;}
+.top-bar{background:var(--white);border-bottom:1px solid var(--line);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.top-bar h1{font-size:15px;font-weight:700;}
+.top-actions{display:flex;gap:8px;align-items:center;}
+.btn-primary{background:var(--navy);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-family:var(--sans);cursor:pointer;}
+.btn-primary:hover{opacity:.9;}
+.wrap{padding:20px 24px;}
+.card{background:var(--white);border-radius:10px;border:1px solid var(--line);margin-bottom:16px;overflow:hidden;}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:14px;font-weight:700;}
+.card-body{padding:16px 18px;}
+.form-group{margin-bottom:14px;}
+.form-group label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px;font-weight:700;}
+.form-group input,.form-group select,.form-group textarea{width:100%;border:1px solid var(--line);border-radius:6px;padding:9px 12px;font-size:13px;font-family:var(--sans);color:var(--ink);outline:none;transition:.15s;background:var(--white);}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--navy);}
+.form-group textarea{min-height:80px;resize:vertical;line-height:1.6;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.upload-area{border:2px dashed var(--line);border-radius:8px;padding:32px;text-align:center;cursor:pointer;transition:.15s;}
+.upload-area:hover{border-color:var(--navy);background:var(--bg);}
+.upload-area.dragover{border-color:var(--navy);background:var(--blue-bg);}
+.upload-icon{font-size:32px;margin-bottom:8px;}
+.upload-text{font-size:13px;color:var(--muted);}
+.upload-text strong{color:var(--navy);}
+.upload-preview{display:flex;align-items:center;gap:10px;background:var(--blue-bg);border-radius:6px;padding:10px 14px;margin-top:10px;}
+.upload-preview-name{font-size:13px;color:var(--blue);font-weight:700;flex:1;}
+.upload-preview-remove{background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;}
+.progress-bar{height:6px;background:var(--line);border-radius:3px;margin-top:10px;overflow:hidden;display:none;}
+.progress-fill{height:100%;background:var(--navy);border-radius:3px;transition:.3s;width:0%;}
+.exam-list{display:flex;flex-direction:column;gap:10px;}
+.exam-item{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px;transition:.15s;}
+.exam-item:hover{border-color:var(--navy);box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.exam-icon{font-size:24px;flex-shrink:0;}
+.exam-info{flex:1;}
+.exam-title{font-size:14px;font-weight:700;margin-bottom:4px;}
+.exam-meta{font-size:12px;color:var(--muted);margin-bottom:6px;line-height:1.6;}
+.exam-note{font-size:12px;color:var(--ink2);background:var(--bg);border-radius:5px;padding:8px 10px;line-height:1.6;}
+.exam-actions{display:flex;gap:6px;flex-shrink:0;}
+.btn-sm{font-size:11px;padding:5px 10px;border-radius:5px;border:1px solid var(--line);background:none;cursor:pointer;font-family:var(--sans);color:var(--ink);}
+.btn-sm:hover{border-color:var(--navy);}
+.btn-sm.danger{color:var(--red);border-color:var(--red-bg);}
+.btn-sm.danger:hover{background:var(--red-bg);}
+.btn-sm.primary{background:var(--navy);color:#fff;border-color:var(--navy);}
+.tag{font-size:11px;padding:2px 8px;border-radius:3px;font-weight:700;display:inline-block;margin-right:4px;margin-bottom:4px;}
+.tag-student{background:var(--blue-bg);color:var(--blue);}
+.tag-group{background:var(--green-bg);color:var(--green);}
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-btn{font-size:12px;padding:6px 14px;border-radius:6px;border:1px solid var(--line);background:var(--white);cursor:pointer;font-family:var(--sans);color:var(--muted);}
+.filter-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.empty{text-align:center;color:var(--muted);padding:48px;font-size:13px;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:.2s;}
+.modal-bg.open{opacity:1;pointer-events:all;}
+.modal{background:var(--white);border-radius:12px;padding:22px;width:500px;max-width:92vw;max-height:90vh;overflow-y:auto;}
+.modal-h{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted);}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
+.btn-cancel{background:none;border:1px solid var(--line);border-radius:6px;padding:7px 14px;font-size:13px;font-family:var(--sans);cursor:pointer;color:var(--muted);}
+.btn-save{background:var(--navy);color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:13px;font-family:var(--sans);cursor:pointer;}
+.loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div class="sb">
+  <div class="sb-logo">🧮 김병진 수학연구소</div>
+  <div class="sb-menu">
+    <div class="sb-section">메인</div>
+    <a href="index.html" class="sb-item"><span class="icon">📊</span> 대시보드</a>
+    <a href="index.html" class="sb-item"><span class="icon">👥</span> 학생 목록</a>
+    <div class="sb-section">관리</div>
+    <a href="index.html" class="sb-item"><span class="icon">✅</span> 출결 관리</a>
+    <a href="index.html" class="sb-item"><span class="icon">📝</span> 테스트 결과</a>
+    <a href="index.html" class="sb-item"><span class="icon">📚</span> 숙제 관리</a>
+    <a href="index.html" class="sb-item"><span class="icon">📖</span> 진도 관리</a>
+    <a href="index.html" class="sb-item"><span class="icon">🏫</span> 반 관리</a>
+    <div class="sb-section">일정</div>
+    <a href="index.html" class="sb-item"><span class="icon">🔧</span> 보강·일정</a>
+    <a href="index.html" class="sb-item"><span class="icon">🗒️</span> 메모</a>
+    <a href="index.html" class="sb-item"><span class="icon">📅</span> 시험 일정</a>
+    <a href="planner.html" class="sb-item"><span class="icon">🗓️</span> 플래너</a>
+    <a href="timetable.html" class="sb-item"><span class="icon">📋</span> 수업 시간표</a>
+    <a href="exam_upload.html" class="sb-item active"><span class="icon">📄</span> 시험지 관리</a>
+  </div>
+  <div class="sb-footer">데이터는 Firebase에 저장됩니다.</div>
+</div>
+
+<div class="main">
+  <div class="top-bar">
+    <h1>📄 시험지 관리</h1>
+    <div class="top-actions">
+      <button class="btn-primary" onclick="openUploadModal()">+ 시험지 업로드</button>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setFilter('all',this)">전체</button>
+      <button class="filter-btn" onclick="setFilter('student',this)">학생별</button>
+      <button class="filter-btn" onclick="setFilter('group',this)">반별</button>
+    </div>
+    <div id="exam-list" class="exam-list">
+      <div class="empty">업로드된 시험지가 없습니다</div>
+    </div>
+  </div>
+</div>
+
+<!-- 업로드 모달 -->
+<div class="modal-bg" id="upload-modal">
+  <div class="modal">
+    <div class="modal-h">시험지 업로드 <button class="modal-close" onclick="closeModal()">×</button></div>
+    <div class="form-group">
+      <label>시험지 제목</label>
+      <input type="text" id="f-title" placeholder="예: 5월 3주차 Daily Test 행렬">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>대상 유형</label>
+        <select id="f-target-type" onchange="renderTargetList()">
+          <option value="student">학생별</option>
+          <option value="group">반별</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>대상 선택</label>
+        <select id="f-target"></select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>PDF 파일</label>
+      <div class="upload-area" id="upload-area" onclick="document.getElementById('f-file').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
+        <div class="upload-icon">📄</div>
+        <div class="upload-text"><strong>클릭</strong>하거나 파일을 드래그하세요</div>
+        <div class="upload-text" style="margin-top:4px;font-size:11px;">PDF 파일만 가능 · 최대 10MB</div>
+      </div>
+      <input type="file" id="f-file" accept=".pdf" style="display:none" onchange="fileSelected(this)">
+      <div id="file-preview" style="display:none" class="upload-preview">
+        <span>📄</span>
+        <span class="upload-preview-name" id="file-name"></span>
+        <button class="upload-preview-remove" onclick="removeFile()">×</button>
+      </div>
+      <div class="progress-bar" id="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>오답 번호 및 설명</label>
+      <textarea id="f-note" placeholder="예: 3번 - 등차수열 공식 혼동, 7번 - 계산 실수, 12번 - 개념 이해 부족"></textarea>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">취소</button>
+      <button class="btn-save" id="upload-btn" onclick="uploadExam()">업로드</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+var FBCONFIG={apiKey:"AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",databaseURL:"https://kimbjmath-default-rtdb.firebaseio.com",projectId:"kimbjmath",appId:"1:664889936709:web:2df1494b0cd978c64e4c2c"};
+if(!firebase.apps.length)firebase.initializeApp(FBCONFIG);
+var db=firebase.database();
+
+var CLOUD_NAME='dqv4lkx3k';
+var UPLOAD_PRESET='kimbjmath_upload';
+
+var exams=[];
+var currentFilter='all';
+var selectedFile=null;
+
+function get(key){try{return JSON.parse(localStorage.getItem(key)||'[]');}catch(e){return[];}}
+
+// 시험지 목록 Firebase에서 로드
+db.ref('bjm_exam_files').on('value',function(snap){
+  var val=snap.val();
+  if(val) exams=Object.values(val).filter(Boolean).sort(function(a,b){return b.date.localeCompare(a.date);});
+  else exams=[];
+  renderExamList();
+});
+
+function setFilter(f,el){
+  currentFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
+  el.classList.add('active');
+  renderExamList();
+}
+
+function renderExamList(){
+  var filtered=exams;
+  if(currentFilter!=='all') filtered=exams.filter(function(e){return e.targetType===currentFilter;});
+  var el=document.getElementById('exam-list');
+  if(!filtered.length){el.innerHTML='<div class="empty">시험지가 없습니다</div>';return;}
+  el.innerHTML=filtered.map(function(e){
+    return '<div class="exam-item">'+
+      '<div class="exam-icon">📄</div>'+
+      '<div class="exam-info">'+
+        '<div class="exam-title">'+e.title+'</div>'+
+        '<div class="exam-meta">'+
+          '<span class="tag '+(e.targetType==='student'?'tag-student':'tag-group')+'">'+(e.targetType==='student'?'학생':'반')+'</span>'+
+          '<strong>'+e.targetName+'</strong> · '+e.date+
+        '</div>'+
+        (e.note?'<div class="exam-note">📝 '+e.note+'</div>':'')+
+      '</div>'+
+      '<div class="exam-actions">'+
+        '<button class="btn-sm primary" onclick="window.open(\''+e.url+'\',\'_blank\')">보기</button>'+
+        '<button class="btn-sm danger" onclick="deleteExam(\''+e.id+'\')">삭제</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function openUploadModal(){
+  selectedFile=null;
+  document.getElementById('f-title').value='';
+  document.getElementById('f-note').value='';
+  document.getElementById('file-preview').style.display='none';
+  document.getElementById('upload-area').style.display='block';
+  document.getElementById('progress-bar').style.display='none';
+  document.getElementById('progress-fill').style.width='0%';
+  document.getElementById('upload-btn').innerHTML='업로드';
+  document.getElementById('upload-btn').disabled=false;
+  renderTargetList();
+  document.getElementById('upload-modal').classList.add('open');
+}
+
+function renderTargetList(){
+  var type=document.getElementById('f-target-type').value;
+  var sel=document.getElementById('f-target');
+  if(type==='student'){
+    var students=get('bjm_students').filter(function(s){return !s.left;});
+    sel.innerHTML=students.map(function(s){return '<option value="'+s.id+'|'+s.name+'">'+s.name+' ('+( s.grade||'')+') </option>';}).join('');
+  } else {
+    var groups=get('bjm_groups');
+    sel.innerHTML=groups.map(function(g){return '<option value="'+g.id+'|'+g.name+'">'+g.name+'</option>';}).join('');
+  }
+}
+
+function fileSelected(input){
+  if(input.files&&input.files[0]){
+    selectedFile=input.files[0];
+    document.getElementById('file-name').textContent=selectedFile.name;
+    document.getElementById('file-preview').style.display='flex';
+    document.getElementById('upload-area').style.display='none';
+  }
+}
+
+function removeFile(){
+  selectedFile=null;
+  document.getElementById('f-file').value='';
+  document.getElementById('file-preview').style.display='none';
+  document.getElementById('upload-area').style.display='block';
+}
+
+function dragOver(e){e.preventDefault();document.getElementById('upload-area').classList.add('dragover');}
+function dragLeave(e){document.getElementById('upload-area').classList.remove('dragover');}
+function dropFile(e){
+  e.preventDefault();
+  document.getElementById('upload-area').classList.remove('dragover');
+  var file=e.dataTransfer.files[0];
+  if(file&&file.type==='application/pdf'){
+    selectedFile=file;
+    document.getElementById('file-name').textContent=file.name;
+    document.getElementById('file-preview').style.display='flex';
+    document.getElementById('upload-area').style.display='none';
+  } else {
+    alert('PDF 파일만 업로드 가능합니다.');
+  }
+}
+
+function uploadExam(){
+  var title=document.getElementById('f-title').value.trim();
+  if(!title){alert('시험지 제목을 입력해주세요');return;}
+  if(!selectedFile){alert('PDF 파일을 선택해주세요');return;}
+  var targetVal=document.getElementById('f-target').value;
+  var targetType=document.getElementById('f-target-type').value;
+  var targetId=targetVal.split('|')[0];
+  var targetName=targetVal.split('|')[1];
+  var note=document.getElementById('f-note').value;
+
+  var btn=document.getElementById('upload-btn');
+  btn.innerHTML='<span class="loading"></span>업로드 중...';
+  btn.disabled=true;
+  document.getElementById('progress-bar').style.display='block';
+
+  var formData=new FormData();
+  formData.append('file',selectedFile);
+  formData.append('upload_preset',UPLOAD_PRESET);
+  formData.append('folder','kimbjmath_exams');
+  formData.append('resource_type','raw');
+
+  var xhr=new XMLHttpRequest();
+  xhr.upload.onprogress=function(e){
+    if(e.lengthComputable){
+      var pct=Math.round(e.loaded/e.total*100);
+      document.getElementById('progress-fill').style.width=pct+'%';
+    }
+  };
+  xhr.onload=function(){
+    var res=JSON.parse(xhr.responseText);
+    if(res.secure_url){
+      var id=Date.now().toString();
+      var today=new Date();
+      var dateStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+      var examData={
+        id:id,title:title,targetType:targetType,targetId:targetId,targetName:targetName,
+        url:res.secure_url,note:note,date:dateStr,fileName:selectedFile.name
+      };
+      db.ref('bjm_exam_files/'+id).set(examData).then(function(){
+        alert('시험지가 업로드되었습니다!');
+        closeModal();
+      });
+    } else {
+      alert('업로드 실패: '+( res.error&&res.error.message||'알 수 없는 오류'));
+      btn.innerHTML='업로드';
+      btn.disabled=false;
+    }
+  };
+  xhr.onerror=function(){
+    alert('업로드 중 오류가 발생했습니다.');
+    btn.innerHTML='업로드';
+    btn.disabled=false;
+  };
+  xhr.open('POST','https://api.cloudinary.com/v1_1/'+CLOUD_NAME+'/raw/upload');
+  xhr.send(formData);
+}
+
+function deleteExam(id){
+  if(!confirm('시험지를 삭제할까요?'))return;
+  db.ref('bjm_exam_files/'+id).remove();
+}
+
+function closeModal(){
+  document.getElementById('upload-modal').classList.remove('open');
+}
+</script>
+</body>
+</html>
