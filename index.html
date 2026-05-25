@@ -821,6 +821,15 @@ textarea{resize:vertical;min-height:80px;}
         <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;">📖 최근 진도</div>
         <div id="detail-progress"></div>
       </div>
+      <!-- 학부모 월간 리포트 -->
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;">🗒️ 학부모 월간 리포트</div>
+        <textarea id="detail-report-text" placeholder="리포트 문구를 여기에 붙여넣기 하세요..." style="width:100%;min-height:160px;border:1.5px solid var(--line);border-radius:6px;padding:12px;font-size:13px;font-family:var(--sans);resize:vertical;outline:none;line-height:1.8;background:var(--white);"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button onclick="saveReportToFirebase(currentDetailSid)" class="btn-primary" style="flex:1;">💾 리포트 저장</button>
+          <button onclick="location.href='exam_upload.html'" class="btn-sm" style="flex:1;background:#0d6e6e;color:#fff;border:none;border-radius:6px;padding:7px;">📄 시험지 업로드</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
