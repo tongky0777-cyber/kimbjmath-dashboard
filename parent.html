@@ -129,6 +129,13 @@ function render(){
   }
 
   var keys = ['students','attendance','homework','tests','schedules','progress'];
+  rtdb.ref('bjm_report_' + sid).once('value', function(snap){
+    var report = snap.val();
+    if(report){
+      var reportEl = document.getElementById('aiReportText');
+      if(reportEl) reportEl.innerText = report;
+    }
+  });
   var data = {};
   var loaded = 0;
 
