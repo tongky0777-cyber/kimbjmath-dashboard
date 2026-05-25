@@ -398,5 +398,32 @@ async function generateAIReport(){
   }
 }
 </script>
-</body>
-</html>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+(function(){
+  var FBCONFIG={apiKey:"AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",databaseURL:"https://kimbjmath-default-rtdb.firebaseio.com",projectId:"kimbjmath",appId:"1:664889936709:web:2df1494b0cd978c64e4c2c"};
+  if(!firebase.apps.length)firebase.initializeApp(FBCONFIG);
+  var db=firebase.database();
+  var params=new URLSearchParams(window.location.search);
+  var sid=params.get('id');
+  if(!sid)return;
+  db.ref('bjm_exam_files').once('value',function(snap){
+    var val=snap.val();
+    if(!val)return;
+    var exams=Object.values(val).filter(function(e){return e&&e.targetId===sid;}).sort(function(a,b){return b.date.localeCompare(a.date);});
+    if(!exams.length)return;
+    var wrap=document.querySelector('.wrap');
+    if(!wrap)return;
+    var sec=document.createElement('div');
+    sec.className='section';
+    sec.innerHTML='<div class="section-title"><span>📄</span> 시험지</div>'+
+      exams.map(function(e){
+        return '<div style="border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:8px;">'+
+          '<div style="font-size:14px;font-weight:700;margin-bottom:4px;">'+e.title+'</div>'+
+          '<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">'+e.date+'</div>'+
+          (e.note?'<div style="font-size:12px;background:#f7f7fa;border-radius:6px;padding:8px 10px;margin-bottom:8px;line-height:1.6;">📝 '+e.note+'</div>':'')+
+          '<button onclick="viewExam(\''+e.id+'\')" style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:13px;cursor:pointer;width:100%;">📄 시험지 보기</button>'+
+          '</div>';
+      }).join('');
+    wrap.appe
