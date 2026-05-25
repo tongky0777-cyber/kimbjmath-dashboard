@@ -183,6 +183,10 @@ var FBCONFIG={apiKey:"AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",databaseURL:"http
 if(!firebase.apps.length)firebase.initializeApp(FBCONFIG);
 var db=firebase.database();
 
+function viewPdf(url){
+  var fixedUrl=url.replace('/raw/upload/','/image/upload/');
+  window.open('https://docs.google.com/viewer?url='+encodeURIComponent(fixedUrl),'_blank');
+}
 var CLOUD_NAME='dqv4lkx3k';
 var UPLOAD_PRESET='kimbjmath_upload';
 
@@ -224,7 +228,7 @@ function renderExamList(){
         (e.note?'<div class="exam-note">📝 '+e.note+'</div>':'')+
       '</div>'+
       '<div class="exam-actions">'+
-        '<button class="btn-sm primary" onclick="window.open(\'https://docs.google.com/viewer?url=\'+encodeURIComponent(e.url.replace(\'/raw/upload/\',\'/image/upload/\'))+\'\',\'_blank\')">보기</button>'+
+        '<button class="btn-sm primary" onclick="viewPdf(\''+e.url+'\')">보기</button>'+
         '<button class="btn-sm danger" onclick="deleteExam(\''+e.id+'\')">삭제</button>'+
       '</div>'+
     '</div>';
