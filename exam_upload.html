@@ -185,7 +185,7 @@ var db=firebase.database();
 
 function viewPdf(url){
   var fixedUrl=url.replace('/raw/upload/','/image/upload/');
-  window.open('https://docs.google.com/viewer?url='+encodeURIComponent(fixedUrl),'_blank');
+  window.open(fixedUrl,'_blank');
 }
 var CLOUD_NAME='dqv4lkx3k';
 var UPLOAD_PRESET='kimbjmath_upload';
