@@ -136,6 +136,13 @@ function render(){
       if(reportEl) reportEl.innerText = report;
     }
   });
+  rtdb.ref('bjm_report_' + sid).once('value', function(snap){
+    var report = snap.val();
+    if(report){
+      var reportEl = document.getElementById('aiReportText');
+      if(reportEl) reportEl.innerText = report;
+    }
+  });
   var data = {};
   var loaded = 0;
 
