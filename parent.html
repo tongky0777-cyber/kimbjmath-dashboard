@@ -98,6 +98,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 
 <div class="wrap" id="app">
   <div class="loading">불러오는 중..</div>
+  </div>
+<div id="exam-section" style="max-width:640px;margin:0 auto;padding:0 16px 60px;"></div>
 </div>
 
 <script>
@@ -412,7 +414,7 @@ async function generateAIReport(){
     if(!val)return;
     var exams=Object.values(val).filter(function(e){return e&&e.targetId===sid;}).sort(function(a,b){return b.date.localeCompare(a.date);});
     if(!exams.length)return;
-    var wrap=document.getElementById('app')||document.querySelector('.wrap')||document.body;
+    var wrap=document.getElementById('exam-section')||document.body;
     var sec=document.createElement('div');
     sec.className='section';
     sec.innerHTML='<div class="section-title"><span>📄</span> 시험지</div>'+
