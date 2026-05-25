@@ -411,7 +411,15 @@ async function generateAIReport(){
   db.ref('bjm_exam_files').once('value',function(snap){
     var val=snap.val();
     if(!val)return;
-    var exams=Object.values(val).filter(function(e){return e&&e.targetId===sid;}).sort(function(a,b){return b.date.localeCompare(a.date);});
+    var groupIds=[];
+    try{
+      var raw=localStorage.getItem('bjm_groups');
+      if(raw){
+        var groups=JSON.parse(raw);
+        groups.forEach(function(g){if((g.students||[]).includes(sid))groupIds.push(g.id);});
+      }
+    }catch(e){}
+    var exams=Object.values(val).filter(function(e){return e&&(e.targetId===sid||groupIds.includes(e.targetId));}).sort(function(a,b){return b.date.localeCompare(a.date);});
     if(!exams.length)return;
     var wrap=document.getElementById('exam-section')||document.body;
     var sec=document.createElement('div');
