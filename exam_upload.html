@@ -342,7 +342,7 @@ function uploadExam(){
     btn.innerHTML='업로드';
     btn.disabled=false;
   };
-  xhr.open('POST','https://api.cloudinary.com/v1_1/'+CLOUD_NAME+'/raw/upload');
+  xhr.open('POST','https://api.cloudinary.com/v1_1/'+CLOUD_NAME+'/image/upload');
   xhr.send(formData);
 }
 
