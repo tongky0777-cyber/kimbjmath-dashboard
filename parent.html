@@ -408,7 +408,6 @@ async function generateAIReport(){
   var params=new URLSearchParams(window.location.search);
   var sid=params.get('id');
   if(!sid)return;
-  setTimeout(function(){
   db.ref('bjm_exam_files').once('value',function(snap){
     var val=snap.val();
     if(!val)return;
