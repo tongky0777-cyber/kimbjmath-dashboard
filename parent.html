@@ -406,12 +406,13 @@ async function generateAIReport(){
   var params=new URLSearchParams(window.location.search);
   var sid=params.get('id');
   if(!sid)return;
+  setTimeout(function(){
   db.ref('bjm_exam_files').once('value',function(snap){
     var val=snap.val();
     if(!val)return;
     var exams=Object.values(val).filter(function(e){return e&&e.targetId===sid;}).sort(function(a,b){return b.date.localeCompare(a.date);});
     if(!exams.length)return;
-    var wrap=document.querySelector('.wrap')||document.body;
+    var wrap=document.getElementById('app')||document.querySelector('.wrap')||document.body;
     var sec=document.createElement('div');
     sec.className='section';
     sec.innerHTML='<div class="section-title"><span>📄</span> 시험지</div>'+
@@ -423,4 +424,17 @@ async function generateAIReport(){
           '<button onclick="viewExam(\''+e.id+'\')" style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:13px;cursor:pointer;width:100%;">📄 시험지 보기</button>'+
           '</div>';
       }).join('');
-    wrap.appe
+    wrap.appendChild(sec);
+    window._examData=exams;
+  });
+})();
+function viewExam(id){
+  var exams=window._examData||[];
+  var e=exams.find(function(x){return x.id===id;});
+  if(!e||!e.base64){alert('시험지 데이터가 없습니다.');return;}
+  var w=window.open('','_blank');
+  w.document.write('<html><head><title>'+e.title+'</title></head><body style="margin:0"><embed src="'+e.base64+'" type="application/pdf" width="100%" height="100%"></body></html>');
+}
+</script>
+</body>
+</html>
