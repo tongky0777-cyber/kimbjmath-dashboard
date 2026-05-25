@@ -224,7 +224,7 @@ function renderExamList(){
         (e.note?'<div class="exam-note">📝 '+e.note+'</div>':'')+
       '</div>'+
       '<div class="exam-actions">'+
-        '<button class="btn-sm primary" onclick="window.open(\'https://docs.google.com/viewer?url=\'+encodeURIComponent(e.url)+\'\',\'_blank\')">보기</button>'+
+        '<button class="btn-sm primary" onclick="window.open(\'https://docs.google.com/viewer?url='+encodeURIComponent(e.url)+'\',\'_blank\')">보기</button>'+
         '<button class="btn-sm danger" onclick="deleteExam(\''+e.id+'\')">삭제</button>'+
       '</div>'+
     '</div>';
