@@ -411,8 +411,7 @@ async function generateAIReport(){
     if(!val)return;
     var exams=Object.values(val).filter(function(e){return e&&e.targetId===sid;}).sort(function(a,b){return b.date.localeCompare(a.date);});
     if(!exams.length)return;
-    var wrap=document.querySelector('.wrap');
-    if(!wrap)return;
+    var wrap=document.querySelector('.wrap')||document.body;
     var sec=document.createElement('div');
     sec.className='section';
     sec.innerHTML='<div class="section-title"><span>📄</span> 시험지</div>'+
