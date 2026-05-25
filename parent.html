@@ -191,7 +191,7 @@ function renderData(sid, data, app){
   var hwStatusLabel = {pending:'미제출',done:'제출',half:'일부제출'};
   var hwStatusClass = {pending:'tag-pending',done:'tag-done',half:'tag-half'};
 
-  // ── 격주 리포트 기간 계산
+  // ── 월간 리포트 기간 계산
   function getBiweeklyPeriod() {
     var now = new Date();
     var d = now.getDate();
@@ -230,11 +230,11 @@ function renderData(sid, data, app){
     + '<div class="student-meta">'+student.grade+' · '+(student.school||'')+(student.class?' · '+student.class:'')+'</div>'
     + '</div>';
 
-  // AI 격주 리포트 섹션
+  // AI 월간 리포트 섹션
   html += '<div class="ai-report-section">'
     + '<div class="ai-report-header">'
     + '<div class="ai-report-icon">✦</div>'
-    + '<span class="ai-report-title">격주 학습 리포트</span>'
+    + '<span class="ai-report-title">월간 학습 리포트</span>'
     + '<span class="ai-report-badge">AI 분석</span>'
     + '</div>'
     + '<div class="ai-period">📅 '+reportPeriod+'</div>'
@@ -361,7 +361,7 @@ async function generateAIReport(){
 
   var payload = window._reportPayload || {};
   var prompt = '당신은 20년 경력의 고등수학 강사 김병진T입니다.\n'
-    + '아래 학생 데이터를 바탕으로 학부모에게 전달할 격주 학습 리포트 코멘트를 작성해주세요.\n\n'
+    + '아래 학생 데이터를 바탕으로 학부모에게 전달할 월간 학습 리포트 코멘트를 작성해주세요.\n\n'
     + '학생 데이터:\n' + JSON.stringify(payload, null, 2) + '\n\n'
     + '작성 규칙:\n'
     + '- 따뜻하고 전문적인 톤으로 학부모에게 직접 말하듯 작성\n'
