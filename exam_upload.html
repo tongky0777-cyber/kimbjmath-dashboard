@@ -184,7 +184,7 @@ if(!firebase.apps.length)firebase.initializeApp(FBCONFIG);
 var db=firebase.database();
 
 function viewPdf(url){
-  var fixedUrl=url.replace('/raw/upload/','/image/upload/');
+  var fixedUrl=url.replace('/image/upload/','/raw/upload/');
   window.open(fixedUrl,'_blank');
 }
 var CLOUD_NAME='dqv4lkx3k';
