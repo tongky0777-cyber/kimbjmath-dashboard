@@ -489,6 +489,18 @@ function deleteEvent(){
   if(currentView==='month')renderMonth();else renderWeek();
 }
 
+function addToCalendar(id){
+  let e=events.find(x=>x.id===id);
+  if(!e)return;
+  let dt=e.date.replace(/-/g,'');
+  let tm=e.time.replace(':','')+'00';
+  let ics='BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:'+dt+'T'+tm+'\nDTEND:'+dt+'T'+tm+'\nSUMMARY:'+e.title+'\nDESCRIPTION:'+(e.memo||'')+'\nEND:VEVENT\nEND:VCALENDAR';
+  let blob=new Blob([ics],{type:'text/calendar'});
+  let a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=e.title+'.ics';
+  a.click();
+}
 function closeModal(){
   document.getElementById('add-modal').classList.remove('open');
   document.getElementById('detail-modal').classList.remove('open');
