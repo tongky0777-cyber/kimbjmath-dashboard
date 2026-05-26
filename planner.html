@@ -287,6 +287,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
     <div id="d-memo" class="detail-memo"></div>
     <div class="modal-btns">
       <button class="btn-del" onclick="deleteEvent()">삭제</button>
+      <button id="btn-done" class="btn-cancel" onclick="toggleDone(deleteId)" style="color:#1a6b3a;border-color:#1a6b3a;">✅ 완료</button>
       <button class="btn-cancel" onclick="editEvent()">수정</button>
       <button class="btn-cancel" onclick="closeModal()">닫기</button>
       <button class="btn-cancel" onclick="addToCalendar(deleteId)" style="color:#1a6b3a;border-color:#1a6b3a;">📅 캘린더 추가</button>
@@ -357,7 +358,7 @@ function renderMonth(){
       if(isToday)cls.push('today');
       if(isSel)cls.push('selected');
       let dateCls='cal-date'+(c===0?' sun':c===6?' sat':'');
-      let evHtml=dayEvs.slice(0,3).map(e=>`<div class="cal-event ${e.type}" onclick="showDetail(${e.id},event)" title="${e.title}">${e.time.slice(0,5)} ${e.title}</div>`).join('');
+      let evHtml=dayEvs.slice(0,3).map(e=>`<div class="cal-event ${e.type}" onclick="showDetail(${e.id},event)" title="${e.title}" style="${e.done?'opacity:0.45;text-decoration:line-through;':''}">${e.done?'✅ ':''} ${e.time.slice(0,5)} ${e.title}</div>`).join('');
       let moreHtml=dayEvs.length>3?`<div class="cal-more">+${dayEvs.length-3}개 더</div>`:'';
       cells+=`<div class="${cls.join(' ')}" onclick="selectDate('${ds}')">
         <div class="${dateCls}"><div class="cal-date-num">${isOther?'':d}</div></div>
@@ -430,6 +431,9 @@ function showDetail(id,ev){
   document.getElementById('d-title').textContent=e.title;
   document.getElementById('d-meta').textContent=`${e.date} ${e.time}`;
   document.getElementById('d-memo').textContent=e.memo||'메모가 없습니다.';
+  var btnDone=document.getElementById('btn-done');
+  if(e.done){btnDone.textContent='↩️ 완료 취소';btnDone.style.color='#888';btnDone.style.borderColor='#888';}
+  else{btnDone.textContent='✅ 완료';btnDone.style.color='#1a6b3a';btnDone.style.borderColor='#1a6b3a';}
   document.getElementById('detail-modal').classList.add('open');
 }
 
@@ -481,6 +485,14 @@ function editEvent(){
   document.getElementById('add-modal').classList.add('open');
 }
 
+function toggleDone(id){
+  let e=events.find(x=>x.id===id);
+  if(!e)return;
+  e.done=!e.done;
+  save();
+  if(currentView==='month')renderMonth();else renderWeek();
+  showDetail(id,null);
+}
 function deleteEvent(){
   events=events.filter(e=>e.id!==deleteId);
   save();
