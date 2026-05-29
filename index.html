@@ -801,6 +801,11 @@ textarea{resize:vertical;min-height:80px;}
         <canvas id="detail-chart" height="180"></canvas>
         <div id="detail-no-test" style="text-align:center;color:var(--muted);font-size:12px;padding:24px;display:none;">테스트 기록이 없습니다</div>
       </div>
+      <!-- 최근 테스트 3개 -->
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;">📝 최근 본 테스트 3개</div>
+        <div id="detail-recent-tests" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
       <!-- 최근 출결 -->
       <div>
         <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;">✅ 최근 출결</div>
@@ -3388,6 +3393,27 @@ function openStudentDetail(sid) {
       +'<div style="font-size:22px;font-weight:700;color:'+c.color+';">'+c.value+'</div>'
       +'</div>';
   }).join('');
+
+  // 최근 본 테스트 3개 (날짜 내림차순)
+  var recentEl = document.getElementById('detail-recent-tests');
+  if(recentEl){
+    if(!tests.length){
+      recentEl.innerHTML = '<div style="font-size:12px;color:var(--muted);">테스트 기록이 없습니다</div>';
+    } else {
+      var recent3 = tests.slice().sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,3);
+      recentEl.innerHTML = recent3.map(function(t){
+        var c = t.score>=90?'var(--green)':t.score>=70?'var(--gold)':'var(--red)';
+        var bg = t.score>=90?'var(--green-bg)':t.score>=70?'var(--gold-bg)':'var(--red-bg)';
+        return '<div style="display:flex;align-items:center;justify-content:space-between;background:var(--white);border:1px solid var(--line);border-radius:6px;padding:10px 12px;">'
+          +'<div style="min-width:0;">'
+          +'<div style="font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(t.name||'테스트')+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+t.date+'</div>'
+          +'</div>'
+          +'<div style="flex-shrink:0;background:'+bg+';color:'+c+';font-weight:700;font-size:14px;padding:6px 12px;border-radius:6px;margin-left:10px;">'+t.score+'점</div>'
+          +'</div>';
+      }).join('');
+    }
+  }
 
   // 테스트 그래프
   var chartEl  = document.getElementById('detail-chart');
