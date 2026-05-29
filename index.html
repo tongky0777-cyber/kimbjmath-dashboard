@@ -971,6 +971,16 @@ window.addEventListener('DOMContentLoaded', function() {
   }
   updateTestFilter();
   renderDashboard();
+
+  // URL에 ?view=xxx 가 있으면 해당 화면을 바로 연다 (플래너 등 다른 페이지에서 넘어올 때)
+  try {
+    var params = new URLSearchParams(location.search);
+    var v = params.get('view');
+    if(v){
+      var menuEl = document.querySelector('.sb-item[onclick*="showView(\'' + v + '\'"]');
+      showView(v, menuEl || null);
+    }
+  } catch(e){}
 });
 
 // 뷰 전환
