@@ -157,8 +157,9 @@ textarea{resize:vertical;min-height:80px;}
 
 /* 달력 */
 .cal-day{
-  min-height:70px;padding:6px 4px;border:0.5px solid var(--line);
+  min-height:84px;padding:6px 4px;border:0.5px solid var(--line);
   cursor:pointer;transition:.15s;position:relative;
+  display:flex;flex-direction:column;box-sizing:border-box;
 }
 .cal-day:hover{background:var(--bg);}
 .cal-day.today{background:var(--red-bg);}
@@ -305,7 +306,7 @@ textarea{resize:vertical;min-height:80px;}
           <div style="padding:7px;font-size:11px;font-weight:700;color:var(--muted);">금</div>
           <div style="padding:7px;font-size:11px;font-weight:700;color:var(--blue);">토</div>
         </div>
-        <div id="att-cal-body" style="display:grid;grid-template-columns:repeat(7,1fr);"></div>
+        <div id="att-cal-body" style="display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:minmax(84px,auto);"></div>
       </div>
 
       <!-- 날짜 클릭 시 출결 체크 패널 -->
@@ -355,7 +356,7 @@ textarea{resize:vertical;min-height:80px;}
         <div style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;border-bottom:1px solid var(--line);">
           <div style="padding:6px;font-size:10px;font-weight:700;color:var(--red);">일</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">월</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">화</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">수</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">목</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">금</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--blue);">토</div>
         </div>
-        <div id="test-cal-body" style="display:grid;grid-template-columns:repeat(7,1fr);"></div>
+        <div id="test-cal-body" style="display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:minmax(84px,auto);"></div>
       </div>
 
       <!-- 날짜 클릭 패널 -->
@@ -392,7 +393,7 @@ textarea{resize:vertical;min-height:80px;}
         <div style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;border-bottom:1px solid var(--line);">
           <div style="padding:6px;font-size:10px;font-weight:700;color:var(--red);">일</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">월</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">화</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">수</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">목</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--muted);">금</div><div style="padding:6px;font-size:10px;font-weight:700;color:var(--blue);">토</div>
         </div>
-        <div id="hw-cal-body" style="display:grid;grid-template-columns:repeat(7,1fr);"></div>
+        <div id="hw-cal-body" style="display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:minmax(84px,auto);"></div>
       </div>
 
       <!-- 날짜 클릭 패널 -->
@@ -437,7 +438,7 @@ textarea{resize:vertical;min-height:80px;}
           <div style="padding:7px;font-size:11px;font-weight:700;color:var(--muted);">금</div>
           <div style="padding:7px;font-size:11px;font-weight:700;color:var(--blue);">토</div>
         </div>
-        <div id="prog-cal-body" style="display:grid;grid-template-columns:repeat(7,1fr);"></div>
+        <div id="prog-cal-body" style="display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:minmax(84px,auto);"></div>
       </div>
 
       <!-- 날짜 클릭 시 진도 패널 -->
@@ -491,7 +492,7 @@ textarea{resize:vertical;min-height:80px;}
           <div style="padding:8px;font-size:11px;font-weight:700;color:var(--muted);">금</div>
           <div style="padding:8px;font-size:11px;font-weight:700;color:var(--blue);">토</div>
         </div>
-        <div id="cal-body" style="display:grid;grid-template-columns:repeat(7,1fr);"></div>
+        <div id="cal-body" style="display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:minmax(84px,auto);"></div>
       </div>
 
       <!-- 날짜 클릭시 일정 상세 -->
