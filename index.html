@@ -1306,16 +1306,28 @@ function deleteStudent(id) {
 }
 
 function withdrawStudent(id) {
-  if(!confirm('퇴원 처리할까요?')) return;
   var students = DB.get('students');
   var s = students.find(function(x){ return x.id===id; });
   if(!s) return;
-  s.status = 'withdrawn';
-  s.withdrawnAt = new Date().toISOString().slice(0,10);
-  DB.set('students', students);
-  renderStudents();
-  renderDashboard();
-  toast(s.name+' 학생이 퇴원 처리되었습니다');
+  if(s.status === 'withdrawn') {
+    // 이미 퇴원 상태 → 재원 복귀
+    if(!confirm(s.name + ' 학생을 재원 복귀시킬까요?')) return;
+    s.status = '';
+    s.withdrawnAt = '';
+    DB.set('students', students);
+    renderStudents();
+    renderDashboard();
+    toast(s.name+' 학생이 재원 복귀되었습니다');
+  } else {
+    // 재원 상태 → 퇴원 처리
+    if(!confirm('퇴원 처리할까요?')) return;
+    s.status = 'withdrawn';
+    s.withdrawnAt = new Date().toISOString().slice(0,10);
+    DB.set('students', students);
+    renderStudents();
+    renderDashboard();
+    toast(s.name+' 학생이 퇴원 처리되었습니다');
+  }
 }
 
 function editStudent(id) {
