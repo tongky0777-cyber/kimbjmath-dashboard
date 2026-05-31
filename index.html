@@ -234,7 +234,10 @@ textarea{resize:vertical;min-height:80px;}
 <a href="timetable.html" class="sb-item"><span class="sb-icon">📋</span> 수업 시간표</a>
 <a href="exam_upload.html" class="sb-item"><span class="sb-icon">📄</span> 시험지 관리</a>
   </nav>
-  <div class="sb-footer">데이터는 이 기기에 저장됩니다.</div>
+  <div class="sb-footer">
+    <div style="margin-bottom:8px;">🔄 여러 기기에서 동기화됩니다.</div>
+    <button onclick="if(confirm('이 기기의 데이터를 서버에 올립니다. 계속할까요?'))_fbPushAll();" style="width:100%;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:7px;font-size:12px;cursor:pointer;">이 기기 데이터 서버에 올리기</button>
+  </div>
 </aside>
 
 <!-- 메인 -->
@@ -898,16 +901,55 @@ textarea{resize:vertical;min-height:80px;}
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script>
-// ===== Firebase Sync =====
+// ===== Firebase Sync (양방향 + 안전장치) =====
+window._FB_PREFIX = "bjm_";
+window._fbReady = false;
 (function(){
   try{
     var FBCONFIG={apiKey:"AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",databaseURL:"https://kimbjmath-default-rtdb.firebaseio.com",projectId:"kimbjmath",appId:"1:664889936709:web:2df1494b0cd978c64e4c2c"};
     if(!firebase.apps.length)firebase.initializeApp(FBCONFIG);
     var db=firebase.database();window._fbDb=db;
+    var PREFIX=window._FB_PREFIX;
+    // 동기화 대상 키
+    var SYNC_KEYS=["students","attendance","homework","tests","progress","groups","schedules","exams"].map(function(k){return PREFIX+k;});
+
+    // 저장 시 서버에도 반영 (단, 동기화 준비 전에는 서버 덮어쓰기 금지)
     var _orig=localStorage.setItem.bind(localStorage);
-    localStorage.setItem=function(key,value){_orig(key,value);if(key.startsWith("bjm_")){try{db.ref(key).set(JSON.parse(value));}catch(e){}}};
-    ["bjm_students","bjm_attendance","bjm_homework","bjm_tests","bjm_progress","bjm_groups"].forEach(function(k){var v=localStorage.getItem(k);if(v){try{db.ref(k).set(JSON.parse(v));}catch(e){}}});
-  }catch(e){console.error("Firebase init:",e);}
+    localStorage.setItem=function(key,value){
+      _orig(key,value);
+      if(window._fbReady && key.indexOf(PREFIX)===0){
+        try{ db.ref(key).set(JSON.parse(value)); }catch(e){}
+      }
+    };
+
+    // 켤 때: 서버에서 받아와 이 기기에 채움 → 그 다음 화면 그림
+    window._fbPull=function(cb){
+      db.ref().once("value").then(function(snap){
+        var all=snap.val()||{};
+        SYNC_KEYS.forEach(function(k){
+          if(all[k]!==undefined && all[k]!==null){
+            _orig(k, JSON.stringify(all[k]));
+          }
+        });
+        window._fbReady=true;
+        if(cb)cb(true);
+      }).catch(function(e){
+        console.error("Firebase pull 실패:",e);
+        window._fbReady=true; // 서버 못 받아도 로컬로 동작
+        if(cb)cb(false);
+      });
+    };
+
+    // 이 기기 데이터를 서버로 밀어올리기 (최초 1회/필요시 수동)
+    window._fbPushAll=function(){
+      var n=0;
+      SYNC_KEYS.forEach(function(k){
+        var v=localStorage.getItem(k);
+        if(v){try{ db.ref(k).set(JSON.parse(v)); n++; }catch(e){}}
+      });
+      alert("이 기기의 데이터를 서버에 올렸습니다. ("+n+"개 항목)\n다른 기기에서 새로고침하면 동일하게 보입니다.");
+    };
+  }catch(e){console.error("Firebase init:",e);window._fbReady=true;}
 })();
 // ===== Firebase Sync End =====
 
@@ -961,8 +1003,6 @@ window.addEventListener('DOMContentLoaded', function() {
     var el = document.getElementById(id);
     if(el) el.value = todayStr;
   });
-  var memo = DB.getOne('memo');
-  if(memo) document.getElementById('memo-area').value = memo;
   var memoEl = document.getElementById('memo-area');
   if(memoEl) {
     memoEl.addEventListener('input', function() {
@@ -970,18 +1010,31 @@ window.addEventListener('DOMContentLoaded', function() {
       memoEl._t = setTimeout(function(){ DB.setOne('memo', memoEl.value); }, 1200);
     });
   }
-  updateTestFilter();
-  renderDashboard();
 
-  // URL에 ?view=xxx 가 있으면 해당 화면을 바로 연다 (플래너 등 다른 페이지에서 넘어올 때)
-  try {
-    var params = new URLSearchParams(location.search);
-    var v = params.get('view');
-    if(v){
-      var menuEl = document.querySelector('.sb-item[onclick*="showView(\'' + v + '\'"]');
-      showView(v, menuEl || null);
-    }
-  } catch(e){}
+  // 화면 그리는 작업 (서버 동기화 후 실행)
+  function _renderStart(){
+    var memo = DB.getOne('memo');
+    if(memo && document.getElementById('memo-area')) document.getElementById('memo-area').value = memo;
+    updateTestFilter();
+    renderDashboard();
+    // URL에 ?view=xxx 가 있으면 해당 화면을 바로 연다
+    try {
+      var params = new URLSearchParams(location.search);
+      var v = params.get('view');
+      if(v){
+        var menuEl = document.querySelector('.sb-item[onclick*="showView(\'' + v + '\'"]');
+        showView(v, menuEl || null);
+      }
+    } catch(e){}
+  }
+
+  // 서버에서 최신 데이터를 받아온 뒤 화면을 그린다 (기기 간 동일하게 보이도록)
+  if(typeof window._fbPull === 'function'){
+    _fbPull(function(){ _renderStart(); });
+  } else {
+    window._fbReady = true;
+    _renderStart();
+  }
 });
 
 // 뷰 전환
