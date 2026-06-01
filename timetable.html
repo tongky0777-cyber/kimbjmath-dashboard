@@ -41,7 +41,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .tt-cell{border-right:1px solid var(--line);border-bottom:1px solid var(--line);height:80px;position:relative;cursor:pointer;}
 .tt-cell:last-child{border-right:none;}
 .tt-cell:hover{background:#f7f7fa;}
-.tt-class{position:absolute;left:2px;right:2px;border-radius:5px;padding:4px 7px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;justify-content:center;}
+.tt-class{position:absolute;left:2px;right:2px;border-radius:5px;padding:4px 7px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;justify-content:center;z-index:2;}
 .tt-class:hover{opacity:.85;}
 .tt-class-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .tt-class-time{font-size:10px;opacity:.8;}
@@ -204,11 +204,17 @@ function renderTimetable(){
       });
       var evHtml=startClasses.map(function(c){
         var sh=parseInt(c.start.split(':')[0]);
+        var sm=parseInt(c.start.split(':')[1]||'0');
         var eh=parseInt(c.end.split(':')[0]);
-        var span=Math.max(1,eh-sh);
+        var em=parseInt(c.end.split(':')[1]||'0');
+        var startMin=sh*60+sm, endMin=eh*60+em;
+        var durMin=Math.max(30, endMin-startMin);   // 분 단위 길이 (최소 30분)
+        var PX=80/60;                                 // 1분당 픽셀 (칸 높이 80px = 60분)
+        var topPx=sm*PX + 2;                          // 시작 분만큼 아래로
+        var hPx=durMin*PX - 4;                        // 시간 길이만큼 높이
         var bg=COLOR_BG[c.color]||'#eef3fb';
         var col=c.color||'#1c3c6e';
-        return '<div class="tt-class" style="background:'+bg+';border-left:3px solid '+col+';height:'+(span*60-4)+'px;top:2px;" onclick="showDetail('+c.id+',event)">'+
+        return '<div class="tt-class" style="background:'+bg+';border-left:3px solid '+col+';height:'+hPx+'px;top:'+topPx+'px;" onclick="showDetail('+c.id+',event)">'+
           '<div class="tt-class-name" style="color:'+col+'">'+c.name+'</div>'+
           '<div class="tt-class-time" style="color:'+col+'">'+c.start+'~'+c.end+'</div>'+
           (c.students&&c.students.length?'<div style="font-size:10px;color:'+col+';opacity:.7;white-space:normal;line-height:1.4;">'+c.students.join(', ')+'</div>':'')+
