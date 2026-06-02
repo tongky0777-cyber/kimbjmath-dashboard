@@ -2409,10 +2409,10 @@ function renderPaperStats(){
 // 평균 점수 추세 꺾은선 (SVG)
 function paperTrendGraph(arr){
   if(arr.length<2) return ''; // 1개면 추세 의미 없음
-  var padL=45, padR=27, padT=24, padB=57;
-  var STEP=105;                      // 점 간격 고정폭 (왼쪽부터 일정 간격, ~1.5배)
+  var padL=45, padR=27, padT=28, padB=62;
+  var STEP=105;                      // 점 간격 고정폭 (가로는 유지)
   var plotW=STEP*(arr.length-1);     // 점 개수에 비례한 그림 폭
-  var W=padL+padR+plotW, H=237;
+  var W=padL+padR+plotW, H=340;      // 세로만 더 길게 (plot 영역 확대)
   var plotH=H-padT-padB;
   var pts=arr.map(function(p,i){
     var x=padL + STEP*i;             // 고정 간격, 양 끝으로 벌어지지 않음
@@ -2439,7 +2439,7 @@ function paperTrendGraph(arr){
   }).join('');
   return '<div style="background:var(--white);border:1px solid var(--line);border-radius:8px;padding:14px 16px 6px;margin-bottom:14px;overflow-x:auto;">'
     +'<div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:4px;">📈 평균 점수 추세</div>'
-    +'<svg viewBox="0 0 '+W+' '+H+'" style="display:block;max-width:'+W+'px;width:100%;height:auto;">'+grid+line+dots+'</svg>'
+    +'<svg viewBox="0 0 '+W+' '+H+'" style="display:block;width:'+W+'px;max-width:100%;height:auto;">'+grid+line+dots+'</svg>'
     +'</div>';
 }
 function trendEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
