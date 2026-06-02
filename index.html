@@ -449,6 +449,9 @@ textarea{resize:vertical;min-height:80px;}
     <div class="view" id="view-progress">
       <div class="sec-hd"><h2>📖 진도 관리</h2><div class="actions"><button class="btn-sm sec" onclick="openGroupProgressModal()">👥 반별 진도</button><button class="btn-sm" onclick="openProgressModal()">+ 개별 진도</button></div></div>
 
+      <!-- 날짜 없는 진도 알림 -->
+      <div id="undated-box" style="display:none;margin-bottom:16px;"></div>
+
       <!-- 진도 달력 -->
       <div style="background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:16px;">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--line);">
@@ -1369,6 +1372,12 @@ var CURRICULUM = {
   "대수": ["지수","로그","지수와 로그(통합)","지수함수","로그함수","지수함수와 로그함수(통합)","삼각함수의 뜻","삼각함수의 그래프","사인법칙과 코사인법칙","삼각함수(통합)","등차수열과 등비수열","수열의 합","수학적 귀납법","수열(통합)"],
   "미적분1": ["함수의 극한","함수의 연속","함수의 극한과 연속(통합)","미분계수와 도함수","도함수의 활용","미분(통합)","부정적분","정적분","정적분의 활용","적분(통합)"],
   "확률과 통계": ["순열과 조합","이항정리","경우의 수(통합)","확률의 뜻과 활용","조건부확률","확률(통합)","확률분포","정규분포","통계적 추정","통계(통합)"],
+  "중1-1": ["소인수분해","최대공약수와 최소공배수","정수와 유리수","정수와 유리수의 계산","문자의 사용과 식의 값","일차식의 계산","일차방정식","일차방정식의 활용","좌표평면과 그래프","정비례와 반비례"],
+  "중1-2": ["기본 도형","위치 관계","작도와 합동","다각형","원과 부채꼴","다면체","회전체","입체도형의 겉넓이와 부피","줄기와 잎 그림과 도수분포표","상대도수와 그래프"],
+  "중2-1": ["유리수와 순환소수","단항식의 계산","다항식의 계산","일차부등식","일차부등식의 활용","연립일차방정식","연립방정식의 활용","일차함수와 그래프","일차함수와 일차방정식의 관계"],
+  "중2-2": ["삼각형의 성질","삼각형의 외심과 내심","사각형의 성질","도형의 닮음","평행선과 선분의 길이의 비","닮음의 활용","피타고라스 정리","경우의 수","확률"],
+  "중3-1": ["제곱근과 실수","근호를 포함한 식의 계산","다항식의 곱셈","인수분해","이차방정식","이차방정식의 활용","이차함수와 그래프","이차함수의 최댓값과 최솟값"],
+  "중3-2": ["삼각비","삼각비의 활용","원과 직선","원주각","원주각의 활용","대푯값과 산포도","산점도와 상관관계"],
   "테마수업": []
 };
 
@@ -1398,7 +1407,11 @@ var BOOKUNITS = {
   }
 };
 // 교재 목록 (학원에서 쓰는 책). 추가/삭제하세요.
-var BOOKLIST = ["내 교재","고쟁이","절대등급","개념원리","RPM","라이트쎈","쎈","개념+유형","마플시너지","자이스토리","완쏠","All in one","Only one"];
+// 교재 목록 (학원에서 쓰는 책). 고등/중등으로 분리. 공통 교재는 양쪽에 둔다.
+var BOOKLIST_HIGH = ["내 교재","고쟁이","절대등급","개념원리","RPM","라이트쎈","쎈","개념+유형","마플시너지","자이스토리","완쏠","All in one","Only one"];
+var BOOKLIST_MID  = ["내 교재","우공비Q","개념+유형","개념원리","RPM","쎈","자이스토리","일등급수학","절대등급","최상위수학","에이급","최고득점"];
+// 검증/기존 참조용 통합 목록 (중복 제거)
+var BOOKLIST = BOOKLIST_HIGH.concat(BOOKLIST_MID.filter(function(b){ return BOOKLIST_HIGH.indexOf(b)===-1; }));
 // 테스트 이름 목록 (드롭다운). 추가/삭제하세요.
 var TESTLIST = ["개념반 Daily Test","문풀반 Daily Test - 기본","문풀반 Daily Test - 실전","문풀반 Daily Test - 심화","미니모의고사","기출 Test","모의고사 기출"];
 
@@ -1455,6 +1468,21 @@ function getUnitsFor(subject, book){
   if(book && BOOKUNITS[book] && BOOKUNITS[book][subject]) return BOOKUNITS[book][subject];
   return CURRICULUM[subject] || [];
 }
+// 과목이 중등 학기(중1-1 ~ 중3-2)인지
+function isMiddleSubject(subj){ return /^중[1-3]-[12]$/.test(subj||''); }
+// 과목에 맞는 교재 목록 (중등이면 중등용, 아니면 고등용). 테마수업은 고등 목록 사용.
+function getBookListFor(subj){ return isMiddleSubject(subj) ? BOOKLIST_MID : BOOKLIST_HIGH; }
+// 과목에 맞는 교재 드롭다운 다시 채우기 (가능하면 기존 선택값 유지)
+function refreshBooks(prefix){
+  var subjSel = document.getElementById(prefix+'-subject');
+  var bookSel = document.getElementById(prefix+'-book');
+  if(!bookSel) return;
+  var subj = subjSel ? subjSel.value : '';
+  var prev = bookSel.value;
+  var list = getBookListFor(subj);
+  bookSel.innerHTML = list.map(function(b){ return '<option value="'+b+'">'+b+'</option>'; }).join('');
+  if(prev && list.indexOf(prev)>-1) bookSel.value = prev;
+}
 // 단원이 자유입력(테마수업 등)인 과목인지
 function isFreeUnitSubject(subj){ return subj==='테마수업'; }
 // 단원 값 읽기 (테마수업이면 input, 아니면 select)
@@ -1498,6 +1526,7 @@ function refreshUnits(prefix){
 
 // 과목 선택 시 단원 드롭다운 채우기 (교재별 단원 우선)
 function onSubjectChange(prefix){
+  refreshBooks(prefix);
   refreshUnits(prefix);
 }
 // 과목/교재 드롭다운 옵션 채우기
@@ -1505,7 +1534,8 @@ function fillSubjectBookSelects(prefix){
   var subjSel = document.getElementById(prefix+'-subject');
   var bookSel = document.getElementById(prefix+'-book');
   if(subjSel) subjSel.innerHTML = Object.keys(CURRICULUM).map(function(s){ return '<option value="'+s+'">'+s+'</option>'; }).join('');
-  if(bookSel) bookSel.innerHTML = BOOKLIST.map(function(b){ return '<option value="'+b+'">'+b+'</option>'; }).join('');
+  // 교재 목록은 현재 선택된 과목(기본=첫 과목)에 맞춰 채운다
+  refreshBooks(prefix);
 }
 // 테스트명 드롭다운 채우기. keepValue=기존에 저장된 이름(목록에 없으면 임시 옵션으로 추가)
 function fillTestNameSelect(keepValue){
@@ -1523,12 +1553,13 @@ function applyLastDefault(prefix, dataKey){
   // date 기준 최신 1건
   var last = recs.slice().sort(function(a,b){ return (b.date||b.due||'').localeCompare(a.date||a.due||''); })[0];
   if(!last) return;
-  // 1) 교재 먼저 (단원 목록이 교재 기준으로 잡히도록)
-  var bookSel = document.getElementById(prefix+'-book');
-  if(bookSel && last.book && BOOKLIST.indexOf(last.book)>-1) bookSel.value = last.book;
-  // 2) 과목
+  // 1) 과목 먼저 (교재 목록이 고/중에 맞게 잡히도록)
   var subjSel = document.getElementById(prefix+'-subject');
   if(subjSel && last.subject && CURRICULUM[last.subject]) subjSel.value = last.subject;
+  // 2) 교재 목록 갱신 후 교재값
+  refreshBooks(prefix);
+  var bookSel = document.getElementById(prefix+'-book');
+  if(bookSel && last.book){ var lbh=Array.prototype.some.call(bookSel.options,function(o){return o.value===last.book;}); if(lbh) bookSel.value=last.book; }
   // 3) 단원 목록 새로고침(교재+과목 기준) 후 단원값
   refreshUnits(prefix);
   if(last.unit){
@@ -1971,7 +2002,6 @@ function editTest(id) {
   fillTestNameSelect(t.name);
   fillSubjectBookSelects('test');
   document.getElementById('test-student').value = t.sid;
-  if(t.book){ document.getElementById('test-book').value = t.book; }
   document.getElementById('test-date-input').value = t.date||'';
   document.getElementById('test-total').value = t.total||'';
   document.getElementById('test-memo').value = t.memo||'';
@@ -1998,6 +2028,8 @@ function editTest(id) {
     document.getElementById('test-mock-round').value=t.mockRound||'';
   } else {
     if(t.subject){ document.getElementById('test-subject').value = t.subject; }
+    refreshBooks('test');
+    if(t.book){ var tb=document.getElementById('test-book'); var tbh=Array.prototype.some.call(tb.options,function(o){return o.value===t.book;}); if(tbh) tb.value=t.book; }
     refreshUnits('test');
     if(t.unit){ var tu=document.getElementById('test-unit'); var th=Array.prototype.some.call(tu.options,function(o){return o.value===t.unit;}); if(th) tu.value=t.unit; }
   }
@@ -2940,9 +2972,10 @@ function editProgress(id) {
   document.getElementById('prog-id').value    = r.id;
   document.getElementById('prog-student').value = r.sid;
   document.getElementById('prog-date').value  = r.date || '';
-  // 교재 먼저 → 과목 → 단원 순 (교재별 단원 반영)
-  if(r.book){ document.getElementById('prog-book').value = r.book; }
+  // 과목 먼저 → 교재 목록 갱신(고/중 분리) → 교재 → 단원 순
   if(r.subject){ document.getElementById('prog-subject').value = r.subject; }
+  refreshBooks('prog');
+  if(r.book){ var pb=document.getElementById('prog-book'); var pbh=Array.prototype.some.call(pb.options,function(o){return o.value===r.book;}); if(pbh) pb.value=r.book; }
   refreshUnits('prog');
   setUnitValue('prog', (r.subject||''), r.unit);
   document.getElementById('prog-range').value = r.range || '';
@@ -2988,9 +3021,94 @@ function deleteProgress(id) {
   renderProgress(); toast('삭제되었습니다');
 }
 
-function renderProgress() {
+// ── 날짜 없는 진도 정리 ──────────────────────────
+// 달력은 날짜로 칸을 나누므로 date 가 없는 진도는 달력에서 보이지 않는다.
+// 여기서 모아 보여주고 바로 날짜를 채워 저장한다.
+var _undatedExpanded = false;
+
+function getUndatedRecords(){
+  return DB.get('progress').filter(function(r){ return !r.date; });
+}
+
+function toggleUndated(){
+  _undatedExpanded = !_undatedExpanded;
+  renderUndatedBox();
+}
+
+function renderUndatedBox(){
+  var box = document.getElementById('undated-box');
+  if(!box) return;
   var students = DB.get('students');
-  var recs = DB.get('progress').sort(function(a,b){ return b.date.localeCompare(a.date); });
+  var undated = getUndatedRecords();
+  if(!undated.length){ box.style.display='none'; box.innerHTML=''; return; }
+  box.style.display='block';
+
+  // 반별 진도는 하나로 묶어 보여준다 (개별 행마다 중복 표시 방지)
+  var seenGroupKey = {};
+  var rows = [];
+  undated.forEach(function(r){
+    if(r.groupName){
+      var key = r.groupName+'||'+(r.book||'')+'||'+(r.unit||'')+'||'+(r.range||'');
+      if(seenGroupKey[key]){ seenGroupKey[key].ids.push(r.id); return; }
+      var item = {type:'group', groupName:r.groupName, book:r.book, unit:r.unit, range:r.range, ids:[r.id]};
+      seenGroupKey[key]=item; rows.push(item);
+    } else {
+      var s = students.find(function(x){ return x.id===r.sid; });
+      rows.push({type:'individual', name:(s?s.name:'—'), book:r.book, unit:r.unit, range:r.range, ids:[r.id]});
+    }
+  });
+
+  var head =
+    '<div onclick="toggleUndated()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;'
+    +'background:var(--gold-bg);border:1px solid var(--gold);border-radius:6px;padding:12px 16px;">'
+    +'<span style="font-size:13px;font-weight:700;color:var(--gold);">⚠️ 날짜 없는 진도 '+undated.length+'건</span>'
+    +'<span style="font-size:12px;color:var(--gold);">'+(_undatedExpanded?'▲ 접기':'▼ 펼쳐서 정리')+'</span>'
+    +'</div>';
+
+  if(!_undatedExpanded){ box.innerHTML = head; return; }
+
+  var todayStr = new Date().toISOString().slice(0,10);
+  var listHtml = rows.map(function(row, i){
+    var who = row.type==='group'
+      ? '<span class="class-tag ct-1">'+row.groupName+'</span> <span style="font-size:10px;color:var(--muted);">반 전체</span>'
+      : '<span style="font-weight:600;">'+row.name+'</span>';
+    var info = [row.book, row.unit, row.range].filter(Boolean).join(' · ') || '—';
+    var idsAttr = row.ids.join(',');
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);flex-wrap:wrap;">'
+      +'<div style="flex:1 1 180px;min-width:140px;">'+who+'<div style="font-size:12px;color:var(--muted);margin-top:2px;">'+info+'</div></div>'
+      +'<input type="date" id="undated-date-'+i+'" value="'+todayStr+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:5px;font-size:12px;">'
+      +'<button class="btn-sm" data-ids="'+idsAttr+'" data-idx="'+i+'" onclick="saveUndatedDate(this)">저장</button>'
+      +'</div>';
+  }).join('');
+
+  box.innerHTML = head
+    + '<div style="background:var(--white);border:1px solid var(--gold);border-top:none;border-radius:0 0 6px 6px;padding:4px 16px 12px;">'
+    + '<div style="font-size:11px;color:var(--muted);padding:8px 0;">날짜를 정하고 저장하면 달력에도 표시됩니다.</div>'
+    + listHtml
+    + '</div>';
+}
+
+function saveUndatedDate(btn){
+  var idx = btn.getAttribute('data-idx');
+  var ids = (btn.getAttribute('data-ids')||'').split(',').filter(Boolean);
+  var input = document.getElementById('undated-date-'+idx);
+  var date = input ? input.value : '';
+  if(!date){ toast('날짜를 선택해주세요'); return; }
+  var recs = DB.get('progress').map(function(r){
+    if(ids.indexOf(r.id)>-1) return Object.assign({}, r, {date:date});
+    return r;
+  });
+  DB.set('progress', recs);
+  renderUndatedBox();
+  renderProgress();
+  renderProgCalendar();
+  toast('날짜가 저장되었습니다');
+}
+
+function renderProgress() {
+  renderUndatedBox();
+  var students = DB.get('students');
+  var recs = DB.get('progress').slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
   var tbody = document.getElementById('progress-body');
   if(!tbody) return;
   tbody.innerHTML = '';
@@ -3114,8 +3232,9 @@ function editGroupProgress(rowData) {
   if(matchGroup) sel.value = matchGroup.id;
 
   document.getElementById('gp-date').value  = rowData.date  || '';
-  if(rowData.book){ document.getElementById('gp-book').value = rowData.book; }
   if(rowData.subject){ document.getElementById('gp-subject').value = rowData.subject; }
+  refreshBooks('gp');
+  if(rowData.book){ var gpb=document.getElementById('gp-book'); var gpbh=Array.prototype.some.call(gpb.options,function(o){return o.value===rowData.book;}); if(gpbh) gpb.value=rowData.book; }
   refreshUnits('gp');
   if(rowData.unit){ var gu=document.getElementById('gp-unit'); var gh=Array.prototype.some.call(gu.options,function(o){return o.value===rowData.unit;}); if(gh) gu.value=rowData.unit; }
   document.getElementById('gp-range').value = rowData.range || '';
