@@ -491,9 +491,16 @@ textarea{resize:vertical;min-height:80px;}
     </div>
 
     <div class="view" id="view-papers">
-      <div class="sec-hd"><h2>📊 시험지 분석</h2><div class="actions"><select id="paper-name-filter" onchange="renderPaperStats()" style="font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:3px;background:var(--white);cursor:pointer;font-family:var(--sans);"><option value="">전체 테스트명</option></select></div></div>
-      <p style="font-size:12px;color:var(--muted);margin:-4px 0 14px;">같은 시험지(데일리=테스트명+단원, 미니모의=주차, 기출=연도·학교·과목·학기·중간기말)를 누적해서 평균·최고·최저, 오답률, 최다오답을 집계합니다.</p>
-      <div id="paper-stats-list"></div>
+      <div class="sec-hd"><h2 id="papers-title">📊 시험지 분석</h2><div class="actions"><button id="papers-back" class="btn-sm sec" onclick="papersBackToFolders()" style="display:none;">← 목록으로</button></div></div>
+
+      <!-- 1단계: 카테고리 폴더 -->
+      <div id="papers-folders"></div>
+
+      <!-- 2단계: 폴더 내부 (과목 탭 + 카드) -->
+      <div id="papers-inner" style="display:none;">
+        <div id="papers-subject-tabs" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
+        <div id="paper-stats-list"></div>
+      </div>
     </div>
     <div class="view" id="view-exam"><div class="sec-hd"><h2>📝 학교 시험 일정</h2><div class="actions"><button class="btn-sm" onclick="openExamModal()">+ 시험 추가</button></div></div><div id="exam-calendar" style="margin-bottom:20px;"></div><div class="sec-hd" style="margin-top:8px;"><h2 style="font-size:14px;">전체 목록</h2></div><div id="exam-list"></div></div>
     <!-- 반 관리 -->
@@ -639,11 +646,12 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>단원</label><select id="test-unit"></select></div>
       </div>
 
-      <!-- 미니모의고사: 주차 -->
+      <!-- 미니모의고사: 대상 + 주차 -->
       <div class="form-row" id="test-week-row" style="display:none;">
+        <div class="form-group"><label>대상</label><select id="test-mini-target" onchange="syncWeekLabel()"></select></div>
         <div class="form-group"><label>주차 (숫자만)</label><input type="number" id="test-week-num" min="1" placeholder="예) 3" oninput="syncWeekLabel()"></div>
-        <div class="form-group"><label>&nbsp;</label><div id="test-week-label" style="font-size:13px;font-weight:700;color:var(--teal);padding:9px 0;">—</div></div>
       </div>
+      <div id="test-week-label" style="display:none;font-size:13px;font-weight:700;color:var(--teal);margin:-4px 0 8px;">—</div>
 
       <!-- 기출 Test: 연도/학교급/학교/과목/학기/중간기말 -->
       <div id="test-gicul-rows" style="display:none;">
@@ -1262,7 +1270,7 @@ function showView(id, el) {
   if(id==='students')   renderStudents();
   if(id==='attendance') { renderAttendance(); attCalYear=new Date().getFullYear(); attCalMonth=new Date().getMonth(); renderAttCalendar(); }
   if(id==='tests')      { renderTests(); testCalYear=new Date().getFullYear(); testCalMonth=new Date().getMonth(); renderTestCalendar(); }
-  if(id==='papers')     { renderPaperNameFilter(); renderPaperStats(); }
+  if(id==='papers')     { renderPaperFolders(); }
   if(id==='homework')   { renderHw(); hwCalYear=new Date().getFullYear(); hwCalMonth=new Date().getMonth(); renderHwCalendar(); }
   if(id==='schedule')   { renderSchedule(); }
   if(id==='memo')       activateMemo();
@@ -1318,6 +1326,7 @@ function openTestModal() {
   document.getElementById('test-memo').value='';
   var wd=document.getElementById('test-date-input'); if(wd && !wd.value) wd.value=new Date().toISOString().slice(0,10);
   var wn=document.getElementById('test-week-num'); if(wn) wn.value='';
+  var mt=document.getElementById('test-mini-target'); if(mt) mt.selectedIndex=0;
   var mr=document.getElementById('test-mock-round'); if(mr) mr.value='';
   buildWrongGrid();
   applyLastDefault('test','tests'); // 직전 테스트의 과목·단원·교재 기본값
@@ -1406,6 +1415,9 @@ var EXAM_SUBJECTS = {
 };
 var EXAM_TERMS = ["중간","기말"]; // 중간/기말
 
+// 미니모의고사 대상: 중등은 학년, 고등은 과목
+var MINI_TARGETS = ["중1","중2","중3","공수1","공수2","대수","미적분Ⅰ","기하","확률과 통계","미적분Ⅱ"];
+
 // 데일리 계열 테스트명인지 (단원으로 묶음)
 function isDailyTest(name){ return /Daily Test/.test(name||''); }
 
@@ -1415,7 +1427,8 @@ function getPaperKey(t){
   var name = t.name||'';
   if(name==='미니모의고사'){
     var wk = t.week||'';
-    return { key:'mini||'+wk, label:'미니모의고사 '+wk };
+    var tg = t.miniTarget||'';
+    return { key:'mini||'+tg+'||'+wk, label:(tg?tg+' ':'')+'미니모의고사 '+wk };
   }
   if(name==='기출 Test'){
     var parts=[t.examYear||'',t.examSchool||'',t.examSubject||'',t.examTerm2||'',t.examTerm||''];
@@ -1897,6 +1910,7 @@ function collectTestData(){
   if(name==='미니모의고사'){
     var wn=document.getElementById('test-week-num').value;
     data.week = wn? (wn+'주차') : '';
+    data.miniTarget = document.getElementById('test-mini-target').value;
     data.subject=''; data.unit='';
   } else if(name==='기출 Test'){
     data.examYear=document.getElementById('test-exam-year').value;
@@ -1924,6 +1938,7 @@ function validateTestData(d){
   if(!d.sid||!d.name){ toast('학생과 테스트명을 입력해주세요'); return false; }
   if(isNaN(d.total)||d.total<=0){ toast('전체 문항을 입력해주세요'); return false; }
   if(d.name==='미니모의고사' && !d.week){ toast('주차를 입력해주세요'); return false; }
+  if(d.name==='미니모의고사' && !d.miniTarget){ toast('대상을 선택해주세요'); return false; }
   return true;
 }
 
@@ -1962,6 +1977,8 @@ function editTest(id) {
   onTestNameChange();
   // 테스트명별 칸 값 복원
   if(t.name==='미니모의고사'){
+    fillMiniTargets();
+    if(t.miniTarget) document.getElementById('test-mini-target').value=t.miniTarget;
     document.getElementById('test-week-num').value = (t.week||'').replace('주차',''); syncWeekLabel();
   } else if(t.name==='기출 Test'){
     fillExamYears(); fillExamLevels();
@@ -2017,26 +2034,126 @@ function renderTests() {
   }).join('');
 }
 
-// ===== 시험지별 집계 =====
-function renderPaperNameFilter(){
-  var sel=document.getElementById('paper-name-filter');
-  if(!sel) return;
+// ===== 시험지별 집계 (폴더 → 과목 → 카드) =====
+// 카테고리(폴더) 정의: 각 테스트명을 폴더로. 데일리·기출은 과목 단계 있음.
+var PAPER_FOLDERS = [
+  {name:'개념반 Daily Test', icon:'📘', hasSubject:true},
+  {name:'문풀반 Daily Test - 기본', icon:'📗', hasSubject:true},
+  {name:'문풀반 Daily Test - 실전', icon:'📙', hasSubject:true},
+  {name:'문풀반 Daily Test - 심화', icon:'📕', hasSubject:true},
+  {name:'미니모의고사', icon:'📝', hasSubject:true},
+  {name:'기출 Test', icon:'🏫', hasSubject:true},
+  {name:'모의고사 기출', icon:'🗂️', hasSubject:false}
+];
+
+var papersCurrentFolder = null; // 현재 들어간 폴더명
+var papersCurrentSubject = ''; // 현재 과목 탭
+
+// 시험지 기록에서 과목명 추출 (데일리=subject, 기출=examSubject)
+function paperSubjectOf(t){
+  if(t.name==='기출 Test') return t.examSubject||'기타';
+  if(t.name==='미니모의고사') return t.miniTarget||'기타';
+  return t.subject||'기타';
+}
+
+// 1단계: 폴더 카드 렌더
+function renderPaperFolders(){
+  papersCurrentFolder = null;
+  document.getElementById('papers-folders').style.display='block';
+  document.getElementById('papers-inner').style.display='none';
+  document.getElementById('papers-back').style.display='none';
+  document.getElementById('papers-title').textContent='📊 시험지 분석';
+
   var tests=DB.get('tests');
-  var names={};
-  tests.forEach(function(t){ if(t.name) names[t.name]=true; });
-  var cur=sel.value;
-  sel.innerHTML='<option value="">전체 테스트명</option>'+Object.keys(names).map(function(n){return '<option value="'+n+'">'+n+'</option>';}).join('');
-  if(cur) sel.value=cur;
+  var countByName={};
+  tests.forEach(function(t){ countByName[t.name]=(countByName[t.name]||0)+1; });
+
+  // 정의된 폴더 + 데이터에만 있는 기타 테스트명도 폴더로
+  var folders = PAPER_FOLDERS.slice();
+  Object.keys(countByName).forEach(function(nm){
+    if(!folders.some(function(f){return f.name===nm;})) folders.push({name:nm, icon:'📄', hasSubject:false});
+  });
+
+  var box=document.getElementById('papers-folders');
+  box.innerHTML='<p style="font-size:12px;color:var(--muted);margin:-4px 0 16px;">카테고리를 선택해 과목별 시험지 집계(평균·최고·최저·오답률·최다오답)를 확인하세요.</p>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;">'
+    + folders.map(function(f){
+        var cnt=countByName[f.name]||0;
+        var dim = cnt===0;
+        return '<div onclick="'+(dim?'':'openPaperFolder(\''+f.name.replace(/'/g,"\\'")+'\')')+'" '
+          +'style="background:var(--white);border:1px solid var(--line);border-radius:10px;padding:20px 18px;cursor:'+(dim?'default':'pointer')+';transition:.15s;'+(dim?'opacity:.45;':'')+'" '
+          +(dim?'':'onmouseover="this.style.borderColor=\'var(--teal)\';this.style.boxShadow=\'0 2px 10px rgba(0,0,0,.06)\';" onmouseout="this.style.borderColor=\'var(--line)\';this.style.boxShadow=\'none\';"')+'>'
+          +'<div style="font-size:30px;margin-bottom:10px;">'+f.icon+'</div>'
+          +'<div style="font-size:14px;font-weight:700;line-height:1.35;">'+f.name+'</div>'
+          +'<div style="font-size:12px;color:'+(dim?'var(--muted)':'var(--teal)')+';margin-top:8px;font-weight:600;">'+(dim?'기록 없음':'결과 '+cnt+'건')+'</div>'
+          +'</div>';
+      }).join('')
+    +'</div>';
+}
+
+// 2단계: 폴더 열기
+function openPaperFolder(name){
+  papersCurrentFolder = name;
+  papersCurrentSubject = '';
+  document.getElementById('papers-folders').style.display='none';
+  document.getElementById('papers-inner').style.display='block';
+  document.getElementById('papers-back').style.display='inline-block';
+  document.getElementById('papers-title').textContent='📊 '+name;
+
+  var folderDef = PAPER_FOLDERS.find(function(f){return f.name===name;}) || {hasSubject:false};
+  var tabs=document.getElementById('papers-subject-tabs');
+
+  if(folderDef.hasSubject){
+    // 이 폴더 안에 실제 존재하는 과목들만 탭으로
+    var tests=DB.get('tests').filter(function(t){return t.name===name;});
+    var subjOrderRaw=MINI_TARGETS.concat(Object.keys(EXAM_SUBJECTS)).concat(Object.keys(CURRICULUM));
+    var subjOrder=[]; subjOrderRaw.forEach(function(s){ if(subjOrder.indexOf(s)<0) subjOrder.push(s); });
+    var present={};
+    tests.forEach(function(t){ present[paperSubjectOf(t)]=true; });
+    var subjects=subjOrder.filter(function(s){return present[s];});
+    Object.keys(present).forEach(function(s){ if(subjects.indexOf(s)<0) subjects.push(s); });
+    papersCurrentSubject = subjects[0]||'';
+    tabs.style.display='flex';
+    tabs.innerHTML=subjects.map(function(s){
+      return '<button class="paper-subj-tab" data-subj="'+s+'" onclick="selectPaperSubject(\''+s.replace(/'/g,"\\'")+'\')">'+s+'</button>';
+    }).join('');
+    styleSubjectTabs();
+  } else {
+    tabs.style.display='none';
+    tabs.innerHTML='';
+    papersCurrentSubject='';
+  }
+  renderPaperStats();
+}
+
+function selectPaperSubject(s){
+  papersCurrentSubject=s;
+  styleSubjectTabs();
+  renderPaperStats();
+}
+function styleSubjectTabs(){
+  document.querySelectorAll('.paper-subj-tab').forEach(function(b){
+    var on=b.dataset.subj===papersCurrentSubject;
+    b.style.cssText='padding:7px 16px;border-radius:100px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid '+(on?'var(--teal)':'var(--line)')+';background:'+(on?'var(--teal)':'var(--white)')+';color:'+(on?'#fff':'var(--ink)')+';font-family:var(--sans);';
+  });
+}
+
+function papersBackToFolders(){
+  renderPaperFolders();
 }
 
 function renderPaperStats(){
   var box=document.getElementById('paper-stats-list');
   if(!box) return;
   var students=DB.get('students');
-  var tests=DB.get('tests');
-  var nameFilter=document.getElementById('paper-name-filter') ? document.getElementById('paper-name-filter').value : '';
-  if(nameFilter) tests=tests.filter(function(t){ return t.name===nameFilter; });
-  if(!tests.length){ box.innerHTML='<div style="text-align:center;color:var(--muted);padding:40px;">집계할 테스트 결과가 없습니다.</div>'; return; }
+  var tests=DB.get('tests').filter(function(t){ return t.name===papersCurrentFolder; });
+
+  var folderDef = PAPER_FOLDERS.find(function(f){return f.name===papersCurrentFolder;}) || {hasSubject:false};
+  if(folderDef.hasSubject && papersCurrentSubject){
+    tests=tests.filter(function(t){ return paperSubjectOf(t)===papersCurrentSubject; });
+  }
+
+  if(!tests.length){ box.innerHTML='<div style="text-align:center;color:var(--muted);padding:40px;">집계할 결과가 없습니다.</div>'; return; }
 
   var papers={};
   tests.forEach(function(t){
@@ -2970,14 +3087,22 @@ function onTestNameChange(){
   var giculRows = document.getElementById('test-gicul-rows');
   var mockRow = document.getElementById('test-mock-row');
   unitRow.style.display='none'; weekRow.style.display='none'; giculRows.style.display='none'; mockRow.style.display='none';
-  if(name==='미니모의고사'){ weekRow.style.display='flex'; syncWeekLabel(); }
+  document.getElementById('test-week-label').style.display='none';
+  if(name==='미니모의고사'){ weekRow.style.display='flex'; fillMiniTargets(); document.getElementById('test-week-label').style.display='block'; syncWeekLabel(); }
   else if(name==='기출 Test'){ giculRows.style.display='block'; fillExamYears(); fillExamLevels(); }
   else if(name==='모의고사 기출'){ mockRow.style.display='flex'; fillMockYears(); }
   else { unitRow.style.display='flex'; }
 }
+function fillMiniTargets(){
+  var sel=document.getElementById('test-mini-target');
+  if(sel && !sel.options.length){
+    sel.innerHTML=MINI_TARGETS.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('');
+  }
+}
 function syncWeekLabel(){
   var n=document.getElementById('test-week-num').value;
-  document.getElementById('test-week-label').textContent = n? (n+'주차') : '—';
+  var tg=document.getElementById('test-mini-target') ? document.getElementById('test-mini-target').value : '';
+  document.getElementById('test-week-label').textContent = n? ((tg?tg+' ':'')+'미니모의고사 '+n+'주차') : '—';
 }
 function examYearOptions(){
   var y=new Date().getFullYear(); var arr=[];
