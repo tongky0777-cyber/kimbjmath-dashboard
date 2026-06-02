@@ -459,7 +459,7 @@ textarea{resize:vertical;min-height:80px;}
       <!-- 전체 진도 목록 -->
       <div class="sec-hd" style="margin-top:4px;"><h2>📋 전체 진도 기록</h2></div>
       <div class="tbl-wrap">
-        <table><thead><tr><th>이름/반</th><th>소속 반</th><th>교재</th><th>단원</th><th>진도</th><th>날짜</th><th>상태</th><th>메모</th><th></th></tr></thead>
+        <table><thead><tr><th>이름/반</th><th>소속 반</th><th>교재</th><th>단원</th><th>진도</th><th>날짜</th><th>메모</th><th></th></tr></thead>
         <tbody id="progress-body"><tr><td colspan="9" style="text-align:center;color:var(--muted);padding:32px;">진도를 입력해보세요</td></tr></tbody>
 </tbody>
         </table>
@@ -625,8 +625,16 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>마감일</label><input type="date" id="hw-due"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>과제명</label><input id="hw-name" placeholder="p.45~50 연습문제"></div>
+        <div class="form-group"><label>과목</label><select id="hw-subject" onchange="onSubjectChange('hw')"></select></div>
+        <div class="form-group"><label>단원</label><select id="hw-unit"></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>교재</label><select id="hw-book"></select></div>
+        <div class="form-group"><label>페이지/범위</label><input id="hw-range" placeholder="p.45~50"></div>
+      </div>
+      <div class="form-row">
         <div class="form-group"><label>제출 여부</label><select id="hw-status"><option value="pending">미제출</option><option value="done">제출 완료</option><option value="half">부분 제출</option></select></div>
+        <div class="form-group"></div>
       </div>
     </div>
     <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-hw')">취소</button><button class="btn-save" onclick="saveHw()">저장</button></div>
@@ -694,8 +702,16 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>마감일</label><input type="date" id="ghw-due"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>과제명 *</label><input id="ghw-name" placeholder="p.45~50 연습문제"></div>
+        <div class="form-group"><label>과목</label><select id="ghw-subject" onchange="onSubjectChange('ghw')"></select></div>
+        <div class="form-group"><label>단원</label><select id="ghw-unit"></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>교재</label><select id="ghw-book"></select></div>
+        <div class="form-group"><label>페이지/범위</label><input id="ghw-range" placeholder="p.45~50"></div>
+      </div>
+      <div class="form-row">
         <div class="form-group"><label>제출 여부</label><select id="ghw-status"><option value="pending">미제출</option><option value="done">제출 완료</option></select></div>
+        <div class="form-group"></div>
       </div>
       <div class="form-group full"><label>메모</label><input id="ghw-memo" placeholder="특이사항"></div>
       <div id="ghw-students" style="background:var(--bg2);border-radius:4px;padding:12px;font-size:12px;color:var(--muted);">반을 선택하면 학생 목록이 표시됩니다.</div>
@@ -715,12 +731,12 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>날짜</label><input type="date" id="prog-date"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>교재</label><input id="prog-book" placeholder="공통수학1 개념서"></div>
-        <div class="form-group"><label>단원</label><input id="prog-unit" placeholder="3단원. 방정식"></div>
+        <div class="form-group"><label>과목</label><select id="prog-subject" onchange="onSubjectChange('prog')"></select></div>
+        <div class="form-group"><label>단원</label><select id="prog-unit"></select></div>
       </div>
       <div class="form-row">
+        <div class="form-group"><label>교재</label><select id="prog-book"></select></div>
         <div class="form-group"><label>진도 (페이지/범위)</label><input id="prog-range" placeholder="p.45~62"></div>
-        <div class="form-group"><label>완료 여부</label><select id="prog-status"><option value="done">완료</option><option value="ing">진행 중</option><option value="review">복습 필요</option></select></div>
       </div>
       <div class="form-group full"><label>메모</label><textarea id="prog-memo" placeholder="특이사항, 다음 수업 준비사항 등"></textarea></div>
     </div>
@@ -850,18 +866,12 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>날짜</label><input type="date" id="gp-date"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>교재</label><input id="gp-book" placeholder="공통수학1 개념서"></div>
-        <div class="form-group"><label>단원</label><input id="gp-unit" placeholder="3단원. 방정식"></div>
+        <div class="form-group"><label>과목</label><select id="gp-subject" onchange="onSubjectChange('gp')"></select></div>
+        <div class="form-group"><label>단원</label><select id="gp-unit"></select></div>
       </div>
       <div class="form-row">
+        <div class="form-group"><label>교재</label><select id="gp-book"></select></div>
         <div class="form-group"><label>진도 (페이지/범위)</label><input id="gp-range" placeholder="p.45~62"></div>
-        <div class="form-group"><label>완료 여부</label>
-          <select id="gp-status">
-            <option value="done">✅ 완료</option>
-            <option value="ing">🔄 진행 중</option>
-            <option value="review">⚠️ 복습 필요</option>
-          </select>
-        </div>
       </div>
       <div class="form-group full"><label>메모</label><textarea id="gp-memo" placeholder="다음 수업 준비사항 등" style="min-height:60px;"></textarea></div>
       <div id="gp-student-list" style="background:var(--bg2);border-radius:4px;padding:12px;font-size:12px;color:var(--muted);">반을 선택하면 학생 목록이 표시됩니다.</div>
@@ -1229,7 +1239,16 @@ function openStudentModal() {
 }
 function openAttModal() { populateSel(); openModal('modal-att'); }
 function openTestModal() { populateSel(); openModal('modal-test'); }
-function openHwModal() { populateSel(); openModal('modal-hw'); }
+function openHwModal() {
+  populateSel();
+  fillSubjectBookSelects('hw');
+  ['hw-range'].forEach(function(i){ var el=document.getElementById(i); if(el) el.value=''; });
+  var due = document.getElementById('hw-due');
+  if(due && !due.value) due.value = new Date().toISOString().slice(0,10);
+  onSubjectChange('hw');
+  applyLastDefault('hw','homework'); // 직전 숙제의 과목·단원·교재 기본값
+  openModal('modal-hw');
+}
 function updateSchTarget(){ var sel=document.getElementById('sch-target-sel'); var inp=document.getElementById('sch-target'); var sid=sel.value; if(sid&&sid!=='전체'){ var st=(DB.get('students')||[]).find(function(s){return s.id===sid;}); inp.value=st?st.name:sid; } else { inp.value=''; } } function openScheduleModal() { openModal('modal-schedule'); ['sch-content','sch-target','sch-memo'].forEach(function(id){ document.getElementById(id).value=''; }); var sel=document.getElementById('sch-target-sel'); sel.value=''; var students=(DB.get('students')||[]).filter(function(s){return !s.withdrawn;}); sel.innerHTML='<option value="">-- 학생 선택 --</option><option value="전체">전체</option>'+students.sort(function(a,b){return a.name.localeCompare(b.name);}).map(function(s){return '<option value="'+s.id+'">('+s.grade+') '+s.name+'</option>';}).join(''); }
 
 // 토스트
@@ -1237,6 +1256,49 @@ function toast(msg) {
   var t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('on');
   setTimeout(function(){ t.classList.remove('on'); }, 2400);
+}
+
+// ===== 교육과정 단원 데이터 (2022 개정) =====
+// 학원 사정에 맞게 자유롭게 수정하세요. 과목 > [단원...] 구조.
+var CURRICULUM = {
+  "공통수학1": ["다항식의 연산","나머지정리와 인수분해","복소수","이차방정식","이차방정식과 이차함수","여러 가지 방정식","일차부등식","이차부등식","순열","조합","행렬과 그 연산"],
+  "공통수학2": ["평면좌표","직선의 방정식","원의 방정식","도형의 이동","집합의 뜻과 포함관계","집합의 연산","명제","함수","유리함수","무리함수"],
+  "대수": ["지수","로그","지수함수","로그함수","삼각함수의 뜻","삼각함수의 그래프","사인법칙과 코사인법칙","등차수열과 등비수열","수열의 합","수학적 귀납법"],
+  "미적분1": ["함수의 극한","함수의 연속","미분계수와 도함수","도함수의 활용","부정적분","정적분","정적분의 활용"],
+  "확률과 통계": ["순열과 조합","이항정리","확률의 뜻과 활용","조건부확률","확률분포","정규분포","통계적 추정"]
+};
+// 교재 목록 (학원에서 쓰는 책). 추가/삭제하세요.
+var BOOKLIST = ["내 교재","쎈 공통수학1","쎈 공통수학2","쎈 대수","마플 공통수학1","마플 공통수학2","개념원리 공통수학1","개념원리 공통수학2","RPM 공통수학1","RPM 공통수학2"];
+
+// 과목 선택 시 단원 드롭다운 채우기 (prefix = 'prog' 또는 'hw')
+function onSubjectChange(prefix){
+  var subj = document.getElementById(prefix+'-subject').value;
+  var unitSel = document.getElementById(prefix+'-unit');
+  var units = CURRICULUM[subj] || [];
+  unitSel.innerHTML = units.map(function(u){ return '<option value="'+u+'">'+u+'</option>'; }).join('');
+}
+// 과목/교재 드롭다운 옵션 채우기
+function fillSubjectBookSelects(prefix){
+  var subjSel = document.getElementById(prefix+'-subject');
+  var bookSel = document.getElementById(prefix+'-book');
+  if(subjSel) subjSel.innerHTML = Object.keys(CURRICULUM).map(function(s){ return '<option value="'+s+'">'+s+'</option>'; }).join('');
+  if(bookSel) bookSel.innerHTML = BOOKLIST.map(function(b){ return '<option value="'+b+'">'+b+'</option>'; }).join('');
+}
+// 직전 기록(가장 최근 진도/숙제)의 과목·단원·교재를 기본값으로 세팅
+function applyLastDefault(prefix, dataKey){
+  var recs = DB.get(dataKey) || [];
+  if(!recs.length) return;
+  // date 기준 최신 1건
+  var last = recs.slice().sort(function(a,b){ return (b.date||b.due||'').localeCompare(a.date||a.due||''); })[0];
+  if(!last) return;
+  var subjSel = document.getElementById(prefix+'-subject');
+  if(subjSel && last.subject && CURRICULUM[last.subject]){
+    subjSel.value = last.subject;
+    onSubjectChange(prefix);
+    if(last.unit){ var us=document.getElementById(prefix+'-unit'); if(us) us.value = last.unit; }
+  }
+  var bookSel = document.getElementById(prefix+'-book');
+  if(bookSel && last.book && BOOKLIST.indexOf(last.book)>-1) bookSel.value = last.book;
 }
 
 // 학생 선택 셀렉트 채우기
@@ -1690,10 +1752,17 @@ function updateTestFilter() {
 // 숙제 저장
 function saveHw() {
   var sid = document.getElementById('hw-student').value;
-  var name = document.getElementById('hw-name').value.trim();
-  if(!sid||!name) { toast('학생과 과제명을 입력해주세요'); return; }
+  var subject = document.getElementById('hw-subject').value;
+  var unit = document.getElementById('hw-unit').value;
+  var book = document.getElementById('hw-book').value;
+  var range = document.getElementById('hw-range').value.trim();
+  if(!sid || !book || !range) { toast('학생·교재·페이지를 입력해주세요'); return; }
+  // 과제명 = "교재 단원 페이지" 조합 (기존 목록/달력이 name을 표시하므로 호환 유지)
+  var name = book + ' ' + (unit?unit+' ':'') + range;
   var recs = DB.get('homework');
-  recs.push({id:Date.now().toString(), sid:sid, name:name, status:document.getElementById('hw-status').value, due:document.getElementById('hw-due').value, memo:''});
+  recs.push({id:Date.now().toString(), sid:sid, name:name,
+    subject:subject, unit:unit, book:book, range:range,
+    status:document.getElementById('hw-status').value, due:document.getElementById('hw-due').value, memo:''});
   DB.set('homework', recs);
   closeModal('modal-hw');
   renderHw(); renderHwCalendar(); if(hwSelectedDate) selectHwDay(hwSelectedDate);
@@ -2012,7 +2081,11 @@ function openGroupHwModal() {
   sel.innerHTML = groups.length
     ? groups.map(function(g){ return '<option value="'+g.id+'">'+g.name+'</option>'; }).join('')
     : '<option value="">반 없음 (반 관리에서 먼저 생성)</option>';
-  ['ghw-name','ghw-memo'].forEach(function(i){ document.getElementById(i).value=''; });
+  fillSubjectBookSelects('ghw');
+  ['ghw-range','ghw-memo'].forEach(function(i){ document.getElementById(i).value=''; });
+  var due = document.getElementById('ghw-due'); if(due && !due.value) due.value = new Date().toISOString().slice(0,10);
+  onSubjectChange('ghw');
+  applyLastDefault('ghw','homework');
   updateGhwStudents();
   openModal('modal-group-hw');
 }
@@ -2041,17 +2114,21 @@ function updateGhwStudents() {
 
 function saveGroupHw() {
   var gid = document.getElementById('ghw-group').value;
-  var name = document.getElementById('ghw-name').value.trim();
-  if(!gid||!name) { toast('반과 과제명을 입력해주세요'); return; }
+  var subject = document.getElementById('ghw-subject').value;
+  var unit = document.getElementById('ghw-unit').value;
+  var book = document.getElementById('ghw-book').value;
+  var range = document.getElementById('ghw-range').value.trim();
+  if(!gid||!book||!range) { toast('반·교재·페이지를 입력해주세요'); return; }
   var groups = DB.get('groups');
   var g = groups.find(function(x){ return x.id===gid; });
   if(!g||!g.students||!g.students.length) { toast('반에 학생이 없습니다'); return; }
+  var name = book + ' ' + (unit?unit+' ':'') + range;
   var recs = DB.get('homework');
   var due = document.getElementById('ghw-due').value;
   var status = document.getElementById('ghw-status').value;
   var memo = document.getElementById('ghw-memo').value;
   g.students.forEach(function(sid){
-    recs.push({id:Date.now().toString()+sid, sid:sid, name:name, status:status, due:due, memo:memo});
+    recs.push({id:Date.now().toString()+sid, sid:sid, name:name, subject:subject, unit:unit, book:book, range:range, status:status, due:due, memo:memo});
   });
   DB.set('homework', recs);
   closeModal('modal-group-hw');
@@ -2062,16 +2139,18 @@ function saveGroupHw() {
 // ══ 진도 관리 ════════════════════════════════════
 function openProgressModal() {
   populateSel();
+  fillSubjectBookSelects('prog');
   document.getElementById('prog-id').value = '';
   var titleEl = document.getElementById('prog-modal-title');
   if(titleEl) titleEl.textContent = '📖 진도 입력';
   var progDate = document.getElementById('prog-date');
   if(progDate) progDate.value = new Date().toISOString().slice(0,10);
-  ['prog-book','prog-unit','prog-range','prog-memo'].forEach(function(i){
+  ['prog-range','prog-memo'].forEach(function(i){
     var el = document.getElementById(i);
     if(el) el.value='';
   });
-  document.getElementById('prog-status').value = 'done';
+  onSubjectChange('prog');
+  applyLastDefault('prog','progress'); // 직전 진도의 과목·단원·교재 기본값
   openModal('modal-progress');
 }
 
@@ -2080,13 +2159,16 @@ function editProgress(id) {
   var r = recs.find(function(x){ return x.id===id; });
   if(!r) return;
   populateSel();
+  fillSubjectBookSelects('prog');
   document.getElementById('prog-id').value    = r.id;
   document.getElementById('prog-student').value = r.sid;
   document.getElementById('prog-date').value  = r.date || '';
-  document.getElementById('prog-book').value  = r.book || '';
-  document.getElementById('prog-unit').value  = r.unit || '';
+  // 과목 → 단원 순으로 세팅
+  if(r.subject){ document.getElementById('prog-subject').value = r.subject; }
+  onSubjectChange('prog');
+  if(r.unit){ document.getElementById('prog-unit').value = r.unit; }
+  if(r.book){ document.getElementById('prog-book').value = r.book; }
   document.getElementById('prog-range').value = r.range || '';
-  document.getElementById('prog-status').value= r.status || 'done';
   document.getElementById('prog-memo').value  = r.memo || '';
   var titleEl = document.getElementById('prog-modal-title');
   if(titleEl) titleEl.textContent = '📖 진도 수정';
@@ -2095,16 +2177,16 @@ function editProgress(id) {
 
 function saveProgress() {
   var sid  = document.getElementById('prog-student').value;
-  var book = document.getElementById('prog-book').value.trim();
-  if(!sid||!book) { toast('학생과 교재를 입력해주세요'); return; }
+  var book = document.getElementById('prog-book').value;
+  if(!sid||!book) { toast('학생과 교재를 선택해주세요'); return; }
   var existingId = document.getElementById('prog-id').value;
   var recs = DB.get('progress');
   var record = {
     id: existingId || Date.now().toString(),
     sid: sid, book: book,
+    subject: document.getElementById('prog-subject').value,
     unit:   document.getElementById('prog-unit').value,
     range:  document.getElementById('prog-range').value,
-    status: document.getElementById('prog-status').value,
     date:   document.getElementById('prog-date').value,
     memo:   document.getElementById('prog-memo').value
   };
@@ -2134,7 +2216,7 @@ function renderProgress() {
   if(!tbody) return;
   tbody.innerHTML = '';
   if(!recs.length) {
-    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:32px;">진도를 입력해보세요</td></tr>';
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">진도를 입력해보세요</td></tr>';
     return;
   }
 
@@ -2170,7 +2252,6 @@ function renderProgress() {
         +'<td style="font-size:12px;">'+(row.unit||'—')+'</td>'
         +'<td style="font-size:12px;font-weight:500;">'+(row.range||'—')+'</td>'
         +'<td style="font-size:11px;color:var(--muted);">'+(row.date||'—')+'</td>'
-        +'<td><span style="font-size:11px;font-weight:700;color:'+(statusColor[row.status]||'var(--muted)')+';">'+(statusLabel[row.status]||row.status)+'</span></td>'
         +'<td style="font-size:12px;color:var(--muted);">'+(row.memo||'—')+'</td>'
         +'<td></td>';
 
@@ -2215,7 +2296,6 @@ function renderProgress() {
         +'<td style="font-size:12px;">'+(r.unit||'—')+'</td>'
         +'<td style="font-size:12px;font-weight:500;">'+(r.range||'—')+'</td>'
         +'<td style="font-size:11px;color:var(--muted);">'+(r.date||'—')+'</td>'
-        +'<td><span style="font-size:11px;font-weight:700;color:'+(statusColor[r.status]||'var(--muted)')+';">'+(statusLabel[r.status]||r.status)+'</span></td>'
         +'<td style="font-size:12px;color:var(--muted);">'+(r.memo||'—')+'</td>'
         +'<td></td>';
 
@@ -2248,16 +2328,18 @@ function editGroupProgress(rowData) {
   sel.innerHTML = groups.length
     ? groups.map(function(g){ return '<option value="'+g.id+'">'+g.name+'</option>'; }).join('')
     : '<option value="">반 없음</option>';
+  fillSubjectBookSelects('gp');
 
   // 해당 반 선택
   var matchGroup = groups.find(function(g){ return g.name === rowData.groupName; });
   if(matchGroup) sel.value = matchGroup.id;
 
   document.getElementById('gp-date').value  = rowData.date  || '';
-  document.getElementById('gp-book').value  = rowData.book  || '';
-  document.getElementById('gp-unit').value  = rowData.unit  || '';
+  if(rowData.subject){ document.getElementById('gp-subject').value = rowData.subject; }
+  onSubjectChange('gp');
+  if(rowData.unit){ document.getElementById('gp-unit').value = rowData.unit; }
+  if(rowData.book){ document.getElementById('gp-book').value = rowData.book; }
   document.getElementById('gp-range').value = rowData.range || '';
-  document.getElementById('gp-status').value= rowData.status|| 'done';
   document.getElementById('gp-memo').value  = rowData.memo  || '';
 
   // 저장 버튼을 수정 모드로
@@ -2267,16 +2349,16 @@ function editGroupProgress(rowData) {
     var ids = rowData.ids;
     saveBtn.onclick = function(){
       var recs = DB.get('progress');
-      var book  = document.getElementById('gp-book').value.trim();
+      var subject = document.getElementById('gp-subject').value;
+      var book  = document.getElementById('gp-book').value;
       var unit  = document.getElementById('gp-unit').value;
       var range = document.getElementById('gp-range').value;
-      var status= document.getElementById('gp-status').value;
       var date  = document.getElementById('gp-date').value;
       var memo  = document.getElementById('gp-memo').value;
-      if(!book) { toast('교재를 입력해주세요'); return; }
+      if(!book) { toast('교재를 선택해주세요'); return; }
       recs = recs.map(function(r){
         if(ids.includes(r.id)){
-          return Object.assign({}, r, {book:book, unit:unit, range:range, status:status, date:date, memo:memo});
+          return Object.assign({}, r, {subject:subject, book:book, unit:unit, range:range, date:date, memo:memo});
         }
         return r;
       });
@@ -2530,7 +2612,7 @@ function selectHwDay(dateStr) {
 }
 
 function openHwModalForDate() {
-  populateSel(); openModal('modal-hw');
+  openHwModal();
   var el=document.getElementById('hw-due');
   if(el&&hwSelectedDate) el.value=hwSelectedDate;
 }
@@ -2680,10 +2762,7 @@ function selectProgDay(dateStr) {
         +'<span style="font-size:13px;font-weight:700;color:var(--ink);">'+g.groupName+'</span>'
         +'</div>'
         +'<div style="font-size:12px;color:var(--ink2);">📚 '+(g.book||'—')+(g.unit?' · '+g.unit:'')+(g.range?' · <b>'+g.range+'</b>':'')+'</div>'
-        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">'
-        +'<span style="font-size:11px;font-weight:700;color:'+(statusColor[g.status]||'var(--muted)')+';">'+(statusLabel[g.status]||g.status)+'</span>'
-        +(g.memo?'<span style="font-size:11px;color:var(--muted);">'+g.memo+'</span>':'')
-        +'</div>';
+        +(g.memo?'<div style="display:flex;align-items:center;justify-content:flex-end;margin-top:6px;"><span style="font-size:11px;color:var(--muted);">'+g.memo+'</span></div>':'');
       var gEditBtn = document.createElement('button');
       gEditBtn.style.cssText='margin-top:8px;font-size:11px;padding:3px 10px;border:1px solid var(--line);border-radius:4px;background:var(--white);color:var(--ink);cursor:pointer;';
       gEditBtn.textContent='✏️ 수정';
@@ -2715,10 +2794,7 @@ function selectProgDay(dateStr) {
         +'<span style="font-size:11px;color:var(--muted);">'+(s?s.grade:'')+'</span>'
         +'</div>'
         +'<div style="font-size:12px;color:var(--ink2);">📚 '+(r.book||'—')+(r.unit?' · '+r.unit:'')+(r.range?' · <b>'+r.range+'</b>':'')+'</div>'
-        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">'
-        +'<span style="font-size:11px;font-weight:700;color:'+(statusColor[r.status]||'var(--muted)')+';">'+(statusLabel[r.status]||r.status)+'</span>'
-        +(r.memo?'<span style="font-size:11px;color:var(--muted);">'+r.memo+'</span>':'')
-        +'</div>';
+        +(r.memo?'<div style="display:flex;align-items:center;justify-content:flex-end;margin-top:6px;"><span style="font-size:11px;color:var(--muted);">'+r.memo+'</span></div>':'');
       var rEditBtn = document.createElement('button');
       rEditBtn.style.cssText='margin-top:8px;font-size:11px;padding:3px 10px;border:1px solid var(--line);border-radius:4px;background:var(--white);color:var(--ink);cursor:pointer;';
       rEditBtn.textContent='✏️ 수정';
@@ -2759,8 +2835,11 @@ function openGroupProgressModal() {
   sel.innerHTML = groups.length
     ? groups.map(function(g){ return '<option value="'+g.id+'">'+g.name+'</option>'; }).join('')
     : '<option value="">반 없음 (반 관리에서 먼저 생성)</option>';
-  ['gp-book','gp-unit','gp-range','gp-memo'].forEach(function(i){ document.getElementById(i).value=''; });
+  fillSubjectBookSelects('gp');
+  ['gp-range','gp-memo'].forEach(function(i){ document.getElementById(i).value=''; });
   document.getElementById('gp-date').value = new Date().toISOString().slice(0,10);
+  onSubjectChange('gp');
+  applyLastDefault('gp','progress');
   updateGroupProgressList();
   openModal('modal-group-progress');
 }
@@ -2784,24 +2863,24 @@ function updateGroupProgressList() {
 
 function saveGroupProgress() {
   var gid  = document.getElementById('gp-group').value;
-  var book = document.getElementById('gp-book').value.trim();
-  if(!gid || !book) { toast('반과 교재를 입력해주세요'); return; }
+  var book = document.getElementById('gp-book').value;
+  if(!gid || !book) { toast('반과 교재를 선택해주세요'); return; }
   var groups = DB.get('groups');
   var g = groups.find(function(x){ return x.id===gid; });
   if(!g || !g.students || !g.students.length) { toast('반에 학생이 없습니다'); return; }
   var recs = DB.get('progress');
-  var date   = document.getElementById('gp-date').value;
-  var unit   = document.getElementById('gp-unit').value;
-  var range  = document.getElementById('gp-range').value;
-  var status = document.getElementById('gp-status').value;
-  var memo   = document.getElementById('gp-memo').value;
-  var gName  = g.name;
+  var date    = document.getElementById('gp-date').value;
+  var subject = document.getElementById('gp-subject').value;
+  var unit    = document.getElementById('gp-unit').value;
+  var range   = document.getElementById('gp-range').value;
+  var memo    = document.getElementById('gp-memo').value;
+  var gName   = g.name;
   g.students.forEach(function(sid){
     recs.push({
       id: Date.now().toString()+sid,
       sid: sid,
-      book: book, unit: unit, range: range,
-      status: status, date: date, memo: memo,
+      book: book, subject: subject, unit: unit, range: range,
+      date: date, memo: memo,
       groupName: gName
     });
   });
@@ -3469,12 +3548,10 @@ function openStudentDetail(sid) {
     var progRecs = DB.get('progress').filter(function(p){ return p.sid===sid; }).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,3);
     progEl.innerHTML = progRecs.length
       ? progRecs.map(function(p){
-          var statusLabel = {'done':'✅ 완료','ing':'🔄 진행 중','review':'⚠️ 복습 필요'};
           return '<div style="background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:6px;">'
-            +'<div style="font-size:12px;font-weight:700;color:var(--ink);">'+p.book+(p.unit?' · '+p.unit:'')+'</div>'
+            +'<div style="font-size:12px;font-weight:700;color:var(--ink);">'+p.book+(p.unit?' · '+p.unit:'')+(p.range?' · '+p.range:'')+'</div>'
             +'<div style="display:flex;justify-content:space-between;margin-top:4px;">'
             +'<span style="font-size:11px;color:var(--muted);">'+p.date+'</span>'
-            +'<span style="font-size:11px;font-weight:700;">'+( statusLabel[p.status]||p.status)+'</span>'
             +'</div>'
             +'</div>';
         }).join('')
@@ -3505,7 +3582,6 @@ function openGroupDetail(gid) {
     if(!seen[key]){ seen[key]=true; uniqueProg.push(p); }
   });
   var progEl = document.getElementById('gd-progress');
-  var statusLabel = {'done':'✅ 완료','ing':'🔄 진행 중','review':'⚠️ 복습 필요'};
   progEl.innerHTML = uniqueProg.slice(0,5).length
     ? uniqueProg.slice(0,5).map(function(p){
         return '<div style="background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">'
@@ -3513,7 +3589,6 @@ function openGroupDetail(gid) {
           +'<div style="font-size:13px;font-weight:700;">'+p.book+(p.unit?' · '+p.unit:'')+(p.range?' · '+p.range:'')+'</div>'
           +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+p.date+(p.memo?' · '+p.memo:'')+'</div>'
           +'</div>'
-          +'<span style="font-size:11px;font-weight:700;">'+( statusLabel[p.status]||p.status)+'</span>'
           +'</div>';
       }).join('')
     : '<span style="color:var(--muted);font-size:12px;">진도 기록 없음</span>';
