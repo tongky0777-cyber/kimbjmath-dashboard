@@ -132,8 +132,76 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
   <div class="modal">
     <div class="modal-h">시험지 업로드 <button class="modal-close" onclick="closeModal()">×</button></div>
     <div class="form-group">
-      <label>시험지 제목</label>
-      <input type="text" id="f-title" placeholder="예: 5월 3주차 Daily Test 행렬">
+      <label>테스트명</label>
+      <select id="f-test-name" onchange="onPaperNameChange()"></select>
+    </div>
+
+    <!-- 데일리류: 과목 + 단원 -->
+    <div id="paper-unit-row" style="display:none;">
+      <div class="form-row">
+        <div class="form-group">
+          <label>과목</label>
+          <select id="f-subject" onchange="onPaperSubjectChange()"></select>
+        </div>
+        <div class="form-group">
+          <label>단원</label>
+          <select id="f-unit"></select>
+          <input type="text" id="f-unit-text" placeholder="단원 직접 입력" style="display:none;">
+        </div>
+      </div>
+    </div>
+
+    <!-- 미니모의고사: 대상 + 주차 -->
+    <div id="paper-mini-row" style="display:none;">
+      <div class="form-row">
+        <div class="form-group">
+          <label>대상</label>
+          <select id="f-mini-target"></select>
+        </div>
+        <div class="form-group">
+          <label>주차 (숫자만)</label>
+          <input type="number" id="f-week-num" min="1" placeholder="예: 3" oninput="syncPaperWeekLabel()">
+          <div id="f-week-label" style="font-size:11px;color:var(--muted);margin-top:4px;display:none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 기출 Test: 연도/학교급/학교/과목/학기/중간기말 -->
+    <div id="paper-gicul-rows" style="display:none;">
+      <div class="form-row">
+        <div class="form-group"><label>연도</label><select id="f-exam-year"></select></div>
+        <div class="form-group"><label>학교급</label><select id="f-exam-level" onchange="fillPaperExamSchools()"></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>학교</label><select id="f-exam-school"></select></div>
+        <div class="form-group" id="f-exam-subject-cell"><label>과목</label><select id="f-exam-subject" onchange="fillPaperExamTerms()"></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>학기</label><select id="f-exam-term2"></select></div>
+        <div class="form-group"><label>중간/기말</label><select id="f-exam-term"></select></div>
+      </div>
+    </div>
+
+    <!-- 모의고사 기출: 연도/회차 -->
+    <div id="paper-mock-row" style="display:none;">
+      <div class="form-row">
+        <div class="form-group"><label>연도</label><select id="f-mock-year"></select></div>
+        <div class="form-group"><label>회차</label><input type="text" id="f-mock-round" placeholder="예: 6월 모평"></div>
+      </div>
+    </div>
+
+    <!-- 직접 입력 -->
+    <div id="paper-free-row" style="display:none;">
+      <div class="form-group">
+        <label>시험지 제목 (직접 입력)</label>
+        <input type="text" id="f-title-free" placeholder="예: 5월 3주차 Daily Test 행렬">
+      </div>
+    </div>
+
+    <!-- 자동 생성된 제목 미리보기 -->
+    <div class="form-group">
+      <label>시험지 제목 (자동)</label>
+      <input type="text" id="f-title" readonly style="background:var(--bg);color:var(--ink2);" placeholder="위 항목을 선택하면 제목이 자동으로 만들어집니다">
     </div>
     <div class="form-row">
       <div class="form-group">
@@ -182,6 +250,165 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 var FBCONFIG={apiKey:"AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",databaseURL:"https://kimbjmath-default-rtdb.firebaseio.com",projectId:"kimbjmath",appId:"1:664889936709:web:2df1494b0cd978c64e4c2c"};
 if(!firebase.apps.length)firebase.initializeApp(FBCONFIG);
 var db=firebase.database();
+
+// ===== 테스트 입력 모달과 동일한 데이터/규칙 (index.html과 일치) =====
+var TESTLIST = ["개념반 Daily Test","문풀반 Daily Test - 기본","문풀반 Daily Test - 실전","문풀반 Daily Test - 심화","미니모의고사","기출 Test","모의고사 기출"];
+var CURRICULUM = {
+  "공통수학1": ["다항식의 연산","나머지정리와 인수분해","복소수","이차방정식","이차방정식과 이차함수","여러 가지 방정식","일차부등식","이차부등식","방정식과 부등식(통합)","순열","조합","순열과 조합(통합)","행렬과 그 연산"],
+  "공통수학2": ["평면좌표","직선의 방정식","원의 방정식","도형의 이동","도형의 방정식(통합)","집합의 뜻과 포함관계","집합의 연산","명제","집합과 명제(통합)","함수","유리함수","무리함수","함수와 그래프(통합)"],
+  "대수": ["지수","로그","지수와 로그(통합)","지수함수","로그함수","지수함수와 로그함수(통합)","삼각함수의 뜻","삼각함수의 그래프","사인법칙과 코사인법칙","삼각함수(통합)","등차수열과 등비수열","수열의 합","수학적 귀납법","수열(통합)"],
+  "미적분1": ["함수의 극한","함수의 연속","함수의 극한과 연속(통합)","미분계수와 도함수","도함수의 활용","미분(통합)","부정적분","정적분","정적분의 활용","적분(통합)"],
+  "확률과 통계": ["순열과 조합","이항정리","경우의 수(통합)","확률의 뜻과 활용","조건부확률","확률(통합)","확률분포","정규분포","통계적 추정","통계(통합)"],
+  "중1-1": ["소인수분해","최대공약수와 최소공배수","정수와 유리수","정수와 유리수의 계산","문자의 사용과 식의 값","일차식의 계산","일차방정식","일차방정식의 활용","좌표평면과 그래프","정비례와 반비례"],
+  "중1-2": ["기본 도형","위치 관계","작도와 합동","다각형","원과 부채꼴","다면체","회전체","입체도형의 겉넓이와 부피","줄기와 잎 그림과 도수분포표","상대도수와 그래프"],
+  "중2-1": ["유리수와 순환소수","단항식의 계산","다항식의 계산","일차부등식","일차부등식의 활용","연립일차방정식","연립방정식의 활용","일차함수와 그래프","일차함수와 일차방정식의 관계"],
+  "중2-2": ["삼각형의 성질","삼각형의 외심과 내심","사각형의 성질","도형의 닮음","평행선과 선분의 길이의 비","닮음의 활용","피타고라스 정리","경우의 수","확률"],
+  "중3-1": ["제곱근과 실수","근호를 포함한 식의 계산","다항식의 곱셈","인수분해","이차방정식","이차방정식의 활용","이차함수와 그래프","이차함수의 최댓값과 최솟값"],
+  "중3-2": ["삼각비","삼각비의 활용","원과 직선","원주각","원주각의 활용","대푯값과 산포도","산점도와 상관관계"],
+  "테마수업": []
+};
+var SCHOOLS = {
+  "고등학교": ["경북고","경북여고","경신고","남산고","능인고","대구여고","대륜고","덕원고","동문고","사대부고","수성고","시지고","오성고","원화여고","정화여고","중앙고","청구고","혜화여고"],
+  "중학교": ["경신중","고산중","노변중","능인중","대구동중","대륜중","덕원중","덕화중","동도중","동부중","동원중","매호중","범물중","범일중","소선여중","수성중","시지중","신명여중","오성중","정화중","중앙중","지산중","황금중"]
+};
+var EXAM_SUBJECTS = {
+  "공통수학1": ["1학기"], "공통수학2": ["2학기"], "대수": ["1학기","2학기"],
+  "미적분Ⅰ": ["1학기","2학기"], "기하": ["1학기","2학기"], "확률과 통계": ["1학기","2학기"], "미적분Ⅱ": ["1학기","2학기"]
+};
+var EXAM_TERMS = ["중간","기말"];
+var MINI_TARGETS = ["중1","중2","중3","공수1","공수2","대수","미적분Ⅰ","기하","확률과 통계","미적분Ⅱ"];
+function isFreeUnitSubject(subj){ return subj==='테마수업'; }
+function paperExamYearOptions(){ var y=new Date().getFullYear(); var a=[]; for(var i=0;i<7;i++) a.push(String(y-i)); return a; }
+
+// 테스트 기록을 시험지 이름으로 만드는 규칙(index.html getPaperKey의 label과 동일)
+function buildPaperTitle(){
+  var name=document.getElementById('f-test-name').value;
+  if(name==='__free__'){ return (document.getElementById('f-title-free').value||'').trim(); }
+  if(name==='미니모의고사'){
+    var tg=document.getElementById('f-mini-target').value||'';
+    var wkNum=(document.getElementById('f-week-num').value||'').trim();
+    var wk=wkNum?wkNum+'주차':'';
+    return [tg, '미니모의고사', wk].filter(Boolean).join(' ');
+  }
+  if(name==='기출 Test'){
+    var lv=document.getElementById('f-exam-level').value;
+    var yr=document.getElementById('f-exam-year').value;
+    var sc=document.getElementById('f-exam-school').value;
+    var sb=(lv==='중학교')?'':document.getElementById('f-exam-subject').value;
+    var t2=document.getElementById('f-exam-term2').value;
+    var tm=document.getElementById('f-exam-term').value;
+    return [yr, sc, sb, t2, (tm?tm+'고사':'')].filter(Boolean).join(' ') || '기출 Test';
+  }
+  if(name==='모의고사 기출'){
+    var myr=document.getElementById('f-mock-year').value;
+    var mr=(document.getElementById('f-mock-round').value||'').trim();
+    return [myr, mr].filter(Boolean).join(' ')+' 모의고사 기출';
+  }
+  // 데일리류 → 테스트명 + 단원
+  var subj=document.getElementById('f-subject').value;
+  var unit = isFreeUnitSubject(subj)
+    ? (document.getElementById('f-unit-text').value||'').trim()
+    : document.getElementById('f-unit').value;
+  return name + (unit?' · '+unit:'');
+}
+function refreshPaperTitle(){ document.getElementById('f-title').value = buildPaperTitle(); }
+
+// 과목 → 단원 드롭다운 채우기 (테마수업이면 직접 입력칸)
+function fillPaperUnits(){
+  var subj=document.getElementById('f-subject').value;
+  var unitSel=document.getElementById('f-unit');
+  var unitTxt=document.getElementById('f-unit-text');
+  if(isFreeUnitSubject(subj)){
+    unitSel.style.display='none'; unitTxt.style.display='';
+  } else {
+    unitSel.style.display=''; unitTxt.style.display='none';
+    var units=CURRICULUM[subj]||[];
+    unitSel.innerHTML=units.map(function(u){return '<option value="'+u+'">'+u+'</option>';}).join('');
+  }
+}
+function onPaperSubjectChange(){ fillPaperUnits(); refreshPaperTitle(); }
+
+function fillPaperExamSchools(){
+  var level=document.getElementById('f-exam-level').value;
+  var sel=document.getElementById('f-exam-school');
+  var list=SCHOOLS[level]||[];
+  sel.innerHTML=list.map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join('');
+  var subjCell=document.getElementById('f-exam-subject-cell');
+  if(subjCell) subjCell.style.display=(level==='중학교')?'none':'';
+  fillPaperExamTerms();
+  refreshPaperTitle();
+}
+function isMiddlePaperExamLevel(){ var lv=document.getElementById('f-exam-level'); return lv&&lv.value==='중학교'; }
+function fillPaperExamTerms(){
+  var sel=document.getElementById('f-exam-term2');
+  if(isMiddlePaperExamLevel()){
+    sel.innerHTML=["1학기","2학기"].map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('');
+    refreshPaperTitle(); return;
+  }
+  var subj=document.getElementById('f-exam-subject').value;
+  var terms=EXAM_SUBJECTS[subj]||["1학기","2학기"];
+  sel.innerHTML=terms.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('');
+  refreshPaperTitle();
+}
+function syncPaperWeekLabel(){
+  var n=(document.getElementById('f-week-num').value||'').trim();
+  var lbl=document.getElementById('f-week-label');
+  if(n){ lbl.style.display='block'; lbl.textContent='→ '+n+'주차'; } else { lbl.style.display='none'; }
+  refreshPaperTitle();
+}
+
+// 테스트명 드롭다운 채우기 + 직접입력 옵션
+function fillPaperTestNames(){
+  var sel=document.getElementById('f-test-name');
+  sel.innerHTML='<option value="">-- 테스트명 선택 --</option>'
+    + TESTLIST.map(function(n){return '<option value="'+n+'">'+n+'</option>';}).join('')
+    + '<option value="__free__">직접 입력</option>';
+}
+
+// 테스트명 선택에 따라 칸 전환
+function onPaperNameChange(){
+  var name=document.getElementById('f-test-name').value;
+  var rows={unit:'paper-unit-row',mini:'paper-mini-row',gicul:'paper-gicul-rows',mock:'paper-mock-row',free:'paper-free-row'};
+  Object.keys(rows).forEach(function(k){ document.getElementById(rows[k]).style.display='none'; });
+  if(!name){ refreshPaperTitle(); return; }
+  if(name==='미니모의고사'){
+    document.getElementById('paper-mini-row').style.display='block';
+    var mt=document.getElementById('f-mini-target');
+    if(!mt.options.length) mt.innerHTML=MINI_TARGETS.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('');
+    syncPaperWeekLabel();
+  } else if(name==='기출 Test'){
+    document.getElementById('paper-gicul-rows').style.display='block';
+    var yr=document.getElementById('f-exam-year');
+    if(!yr.options.length) yr.innerHTML=paperExamYearOptions().map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join('');
+    var lv=document.getElementById('f-exam-level');
+    if(!lv.options.length) lv.innerHTML=Object.keys(SCHOOLS).map(function(l){return '<option value="'+l+'">'+l+'</option>';}).join('');
+    var sj=document.getElementById('f-exam-subject');
+    if(!sj.options.length) sj.innerHTML=Object.keys(EXAM_SUBJECTS).map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join('');
+    var tm=document.getElementById('f-exam-term');
+    if(!tm.options.length) tm.innerHTML=EXAM_TERMS.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('');
+    fillPaperExamSchools();
+  } else if(name==='모의고사 기출'){
+    document.getElementById('paper-mock-row').style.display='block';
+    var myr=document.getElementById('f-mock-year');
+    if(!myr.options.length) myr.innerHTML=paperExamYearOptions().map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join('');
+  } else if(name==='__free__'){
+    document.getElementById('paper-free-row').style.display='block';
+  } else {
+    // 데일리류
+    document.getElementById('paper-unit-row').style.display='block';
+    var ss=document.getElementById('f-subject');
+    if(!ss.options.length) ss.innerHTML=Object.keys(CURRICULUM).map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join('');
+    fillPaperUnits();
+  }
+  refreshPaperTitle();
+}
+// 자동 제목 갱신용 입력 리스너 (회차/직접입력)
+document.addEventListener('input', function(ev){
+  if(['f-mock-round','f-title-free','f-week-num'].indexOf(ev.target.id)>-1) refreshPaperTitle();
+});
+document.addEventListener('change', function(ev){
+  if(['f-test-name','f-subject','f-unit','f-mini-target','f-exam-year','f-exam-level','f-exam-school','f-exam-subject','f-exam-term2','f-exam-term','f-mock-year'].indexOf(ev.target.id)>-1) refreshPaperTitle();
+});
 
 function viewPdf(id){
   var exam=exams.find(function(e){return e.id===id;});
@@ -241,7 +468,13 @@ function renderExamList(){
 
 function openUploadModal(){
   selectedFile=null;
+  fillPaperTestNames();
+  document.getElementById('f-test-name').value='';
+  ['paper-unit-row','paper-mini-row','paper-gicul-rows','paper-mock-row','paper-free-row'].forEach(function(id){ document.getElementById(id).style.display='none'; });
   document.getElementById('f-title').value='';
+  var ff=document.getElementById('f-title-free'); if(ff) ff.value='';
+  var wn=document.getElementById('f-week-num'); if(wn) wn.value='';
+  var wl=document.getElementById('f-week-label'); if(wl) wl.style.display='none';
   document.getElementById('f-note').value='';
   document.getElementById('file-preview').style.display='none';
   document.getElementById('upload-area').style.display='block';
@@ -298,8 +531,11 @@ function dropFile(e){
 }
 
 function uploadExam(){
-  var title=document.getElementById('f-title').value.trim();
-  if(!title){alert('시험지 제목을 입력해주세요');return;}
+  var testName=document.getElementById('f-test-name').value;
+  if(!testName){alert('테스트명을 선택해주세요');return;}
+  var title=buildPaperTitle();
+  document.getElementById('f-title').value=title;
+  if(!title){alert('시험지 제목 항목을 입력해주세요');return;}
   if(!selectedFile){alert('PDF 파일을 선택해주세요');return;}
   if(selectedFile.size>7*1024*1024){alert('파일 크기가 7MB를 초과합니다.');return;}
   var targetVal=document.getElementById('f-target').value;
@@ -307,6 +543,29 @@ function uploadExam(){
   var targetId=targetVal.split('|')[0];
   var targetName=targetVal.split('|')[1];
   var note=document.getElementById('f-note').value;
+
+  // 구조화된 항목도 같이 저장 (테스트 기록과 매칭/추후 활용)
+  var meta={ testName:testName };
+  if(testName==='미니모의고사'){
+    meta.miniTarget=document.getElementById('f-mini-target').value;
+    meta.week=(document.getElementById('f-week-num').value||'').trim();
+  } else if(testName==='기출 Test'){
+    var lv=document.getElementById('f-exam-level').value;
+    meta.examLevel=lv;
+    meta.examYear=document.getElementById('f-exam-year').value;
+    meta.examSchool=document.getElementById('f-exam-school').value;
+    meta.examSubject=(lv==='중학교')?'':document.getElementById('f-exam-subject').value;
+    meta.examTerm2=document.getElementById('f-exam-term2').value;
+    meta.examTerm=document.getElementById('f-exam-term').value;
+  } else if(testName==='모의고사 기출'){
+    meta.examYear=document.getElementById('f-mock-year').value;
+    meta.mockRound=(document.getElementById('f-mock-round').value||'').trim();
+  } else if(testName==='__free__'){
+    meta.testName='';
+  } else {
+    meta.subject=document.getElementById('f-subject').value;
+    meta.unit=isFreeUnitSubject(meta.subject)?(document.getElementById('f-unit-text').value||'').trim():document.getElementById('f-unit').value;
+  }
 
   var btn=document.getElementById('upload-btn');
   btn.innerHTML='<span class="loading"></span>변환 중...';
@@ -323,7 +582,7 @@ function uploadExam(){
     var dateStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
     var examData={
       id:id,title:title,targetType:targetType,targetId:targetId,targetName:targetName,
-      base64:base64,note:note,date:dateStr,fileName:selectedFile.name
+      base64:base64,note:note,date:dateStr,fileName:selectedFile.name,meta:meta
     };
     db.ref('bjm_exam_files/'+id).set(examData).then(function(){
       document.getElementById('progress-fill').style.width='100%';
