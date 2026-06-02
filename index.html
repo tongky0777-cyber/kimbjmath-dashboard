@@ -2155,6 +2155,43 @@ function papersBackToFolders(){
   renderPaperFolders();
 }
 
+// 한 시험지(records 묶음)의 통계 계산
+function paperStatOf(p, students){
+  var recs=p.records;
+  var scores=recs.map(function(r){return r.score;}).filter(function(s){return typeof s==='number'&&!isNaN(s);});
+  var n=scores.length;
+  var avg=n?Math.round(scores.reduce(function(a,b){return a+b;},0)/n):0;
+  var max=n?Math.max.apply(null,scores):0;
+  var min=n?Math.min.apply(null,scores):0;
+  function nameOf(sid){var s=students.find(function(x){return x.id===sid;});return s?s.name:'—';}
+  var maxR=recs.filter(function(r){return r.score===max;}).map(function(r){return nameOf(r.sid);});
+  var minR=recs.filter(function(r){return r.score===min;}).map(function(r){return nameOf(r.sid);});
+  // 최다오답
+  var withWrong=recs.filter(function(r){return Array.isArray(r.wrong);});
+  var topQ=null;
+  if(withWrong.length){
+    var counts={};
+    withWrong.forEach(function(r){(r.wrong||[]).forEach(function(q){counts[q]=(counts[q]||0)+1;});});
+    var best=null;
+    Object.keys(counts).forEach(function(q){ if(!best||counts[q]>best.c){best={q:+q,c:counts[q]};} });
+    if(best) topQ={q:best.q, rate:Math.round(best.c/withWrong.length*100)};
+  }
+  return {n:n, avg:avg, max:max, min:min, maxR:maxR, minR:minR, topQ:topQ, hasWrong:withWrong.length>0};
+}
+
+// 시험지 정렬값 (미니=주차 숫자, 데일리/기출=단원 교육과정 순)
+function paperSortKey(p){
+  var r=p.records[0]||{};
+  if(r.name==='미니모의고사'){
+    var m=(r.week||'').match(/(\d+)/); return m?parseInt(m[1]):9999;
+  }
+  // 단원 순서 = 해당 과목 CURRICULUM 인덱스
+  var subj=r.subject||'';
+  var units=CURRICULUM[subj]||[];
+  var idx=units.indexOf(r.unit||'');
+  return idx<0?9998:idx;
+}
+
 function renderPaperStats(){
   var box=document.getElementById('paper-stats-list');
   if(!box) return;
@@ -2165,39 +2202,123 @@ function renderPaperStats(){
   if(folderDef.hasSubject && papersCurrentSubject){
     tests=tests.filter(function(t){ return paperSubjectOf(t)===papersCurrentSubject; });
   }
-
   if(!tests.length){ box.innerHTML='<div style="text-align:center;color:var(--muted);padding:40px;">집계할 결과가 없습니다.</div>'; return; }
 
   var papers={};
   var showName = (papersCurrentFolder===UNCATEGORIZED);
   tests.forEach(function(t){
     var pk=getPaperKey(t);
-    if(!papers[pk.key]) papers[pk.key]={label:(showName?(t.name||'(이름없음)')+' · ':'')+pk.label, name:t.name, records:[]};
+    if(!papers[pk.key]) papers[pk.key]={key:pk.key, label:(showName?(t.name||'(이름없음)')+' · ':'')+pk.label, name:t.name, records:[]};
     papers[pk.key].records.push(t);
   });
 
   var arr=Object.keys(papers).map(function(k){ return papers[k]; });
+  // 주차순/단원순 정렬 (동률이면 라벨순)
   arr.sort(function(a,b){
-    var la=Math.max.apply(null,a.records.map(function(r){return new Date(r.date||0).getTime();}));
-    var lb=Math.max.apply(null,b.records.map(function(r){return new Date(r.date||0).getTime();}));
-    return lb-la;
+    var ka=paperSortKey(a), kb=paperSortKey(b);
+    if(ka!==kb) return ka-kb;
+    return a.label.localeCompare(b.label);
   });
 
-  box.innerHTML=arr.map(function(p){ return paperCardHtml(p, students); }).join('');
+  // 통계 미리 계산
+  arr.forEach(function(p){ p.stat=paperStatOf(p, students); });
+  _paperCache={}; arr.forEach(function(p){ _paperCache[p.key]=p; });
+
+  var graphHtml = paperTrendGraph(arr);
+  var tableHtml = paperTableHtml(arr);
+  box.innerHTML = graphHtml + tableHtml;
 }
 
-function paperCardHtml(p, students){
+// 평균 점수 추세 꺾은선 (SVG)
+function paperTrendGraph(arr){
+  if(arr.length<2) return ''; // 1개면 추세 의미 없음
+  var W=Math.max(360, arr.length*90), H=190, padL=36, padR=16, padT=18, padB=46;
+  var plotW=W-padL-padR, plotH=H-padT-padB;
+  var pts=arr.map(function(p,i){
+    var x=padL + (arr.length===1?plotW/2:plotW*i/(arr.length-1));
+    var y=padT + plotH*(1 - p.stat.avg/100);
+    return {x:x, y:y, p:p};
+  });
+  // 격자/축 라벨 (0,50,100)
+  var grid='';
+  [0,50,100].forEach(function(v){
+    var y=padT+plotH*(1-v/100);
+    grid+='<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="var(--line)" stroke-width="1"/>'
+        +'<text x="'+(padL-6)+'" y="'+(y+3)+'" text-anchor="end" font-size="9" fill="var(--muted)">'+v+'</text>';
+  });
+  var line='';
+  for(var i=0;i<pts.length-1;i++){
+    line+='<line x1="'+pts[i].x+'" y1="'+pts[i].y+'" x2="'+pts[i+1].x+'" y2="'+pts[i+1].y+'" stroke="var(--teal)" stroke-width="2"/>';
+  }
+  var dots=pts.map(function(pt){
+    var col=pt.p.stat.avg>=90?'var(--green)':pt.p.stat.avg>=70?'var(--gold)':'var(--red)';
+    var shortLbl=trendShortLabel(pt.p);
+    return '<circle cx="'+pt.x+'" cy="'+pt.y+'" r="4" fill="'+col+'"/>'
+      +'<text x="'+pt.x+'" y="'+(pt.y-9)+'" text-anchor="middle" font-size="10" font-weight="700" fill="var(--ink)">'+pt.p.stat.avg+'</text>'
+      +'<text x="'+pt.x+'" y="'+(H-padB+16)+'" text-anchor="middle" font-size="9" fill="var(--muted)">'+shortLbl+'</text>';
+  }).join('');
+  return '<div style="background:var(--white);border:1px solid var(--line);border-radius:8px;padding:14px 16px 6px;margin-bottom:14px;overflow-x:auto;">'
+    +'<div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:4px;">📈 평균 점수 추세</div>'
+    +'<svg viewBox="0 0 '+W+' '+H+'" style="min-width:'+W+'px;width:100%;height:auto;">'+grid+line+dots+'</svg>'
+    +'</div>';
+}
+// 그래프 x축에 쓸 짧은 라벨
+function trendShortLabel(p){
+  var r=p.records[0]||{};
+  if(r.name==='미니모의고사'){ var m=(r.week||'').match(/(\d+)/); return m?m[1]+'주':(r.week||''); }
+  if(r.name==='기출 Test'){ return (r.examTerm2||'')+(r.examTerm||''); }
+  return (r.unit||p.label).slice(0,6);
+}
+
+// 시험지 표 (행 클릭 시 상세 펼침)
+function paperTableHtml(arr){
+  var rows=arr.map(function(p,i){
+    var s=p.stat;
+    var avgCol=s.avg>=90?'var(--green)':s.avg>=70?'var(--gold)':'var(--red)';
+    var topTxt=s.topQ?(s.topQ.q+'번 '+s.topQ.rate+'%'):(s.hasWrong?'—':'<span style="color:var(--muted);">미기록</span>');
+    return '<tr onclick="togglePaperDetail(\''+p.key.replace(/'/g,"\\'")+'\')" style="cursor:pointer;border-top:1px solid var(--line);" '
+      +'onmouseover="this.style.background=\'var(--bg2)\';" onmouseout="this.style.background=\'\';">'
+      +'<td style="padding:11px 12px;font-size:13px;font-weight:600;">'+p.label+'</td>'
+      +'<td style="padding:11px 8px;font-size:12px;color:var(--muted);text-align:center;">'+s.n+'</td>'
+      +'<td style="padding:11px 8px;font-size:14px;font-weight:800;color:'+avgCol+';text-align:center;">'+s.avg+'</td>'
+      +'<td style="padding:11px 8px;font-size:13px;font-weight:700;color:var(--green);text-align:center;">'+s.max+'</td>'
+      +'<td style="padding:11px 8px;font-size:13px;font-weight:700;color:var(--red);text-align:center;">'+s.min+'</td>'
+      +'<td style="padding:11px 12px;font-size:12px;color:'+(s.topQ&&s.topQ.rate>=50?'var(--red)':'var(--ink)')+';text-align:center;">'+topTxt+'</td>'
+      +'<td style="padding:11px 10px;font-size:11px;color:var(--muted);text-align:center;">▾</td>'
+      +'</tr>'
+      +'<tr id="pd-'+p.key+'" style="display:none;"><td colspan="7" style="padding:0 14px 16px;background:var(--bg2);"></td></tr>';
+  }).join('');
+  return '<div style="background:var(--white);border:1px solid var(--line);border-radius:8px;overflow:hidden;">'
+    +'<table style="width:100%;border-collapse:collapse;">'
+    +'<thead><tr style="background:var(--bg2);">'
+      +'<th style="padding:10px 12px;font-size:11px;color:var(--muted);text-align:left;font-weight:700;">시험지</th>'
+      +'<th style="padding:10px 8px;font-size:11px;color:var(--muted);font-weight:700;">응시</th>'
+      +'<th style="padding:10px 8px;font-size:11px;color:var(--muted);font-weight:700;">평균</th>'
+      +'<th style="padding:10px 8px;font-size:11px;color:var(--muted);font-weight:700;">최고</th>'
+      +'<th style="padding:10px 8px;font-size:11px;color:var(--muted);font-weight:700;">최저</th>'
+      +'<th style="padding:10px 12px;font-size:11px;color:var(--muted);font-weight:700;">최다오답</th>'
+      +'<th style="width:30px;"></th>'
+    +'</tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+
+// 표 행 클릭 → 상세(오답률·학생) 펼침
+var _paperCache={};
+function togglePaperDetail(key){
+  var tr=document.getElementById('pd-'+key);
+  if(!tr) return;
+  if(tr.style.display==='none'){
+    if(!tr.dataset.filled){
+      var p=_paperCache[key];
+      if(p) tr.querySelector('td').innerHTML=paperDetailHtml(p, DB.get('students'));
+      tr.dataset.filled='1';
+    }
+    tr.style.display='';
+  } else { tr.style.display='none'; }
+}
+
+function paperDetailHtml(p, students){
   var recs=p.records;
-  var scores=recs.map(function(r){ return r.score; }).filter(function(s){ return typeof s==='number' && !isNaN(s); });
-  var n=scores.length;
-  var avg=n? Math.round(scores.reduce(function(a,b){return a+b;},0)/n) : 0;
-  var max=n? Math.max.apply(null,scores) : 0;
-  var min=n? Math.min.apply(null,scores) : 0;
-
-  function nameOf(sid){ var s=students.find(function(x){return x.id===sid;}); return s?s.name:'—'; }
-  var maxR=recs.filter(function(r){return r.score===max;}).map(function(r){return nameOf(r.sid);});
-  var minR=recs.filter(function(r){return r.score===min;}).map(function(r){return nameOf(r.sid);});
-
+  var s=p.stat||paperStatOf(p, students);
   var withWrong=recs.filter(function(r){ return Array.isArray(r.wrong); });
   var wrongHtml=''; var topHtml='';
   if(withWrong.length){
@@ -2207,7 +2328,7 @@ function paperCardHtml(p, students){
     var denom=withWrong.length;
     var qList=[];
     for(var q=1;q<=totalQ;q++){ var c=counts[q]||0; qList.push({q:q, c:c, rate:Math.round(c/denom*100)}); }
-    wrongHtml='<div style="margin-top:14px;"><div style="font-size:11px;color:var(--muted);margin-bottom:8px;">문항별 오답률 (응시 '+denom+'명 기준 · 빨강=50%↑)</div><div style="display:flex;flex-direction:column;gap:4px;">'
+    wrongHtml='<div style="margin-top:12px;"><div style="font-size:11px;color:var(--muted);margin-bottom:8px;">문항별 오답률 (응시 '+denom+'명 기준 · 빨강=50%↑)</div><div style="display:flex;flex-direction:column;gap:4px;">'
       + qList.map(function(o){
           var col=o.rate>=50?'var(--red)':o.rate>=30?'var(--gold)':'var(--teal)';
           return '<div style="display:flex;align-items:center;gap:8px;">'
@@ -2226,20 +2347,8 @@ function paperCardHtml(p, students){
   } else {
     wrongHtml='<div style="margin-top:12px;font-size:12px;color:var(--muted);">※ 이 시험지에는 틀린 번호가 기록된 결과가 없어 오답 집계를 못 했어요. 새로 입력할 땐 틀린 번호를 체크하면 집계됩니다.</div>';
   }
-
-  var avgCol=avg>=90?'var(--green)':avg>=70?'var(--gold)':'var(--red)';
-  return '<div style="background:var(--white);border:1px solid var(--line);border-radius:8px;padding:18px 20px;margin-bottom:14px;">'
-    +'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">'
-      +'<div style="font-size:15px;font-weight:700;">'+p.label+'</div>'
-      +'<div style="font-size:12px;color:var(--muted);">응시 '+n+'명</div>'
-    +'</div>'
-    +'<div style="display:flex;gap:20px;margin-top:12px;flex-wrap:wrap;">'
-      +'<div><div style="font-size:11px;color:var(--muted);">평균</div><div style="font-size:22px;font-weight:800;color:'+avgCol+';">'+avg+'점</div></div>'
-      +'<div><div style="font-size:11px;color:var(--muted);">최고</div><div style="font-size:22px;font-weight:800;color:var(--green);">'+max+'점</div><div style="font-size:10px;color:var(--muted);">'+maxR.slice(0,3).join(', ')+'</div></div>'
-      +'<div><div style="font-size:11px;color:var(--muted);">최저</div><div style="font-size:22px;font-weight:800;color:var(--red);">'+min+'점</div><div style="font-size:10px;color:var(--muted);">'+minR.slice(0,3).join(', ')+'</div></div>'
-    +'</div>'
-    +topHtml+wrongHtml
-    +'</div>';
+  var who='<div style="margin-top:12px;font-size:12px;color:var(--muted);">최고 '+s.max+'점: <b style="color:var(--green);">'+s.maxR.slice(0,5).join(', ')+'</b>　·　최저 '+s.min+'점: <b style="color:var(--red);">'+s.minR.slice(0,5).join(', ')+'</b></div>';
+  return '<div style="padding-top:14px;">'+who+topHtml+wrongHtml+'</div>';
 }
 function updateTestFilter() {
   var tests = DB.get('tests');
