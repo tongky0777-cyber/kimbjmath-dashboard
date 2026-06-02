@@ -2048,6 +2048,15 @@ var PAPER_FOLDERS = [
 
 var papersCurrentFolder = null; // 현재 들어간 폴더명
 var papersCurrentSubject = ''; // 현재 과목 탭
+var UNCATEGORIZED = '분류없음'; // 정의된 카테고리에 없는 옛 시험지 모음
+
+// 현재 폴더에 해당하는 테스트 기록인지
+function testInFolder(t){
+  if(papersCurrentFolder===UNCATEGORIZED){
+    return PAPER_FOLDERS.every(function(f){ return f.name!==t.name; });
+  }
+  return t.name===papersCurrentFolder;
+}
 
 // 시험지 기록에서 과목명 추출 (데일리=subject, 기출=examSubject)
 function paperSubjectOf(t){
@@ -2065,14 +2074,18 @@ function renderPaperFolders(){
   document.getElementById('papers-title').textContent='📊 시험지 분석';
 
   var tests=DB.get('tests');
+  var definedNames = PAPER_FOLDERS.map(function(f){return f.name;});
   var countByName={};
-  tests.forEach(function(t){ countByName[t.name]=(countByName[t.name]||0)+1; });
-
-  // 정의된 폴더 + 데이터에만 있는 기타 테스트명도 폴더로
-  var folders = PAPER_FOLDERS.slice();
-  Object.keys(countByName).forEach(function(nm){
-    if(!folders.some(function(f){return f.name===nm;})) folders.push({name:nm, icon:'📄', hasSubject:false});
+  var uncategorized=0;
+  tests.forEach(function(t){
+    if(definedNames.indexOf(t.name)>-1){ countByName[t.name]=(countByName[t.name]||0)+1; }
+    else { uncategorized++; }
   });
+
+  // 정의된 폴더 + (정의 외 결과가 있으면) 분류없음 폴더 1개
+  var folders = PAPER_FOLDERS.slice();
+  if(uncategorized>0) folders.push({name:UNCATEGORIZED, icon:'🗃️', hasSubject:false});
+  countByName[UNCATEGORIZED]=uncategorized;
 
   var box=document.getElementById('papers-folders');
   box.innerHTML='<p style="font-size:12px;color:var(--muted);margin:-4px 0 16px;">카테고리를 선택해 과목별 시험지 집계(평균·최고·최저·오답률·최다오답)를 확인하세요.</p>'
@@ -2146,7 +2159,7 @@ function renderPaperStats(){
   var box=document.getElementById('paper-stats-list');
   if(!box) return;
   var students=DB.get('students');
-  var tests=DB.get('tests').filter(function(t){ return t.name===papersCurrentFolder; });
+  var tests=DB.get('tests').filter(testInFolder);
 
   var folderDef = PAPER_FOLDERS.find(function(f){return f.name===papersCurrentFolder;}) || {hasSubject:false};
   if(folderDef.hasSubject && papersCurrentSubject){
@@ -2156,9 +2169,10 @@ function renderPaperStats(){
   if(!tests.length){ box.innerHTML='<div style="text-align:center;color:var(--muted);padding:40px;">집계할 결과가 없습니다.</div>'; return; }
 
   var papers={};
+  var showName = (papersCurrentFolder===UNCATEGORIZED);
   tests.forEach(function(t){
     var pk=getPaperKey(t);
-    if(!papers[pk.key]) papers[pk.key]={label:pk.label, name:t.name, records:[]};
+    if(!papers[pk.key]) papers[pk.key]={label:(showName?(t.name||'(이름없음)')+' · ':'')+pk.label, name:t.name, records:[]};
     papers[pk.key].records.push(t);
   });
 
