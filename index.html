@@ -448,6 +448,15 @@ textarea{resize:vertical;min-height:80px;}
     <div class="view" id="view-progress">
       <div class="sec-hd"><h2>📖 진도 관리</h2><div class="actions"><button class="btn-sm sec" onclick="openGroupProgressModal()">👥 반별 진도</button><button class="btn-sm" onclick="openProgressModal()">+ 개별 진도</button></div></div>
 
+      <!-- 날짜 없는 진도 알림 박스 -->
+      <div id="undated-box" style="display:none;background:#FFF8E6;border:1px solid var(--gold);border-radius:6px;overflow:hidden;margin-bottom:16px;">
+        <div onclick="toggleUndated()" style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;cursor:pointer;">
+          <div id="undated-head" style="font-size:13px;font-weight:700;color:var(--gold);"></div>
+          <span id="undated-arrow" style="font-size:13px;color:var(--gold);">▼ 펼치기</span>
+        </div>
+        <div id="undated-list" style="display:none;padding:0 20px 16px;flex-direction:column;gap:8px;"></div>
+      </div>
+
       <!-- 진도 달력 -->
       <div style="background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:16px;">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--line);">
@@ -1225,7 +1234,7 @@ function showView(id, el) {
   if(id==='memo')       activateMemo();
   if(id==='dashboard')  renderDashboard();
   if(id==='prep')       renderPrep();
-  if(id==='progress')   { renderProgress(); progCalYear=new Date().getFullYear(); progCalMonth=new Date().getMonth(); renderProgCalendar(); }
+  if(id==='progress')   { renderProgress(); renderUndatedBox(); progCalYear=new Date().getFullYear(); progCalMonth=new Date().getMonth(); renderProgCalendar(); }
   if(id==='groups')     renderGroups();
   if(id==='exam')       renderExam();
   updateGroupFilter();
@@ -2499,18 +2508,93 @@ function saveProgress() {
   DB.set('progress', recs);
   closeModal('modal-progress');
   renderProgress(); renderProgCalendar();
+  if(typeof renderUndatedBox==='function') renderUndatedBox();
   if(progSelectedDate) selectProgDay(progSelectedDate);
   toast(existingId ? '진도가 수정되었습니다' : '진도가 저장되었습니다');
 }
 
 function deleteProgress(id) {
   DB.set('progress', DB.get('progress').filter(function(p){ return p.id!==id; }));
-  renderProgress(); toast('삭제되었습니다');
+  renderProgress(); renderUndatedBox(); toast('삭제되었습니다');
 }
+
+// ===== 날짜 없는 진도 관리 =====
+var undatedExpanded = false;
+
+function getUndatedProgress() {
+  return DB.get('progress').filter(function(p){ return !p.date; });
+}
+
+function renderUndatedBox() {
+  var box = document.getElementById('undated-box');
+  if(!box) return;
+  var undated = getUndatedProgress();
+  if(!undated.length) { box.style.display='none'; return; }
+  box.style.display='block';
+  document.getElementById('undated-head').textContent = '⚠️ 날짜 없는 진도 '+undated.length+'건';
+  renderUndatedList();
+}
+
+function toggleUndated() {
+  undatedExpanded = !undatedExpanded;
+  var list = document.getElementById('undated-list');
+  var arrow = document.getElementById('undated-arrow');
+  if(undatedExpanded) {
+    list.style.display='flex';
+    arrow.textContent = '▲ 접기';
+    renderUndatedList();
+  } else {
+    list.style.display='none';
+    arrow.textContent = '▼ 펼치기';
+  }
+}
+
+function renderUndatedList() {
+  var list = document.getElementById('undated-list');
+  if(!list) return;
+  var students = DB.get('students');
+  var undated = getUndatedProgress();
+  list.innerHTML = '';
+  if(!undated.length){ renderUndatedBox(); return; }
+  var today = new Date().toISOString().slice(0,10);
+  undated.forEach(function(r){
+    var who;
+    if(r.groupName){ who = '<span class="class-tag ct-1">'+r.groupName+'</span>'; }
+    else { var s = students.find(function(x){ return x.id===r.sid; }); who = '<span class="student-name">'+(s?s.name:'—')+'</span>'; }
+    var info = (r.book||'—')+' · '+(r.unit||'—')+' · '+(r.range||'—');
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--white);border:1px solid var(--line);border-radius:6px;padding:10px 14px;';
+    row.innerHTML =
+      '<div style="min-width:90px;">'+who+'</div>'
+      +'<div style="flex:1;min-width:160px;font-size:12px;color:var(--ink);">'+info+'</div>'
+      +'<input type="date" value="'+today+'" style="font-size:12px;padding:5px 8px;border:1px solid var(--line);border-radius:4px;" />'
+      +'<button class="btn-sm" style="white-space:nowrap;">날짜 저장</button>'
+      +'<button class="btn-sm sec" style="white-space:nowrap;">전체 수정</button>';
+    var dateInput = row.querySelector('input[type=date]');
+    var saveBtn = row.querySelector('button.btn-sm:not(.sec)');
+    var editBtn = row.querySelector('button.btn-sm.sec');
+    var rid = r.id;
+    saveBtn.onclick = function(){ saveUndatedDate(rid, dateInput.value); };
+    editBtn.onclick = function(){ editProgress(rid); };
+    list.appendChild(row);
+  });
+}
+
+function saveUndatedDate(id, date) {
+  if(!date){ toast('날짜를 선택해주세요'); return; }
+  var recs = DB.get('progress');
+  var idx = recs.findIndex(function(x){ return x.id===id; });
+  if(idx<0) return;
+  recs[idx].date = date;
+  DB.set('progress', recs);
+  renderProgress(); renderProgCalendar(); renderUndatedBox();
+  toast('날짜가 저장되었습니다');
+}
+
 
 function renderProgress() {
   var students = DB.get('students');
-  var recs = DB.get('progress').sort(function(a,b){ return b.date.localeCompare(a.date); });
+  var recs = DB.get('progress').sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
   var tbody = document.getElementById('progress-body');
   if(!tbody) return;
   tbody.innerHTML = '';
