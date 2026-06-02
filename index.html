@@ -637,7 +637,7 @@ textarea{resize:vertical;min-height:80px;}
       </div>
       <div class="form-row">
         <div class="form-group"><label>테스트명</label><select id="test-name" onchange="onTestNameChange()"></select></div>
-        <div class="form-group"><label>교재</label><select id="test-book" onchange="refreshUnits('test')"></select></div>
+        <div class="form-group" id="test-book-cell"><label>교재</label><select id="test-book" onchange="refreshUnits('test')"></select></div>
       </div>
 
       <!-- 데일리류: 과목/단원 -->
@@ -675,7 +675,7 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>회차/월</label><input id="test-mock-round" placeholder="예) 3월, 6월"></div>
       </div>
 
-      <div class="form-group full" style="margin-bottom:4px;"><label>전체 문항</label><input type="number" id="test-total" min="1" placeholder="20" oninput="buildWrongGrid()"></div>
+      <div class="form-group full" id="test-total-cell" style="margin-bottom:4px;display:none;"><label>전체 문항</label><input type="number" id="test-total" min="1" placeholder="20" oninput="buildWrongGrid()"></div>
 
       <!-- 틀린 번호 체크 그리드 -->
       <div id="test-wrong-wrap" style="display:none;margin-bottom:12px;">
@@ -686,7 +686,7 @@ textarea{resize:vertical;min-height:80px;}
       <div id="test-pct-preview" style="display:none;background:var(--teal-bg);border-radius:4px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--teal);text-align:center;"></div>
       <input type="hidden" id="test-score">
       <input type="hidden" id="test-correct">
-      <div class="form-group full"><label>메모</label><textarea id="test-memo" placeholder="틀린 유형, 피드백 등"></textarea></div>
+      <div class="form-group full" id="test-memo-cell" style="display:none;"><label>메모</label><textarea id="test-memo" placeholder="틀린 유형, 피드백 등"></textarea></div>
     </div>
     <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-test')">취소</button><button class="btn-save" onclick="saveTest()">저장</button></div>
   </div>
@@ -1320,17 +1320,19 @@ function openAttModal() { populateSel(); openModal('modal-att'); }
 function openTestModal() {
   populateSel(); fillTestNameSelect();
   fillSubjectBookSelects('test');
-  onSubjectChange('test');
+  document.getElementById('test-student').selectedIndex = 0;
+  document.getElementById('test-name').value = '';
   testWrongSet = {};
   document.getElementById('test-total').value='';
   document.getElementById('test-memo').value='';
-  var wd=document.getElementById('test-date-input'); if(wd && !wd.value) wd.value=new Date().toISOString().slice(0,10);
+  var wd=document.getElementById('test-date-input'); wd.value=new Date().toISOString().slice(0,10);
   var wn=document.getElementById('test-week-num'); if(wn) wn.value='';
   var mt=document.getElementById('test-mini-target'); if(mt) mt.selectedIndex=0;
   var mr=document.getElementById('test-mock-round'); if(mr) mr.value='';
-  buildWrongGrid();
-  applyLastDefault('test','tests'); // 직전 테스트의 과목·단원·교재 기본값
-  onTestNameChange();
+  // 저장 버튼 원래대로 (수정 모드에서 빠져나오기)
+  var saveBtn=document.querySelector('#modal-test .btn-save');
+  if(saveBtn){ saveBtn.textContent='저장'; saveBtn.onclick=saveTest; }
+  onTestNameChange(); // 테스트명 비었으므로 하위 칸 전부 숨김
   openModal('modal-test');
 }
 function openHwModal() {
@@ -1340,7 +1342,10 @@ function openHwModal() {
   var due = document.getElementById('hw-due');
   if(due && !due.value) due.value = new Date().toISOString().slice(0,10);
   onSubjectChange('hw');
-  applyLastDefault('hw','homework'); // 직전 숙제의 과목·단원·교재 기본값
+  document.getElementById('hw-student').selectedIndex=0;
+  document.getElementById('hw-subject').selectedIndex=0;
+  document.getElementById('hw-book').selectedIndex=0;
+  onSubjectChange('hw');
   openModal('modal-hw');
 }
 function updateSchTarget(){ var sel=document.getElementById('sch-target-sel'); var inp=document.getElementById('sch-target'); var sid=sel.value; if(sid&&sid!=='전체'){ var st=(DB.get('students')||[]).find(function(s){return s.id===sid;}); inp.value=st?st.name:sid; } else { inp.value=''; } } function openScheduleModal() { openModal('modal-schedule'); ['sch-content','sch-target','sch-memo'].forEach(function(id){ document.getElementById(id).value=''; }); var sel=document.getElementById('sch-target-sel'); sel.value=''; var students=(DB.get('students')||[]).filter(function(s){return !s.withdrawn;}); sel.innerHTML='<option value="">-- 학생 선택 --</option><option value="전체">전체</option>'+students.sort(function(a,b){return a.name.localeCompare(b.name);}).map(function(s){return '<option value="'+s.id+'">('+s.grade+') '+s.name+'</option>';}).join(''); }
@@ -1508,8 +1513,8 @@ function fillTestNameSelect(keepValue){
   if(!sel) return;
   var list = TESTLIST.slice();
   if(keepValue && list.indexOf(keepValue)===-1) list.unshift(keepValue); // 옛 자유입력 값 보존
-  sel.innerHTML = list.map(function(n){ return '<option value="'+n+'">'+n+'</option>'; }).join('');
-  if(keepValue) sel.value = keepValue;
+  sel.innerHTML = '<option value="">-- 테스트명 선택 --</option>' + list.map(function(n){ return '<option value="'+n+'">'+n+'</option>'; }).join('');
+  sel.value = keepValue || '';
 }
 // 직전 기록(가장 최근 진도/숙제)의 과목·단원·교재를 기본값으로 세팅
 function applyLastDefault(prefix, dataKey){
@@ -2853,8 +2858,9 @@ function openGroupHwModal() {
   fillSubjectBookSelects('ghw');
   ['ghw-range','ghw-memo'].forEach(function(i){ document.getElementById(i).value=''; });
   var due = document.getElementById('ghw-due'); if(due && !due.value) due.value = new Date().toISOString().slice(0,10);
+  document.getElementById('ghw-subject').selectedIndex=0;
+  document.getElementById('ghw-book').selectedIndex=0;
   onSubjectChange('ghw');
-  applyLastDefault('ghw','homework');
   updateGhwStudents();
   openModal('modal-group-hw');
 }
@@ -2918,8 +2924,10 @@ function openProgressModal() {
     var el = document.getElementById(i);
     if(el) el.value='';
   });
+  document.getElementById('prog-student').selectedIndex=0;
+  document.getElementById('prog-subject').selectedIndex=0;
+  document.getElementById('prog-book').selectedIndex=0;
   onSubjectChange('prog');
-  applyLastDefault('prog','progress'); // 직전 진도의 과목·단원·교재 기본값
   openModal('modal-progress');
 }
 
@@ -3209,12 +3217,42 @@ function onTestNameChange(){
   var weekRow = document.getElementById('test-week-row');
   var giculRows = document.getElementById('test-gicul-rows');
   var mockRow = document.getElementById('test-mock-row');
+  var bookCell = document.getElementById('test-book-cell');
+  var totalCell = document.getElementById('test-total-cell');
+  var memoCell = document.getElementById('test-memo-cell');
+  var wrongWrap = document.getElementById('test-wrong-wrap');
+  var preview = document.getElementById('test-pct-preview');
+
+  // 일단 전부 숨김
   unitRow.style.display='none'; weekRow.style.display='none'; giculRows.style.display='none'; mockRow.style.display='none';
   document.getElementById('test-week-label').style.display='none';
-  if(name==='미니모의고사'){ weekRow.style.display='flex'; fillMiniTargets(); document.getElementById('test-week-label').style.display='block'; syncWeekLabel(); }
+  if(bookCell) bookCell.style.display='none';
+
+  if(!name){
+    // 테스트명 선택 전 — 학생·날짜·테스트명만 보이게 나머지 숨김
+    if(totalCell) totalCell.style.display='none';
+    if(memoCell) memoCell.style.display='none';
+    if(wrongWrap) wrongWrap.style.display='none';
+    if(preview) preview.style.display='none';
+    return;
+  }
+
+  // 테스트명 선택됨 — 공통 칸 표시
+  if(totalCell) totalCell.style.display='';
+  if(memoCell) memoCell.style.display='';
+
+  if(name==='미니모의고사'){
+    weekRow.style.display='flex'; fillMiniTargets();
+    document.getElementById('test-week-label').style.display='block'; syncWeekLabel();
+  }
   else if(name==='기출 Test'){ giculRows.style.display='block'; fillExamYears(); fillExamLevels(); }
   else if(name==='모의고사 기출'){ mockRow.style.display='flex'; fillMockYears(); }
-  else { unitRow.style.display='flex'; }
+  else {
+    // 데일리류 — 교재 + 과목/단원
+    if(bookCell) bookCell.style.display='';
+    unitRow.style.display='flex';
+  }
+  buildWrongGrid();
 }
 function fillMiniTargets(){
   var sel=document.getElementById('test-mini-target');
@@ -3393,11 +3431,7 @@ function selectTestDay(dateStr) {
 }
 
 function openTestModalForDate() {
-  populateSel(); fillTestNameSelect();
-  fillSubjectBookSelects('test');
-  onSubjectChange('test');
-  applyLastDefault('test','tests');
-  openModal('modal-test');
+  openTestModal();
   var el=document.getElementById('test-date-input');
   if(el&&testSelectedDate) el.value=testSelectedDate;
 }
@@ -3719,8 +3753,9 @@ function openGroupProgressModal() {
   fillSubjectBookSelects('gp');
   ['gp-range','gp-memo'].forEach(function(i){ document.getElementById(i).value=''; });
   document.getElementById('gp-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('gp-subject').selectedIndex=0;
+  document.getElementById('gp-book').selectedIndex=0;
   onSubjectChange('gp');
-  applyLastDefault('gp','progress');
   updateGroupProgressList();
   openModal('modal-group-progress');
 }
