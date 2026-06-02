@@ -1512,10 +1512,15 @@ function getPaperKey(t){
   return { key:'unit||'+name+'||'+(t.unit||''), label:name+(t.unit?' · '+t.unit:'') };
 }
 
+// 시험대비 등에서 쓰는 공통 범위 (모든 과목 단원 목록에 추가)
+var EXAM_PREP_UNITS = ["중간범위","기말범위"];
 // 교재+과목 기준으로 쓸 단원 목록 반환 (교재별 단원 우선, 없으면 과목 기본)
 function getUnitsFor(subject, book){
-  if(book && BOOKUNITS[book] && BOOKUNITS[book][subject]) return BOOKUNITS[book][subject];
-  return CURRICULUM[subject] || [];
+  var base;
+  if(book && BOOKUNITS[book] && BOOKUNITS[book][subject]) base = BOOKUNITS[book][subject];
+  else base = CURRICULUM[subject] || [];
+  // 시험대비 범위를 뒤에 덧붙임 (중복 방지)
+  return base.concat(EXAM_PREP_UNITS.filter(function(u){ return base.indexOf(u)===-1; }));
 }
 // 과목이 중등 학기(중1-1 ~ 중3-2)인지
 function isMiddleSubject(subj){ return /^중[1-3]-[12]$/.test(subj||''); }
