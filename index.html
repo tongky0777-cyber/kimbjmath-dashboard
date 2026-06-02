@@ -664,7 +664,7 @@ textarea{resize:vertical;min-height:80px;}
         </div>
         <div class="form-row">
           <div class="form-group"><label>학교</label><select id="test-exam-school"></select></div>
-          <div class="form-group"><label>과목</label><select id="test-exam-subject" onchange="fillExamTerms()"></select></div>
+          <div class="form-group" id="test-exam-subject-cell"><label>과목</label><select id="test-exam-subject" onchange="fillExamTerms()"></select></div>
         </div>
         <div class="form-row">
           <div class="form-group"><label>학기</label><select id="test-exam-term2"></select></div>
@@ -1952,7 +1952,8 @@ function collectTestData(){
     data.examYear=document.getElementById('test-exam-year').value;
     data.examLevel=document.getElementById('test-exam-level').value;
     data.examSchool=document.getElementById('test-exam-school').value;
-    data.examSubject=document.getElementById('test-exam-subject').value;
+    // 중학교는 과목 선택 없음
+    data.examSubject = (data.examLevel==='중학교') ? '' : document.getElementById('test-exam-subject').value;
     data.examTerm2=document.getElementById('test-exam-term2').value;
     data.examTerm=document.getElementById('test-exam-term').value;
     data.subject=data.examSubject; data.unit='';
@@ -3420,10 +3421,23 @@ function fillExamSchools(){
   var sel=document.getElementById('test-exam-school');
   var list=SCHOOLS[level]||[];
   sel.innerHTML=list.map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join('');
+  // 중학교는 과목 선택 없음 → 과목 칸 숨김. 고등학교는 표시.
+  var subjCell=document.getElementById('test-exam-subject-cell');
+  if(subjCell) subjCell.style.display = (level==='중학교') ? 'none' : '';
+  fillExamTerms();
+}
+function isMiddleExamLevel(){
+  var lv=document.getElementById('test-exam-level');
+  return lv && lv.value==='중학교';
 }
 function fillExamTerms(){
-  var subj=document.getElementById('test-exam-subject').value;
   var sel=document.getElementById('test-exam-term2');
+  // 중학교: 과목 구분 없이 1·2학기 모두
+  if(isMiddleExamLevel()){
+    sel.innerHTML=["1학기","2학기"].map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('');
+    return;
+  }
+  var subj=document.getElementById('test-exam-subject').value;
   var terms=EXAM_SUBJECTS[subj]||["1학기","2학기"];
   sel.innerHTML=terms.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('');
 }
