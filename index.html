@@ -686,6 +686,16 @@ textarea{resize:vertical;min-height:80px;}
         <div id="test-wrong-grid" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
       </div>
 
+      <!-- 점수 직접 입력 (기출/모의고사 기출 — 문항별 배점이 달라 100점 만점 환산) -->
+      <div id="test-points-cell" style="display:none;margin-bottom:12px;">
+        <label style="display:block;font-size:11px;color:var(--muted);margin-bottom:6px;">받은 점수 / 총점</label>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="number" id="test-got" min="0" step="0.5" placeholder="받은 점수" style="flex:1;" oninput="calcTestPct()">
+          <span style="color:var(--muted);font-weight:700;">/</span>
+          <input type="number" id="test-max" min="1" step="0.5" value="100" placeholder="총점" style="flex:1;" oninput="calcTestPct()">
+        </div>
+      </div>
+
       <div id="test-pct-preview" style="display:none;background:var(--teal-bg);border-radius:4px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--teal);text-align:center;"></div>
       <input type="hidden" id="test-score">
       <input type="hidden" id="test-correct">
@@ -1327,6 +1337,8 @@ function openTestModal() {
   document.getElementById('test-name').value = '';
   testWrongSet = {};
   document.getElementById('test-total').value='';
+  var gg=document.getElementById('test-got'); if(gg) gg.value='';
+  var mx=document.getElementById('test-max'); if(mx) mx.value='100';
   document.getElementById('test-memo').value='';
   var wd=document.getElementById('test-date-input'); wd.value=new Date().toISOString().slice(0,10);
   var wn=document.getElementById('test-week-num'); if(wn) wn.value='';
@@ -1965,15 +1977,34 @@ function collectTestData(){
     data.subject=document.getElementById('test-subject').value;
     data.unit=document.getElementById('test-unit').value;
   }
-  var wrong = getWrongList().filter(function(n){ return n<=total; });
-  data.wrong = wrong;
-  data.correct = total - wrong.length;
-  data.score = Math.round(data.correct/total*100);
+  if(isPointsMode(name)){
+    // 기출/모의고사 기출 — 받은 점수/총점 직접 입력
+    var got = parseFloat(document.getElementById('test-got').value);
+    var max = parseFloat(document.getElementById('test-max').value);
+    data.scoreMode = 'points';
+    data.got = isNaN(got) ? null : got;
+    data.max = isNaN(max) ? null : max;
+    data.total = null; data.wrong = []; data.correct = null;
+    data.score = (!isNaN(got) && !isNaN(max) && max>0) ? Math.round(got/max*100) : null;
+  } else {
+    var wrong = getWrongList().filter(function(n){ return n<=total; });
+    data.scoreMode = 'count';
+    data.total = total;
+    data.wrong = wrong;
+    data.correct = total - wrong.length;
+    data.score = Math.round(data.correct/total*100);
+  }
   return data;
 }
 function validateTestData(d){
   if(!d.sid||!d.name){ toast('학생과 테스트명을 입력해주세요'); return false; }
-  if(isNaN(d.total)||d.total<=0){ toast('전체 문항을 입력해주세요'); return false; }
+  if(d.scoreMode==='points'){
+    if(d.got===null||isNaN(d.got)){ toast('받은 점수를 입력해주세요'); return false; }
+    if(d.max===null||isNaN(d.max)||d.max<=0){ toast('총점을 입력해주세요'); return false; }
+    if(d.got>d.max){ toast('받은 점수가 총점보다 클 수 없습니다'); return false; }
+  } else {
+    if(isNaN(d.total)||d.total<=0){ toast('전체 문항을 입력해주세요'); return false; }
+  }
   if(d.name==='미니모의고사' && !d.week){ toast('주차를 입력해주세요'); return false; }
   if(d.name==='미니모의고사' && !d.miniTarget){ toast('대상을 선택해주세요'); return false; }
   return true;
@@ -2005,6 +2036,8 @@ function editTest(id) {
   document.getElementById('test-student').value = t.sid;
   document.getElementById('test-date-input').value = t.date||'';
   document.getElementById('test-total').value = t.total||'';
+  document.getElementById('test-got').value = (t.got!==undefined && t.got!==null) ? t.got : '';
+  document.getElementById('test-max').value = (t.max!==undefined && t.max!==null) ? t.max : 100;
   document.getElementById('test-memo').value = t.memo||'';
   // 틀린 번호 복원 (옛 데이터엔 wrong 없을 수 있음)
   testWrongSet = {};
@@ -2035,6 +2068,7 @@ function editTest(id) {
     if(t.unit){ var tu=document.getElementById('test-unit'); var th=Array.prototype.some.call(tu.options,function(o){return o.value===t.unit;}); if(th) tu.value=t.unit; }
   }
   buildWrongGrid();
+  calcTestPct();
   var saveBtn = document.querySelector('#modal-test .btn-save');
   if(saveBtn) {
     saveBtn.textContent = '수정 저장';
@@ -2068,7 +2102,13 @@ function renderTests() {
     var cls = t.score>=90?'high':t.score>=70?'mid':'low';
     var fillColor = t.score>=90?'var(--green)':t.score>=70?'var(--gold)':'var(--red)';
     var unitStr = (t.unit||'') + (t.book? (t.unit?' · ':'')+t.book : '');
-    return '<tr><td class="student-name">'+(student?student.name:'—')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+t.name+'</td><td style="font-size:12px;color:var(--muted);">'+(unitStr||'—')+'</td><td style="font-size:12px;color:var(--muted);">'+t.date+'</td><td><span class="score '+cls+'">'+t.score+'점</span><div class="score-bar"><div class="score-fill" style="width:'+t.score+'%;background:'+fillColor+'"></div></div></td><td style="font-size:12px;color:var(--muted);">'+(t.memo||'—')+'</td><td><div class="row-action"><button class="icon-btn" onclick="editTest(\''+t.id+'\')">✏️</button><button class="icon-btn" onclick="deleteTest(\''+t.id+'\')">🗑️</button></div></td></tr>';
+    var hasScore = (typeof t.score==='number' && !isNaN(t.score));
+    var rawLine = (t.scoreMode==='points' && t.got!=null && t.max!=null)
+      ? '<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+t.got+' / '+t.max+'점</div>' : '';
+    var scoreCell = hasScore
+      ? '<span class="score '+cls+'">'+t.score+'점</span>'+rawLine+'<div class="score-bar"><div class="score-fill" style="width:'+t.score+'%;background:'+fillColor+'"></div></div>'
+      : '<span style="color:var(--muted);">—</span>';
+    return '<tr><td class="student-name">'+(student?student.name:'—')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+t.name+'</td><td style="font-size:12px;color:var(--muted);">'+(unitStr||'—')+'</td><td style="font-size:12px;color:var(--muted);">'+t.date+'</td><td>'+scoreCell+'</td><td style="font-size:12px;color:var(--muted);">'+(t.memo||'—')+'</td><td><div class="row-action"><button class="icon-btn" onclick="editTest(\''+t.id+'\')">✏️</button><button class="icon-btn" onclick="deleteTest(\''+t.id+'\')">🗑️</button></div></td></tr>';
   }).join('');
 }
 
@@ -3315,10 +3355,26 @@ function getWrongList(){
 }
 
 function calcTestPct() {
-  var total = parseInt(document.getElementById('test-total').value);
+  var name = document.getElementById('test-name') ? document.getElementById('test-name').value : '';
   var preview = document.getElementById('test-pct-preview');
   var scoreEl = document.getElementById('test-score');
   var correctEl = document.getElementById('test-correct');
+
+  // 점수 직접 입력 방식 (기출/모의고사 기출)
+  if(isPointsMode(name)){
+    var got = parseFloat(document.getElementById('test-got').value);
+    var max = parseFloat(document.getElementById('test-max').value);
+    if(isNaN(got) || isNaN(max) || max<=0){ preview.style.display='none'; scoreEl.value=''; correctEl.value=''; return; }
+    var pctP = Math.round(got/max*100);
+    scoreEl.value=pctP; correctEl.value='';
+    preview.style.display='block';
+    preview.style.background = pctP>=90?'var(--green-bg)':pctP>=70?'var(--gold-bg)':'var(--red-bg)';
+    preview.style.color = pctP>=90?'var(--green)':pctP>=70?'var(--gold)':'var(--red)';
+    preview.textContent = got + ' / ' + max + '점  (100점 환산 ' + pctP + '점)';
+    return;
+  }
+
+  var total = parseInt(document.getElementById('test-total').value);
   if(isNaN(total) || total<=0){ preview.style.display='none'; scoreEl.value=''; correctEl.value=''; return; }
   var wrong = getWrongList().filter(function(n){ return n<=total; }).length;
   var correct = total - wrong;
@@ -3329,6 +3385,9 @@ function calcTestPct() {
   preview.style.color = pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
   preview.textContent = correct + ' / ' + total + ' = ' + pct + '점  (틀린 '+wrong+'개'+(wrong?': '+getWrongList().filter(function(n){return n<=total;}).join(', ')+'번':'')+')';
 }
+
+// 점수 직접 입력 방식인 테스트 (문항별 배점이 달라 맞은개수 환산이 부적절)
+function isPointsMode(name){ return name==='기출 Test' || name==='모의고사 기출'; }
 
 // 테스트명 바뀌면 입력 칸 전환
 function onTestNameChange(){
@@ -3342,6 +3401,7 @@ function onTestNameChange(){
   var memoCell = document.getElementById('test-memo-cell');
   var wrongWrap = document.getElementById('test-wrong-wrap');
   var preview = document.getElementById('test-pct-preview');
+  var pointsCell = document.getElementById('test-points-cell');
 
   // 일단 전부 숨김
   unitRow.style.display='none'; weekRow.style.display='none'; giculRows.style.display='none'; mockRow.style.display='none';
@@ -3354,11 +3414,11 @@ function onTestNameChange(){
     if(memoCell) memoCell.style.display='none';
     if(wrongWrap) wrongWrap.style.display='none';
     if(preview) preview.style.display='none';
+    if(pointsCell) pointsCell.style.display='none';
     return;
   }
 
-  // 테스트명 선택됨 — 공통 칸 표시
-  if(totalCell) totalCell.style.display='';
+  // 테스트명 선택됨 — 메모는 공통 표시
   if(memoCell) memoCell.style.display='';
 
   if(name==='미니모의고사'){
@@ -3372,7 +3432,18 @@ function onTestNameChange(){
     if(bookCell) bookCell.style.display='';
     unitRow.style.display='flex';
   }
-  buildWrongGrid();
+
+  // 점수 입력 방식 전환: 기출/모의고사 기출 = 점수 직접입력, 그 외 = 전체문항+틀린번호
+  if(isPointsMode(name)){
+    if(totalCell) totalCell.style.display='none';
+    if(wrongWrap) wrongWrap.style.display='none';
+    if(pointsCell) pointsCell.style.display='block';
+    calcTestPct();
+  } else {
+    if(totalCell) totalCell.style.display='';
+    if(pointsCell) pointsCell.style.display='none';
+    buildWrongGrid();
+  }
 }
 function fillMiniTargets(){
   var sel=document.getElementById('test-mini-target');
