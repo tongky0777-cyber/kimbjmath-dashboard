@@ -2409,10 +2409,13 @@ function renderPaperStats(){
 // 평균 점수 추세 꺾은선 (SVG)
 function paperTrendGraph(arr){
   if(arr.length<2) return ''; // 1개면 추세 의미 없음
-  var W=Math.max(360, arr.length*90), H=190, padL=36, padR=16, padT=18, padB=46;
-  var plotW=W-padL-padR, plotH=H-padT-padB;
+  var padL=30, padR=18, padT=16, padB=38;
+  var STEP=70;                       // 점 간격 고정폭 (왼쪽부터 일정 간격)
+  var plotW=STEP*(arr.length-1);     // 점 개수에 비례한 그림 폭
+  var W=padL+padR+plotW, H=158;
+  var plotH=H-padT-padB;
   var pts=arr.map(function(p,i){
-    var x=padL + (arr.length===1?plotW/2:plotW*i/(arr.length-1));
+    var x=padL + STEP*i;             // 고정 간격, 양 끝으로 벌어지지 않음
     var y=padT + plotH*(1 - p.stat.avg/100);
     return {x:x, y:y, p:p};
   });
@@ -2421,30 +2424,32 @@ function paperTrendGraph(arr){
   [0,50,100].forEach(function(v){
     var y=padT+plotH*(1-v/100);
     grid+='<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="var(--line)" stroke-width="1"/>'
-        +'<text x="'+(padL-6)+'" y="'+(y+3)+'" text-anchor="end" font-size="9" fill="var(--muted)">'+v+'</text>';
+        +'<text x="'+(padL-5)+'" y="'+(y+2.5)+'" text-anchor="end" font-size="7.5" fill="var(--muted)">'+v+'</text>';
   });
   var line='';
   for(var i=0;i<pts.length-1;i++){
-    line+='<line x1="'+pts[i].x+'" y1="'+pts[i].y+'" x2="'+pts[i+1].x+'" y2="'+pts[i+1].y+'" stroke="var(--teal)" stroke-width="2"/>';
+    line+='<line x1="'+pts[i].x+'" y1="'+pts[i].y+'" x2="'+pts[i+1].x+'" y2="'+pts[i+1].y+'" stroke="var(--teal)" stroke-width="1.5"/>';
   }
   var dots=pts.map(function(pt){
     var col=pt.p.stat.avg>=90?'var(--green)':pt.p.stat.avg>=70?'var(--gold)':'var(--red)';
     var shortLbl=trendShortLabel(pt.p);
-    return '<circle cx="'+pt.x+'" cy="'+pt.y+'" r="4" fill="'+col+'"/>'
-      +'<text x="'+pt.x+'" y="'+(pt.y-9)+'" text-anchor="middle" font-size="10" font-weight="700" fill="var(--ink)">'+pt.p.stat.avg+'</text>'
-      +'<text x="'+pt.x+'" y="'+(H-padB+16)+'" text-anchor="middle" font-size="9" fill="var(--muted)">'+shortLbl+'</text>';
+    return '<circle cx="'+pt.x+'" cy="'+pt.y+'" r="3" fill="'+col+'"/>'
+      +'<text x="'+pt.x+'" y="'+(pt.y-7)+'" text-anchor="middle" font-size="8" font-weight="700" fill="var(--ink)">'+pt.p.stat.avg+'</text>'
+      +'<text x="'+pt.x+'" y="'+(H-padB+13)+'" text-anchor="middle" font-size="7.5" fill="var(--muted)">'+trendEsc(shortLbl)+'</text>';
   }).join('');
   return '<div style="background:var(--white);border:1px solid var(--line);border-radius:8px;padding:14px 16px 6px;margin-bottom:14px;overflow-x:auto;">'
     +'<div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:4px;">📈 평균 점수 추세</div>'
-    +'<svg viewBox="0 0 '+W+' '+H+'" style="min-width:'+W+'px;width:100%;height:auto;">'+grid+line+dots+'</svg>'
+    +'<svg viewBox="0 0 '+W+' '+H+'" style="display:block;max-width:'+W+'px;width:100%;height:auto;">'+grid+line+dots+'</svg>'
     +'</div>';
 }
+function trendEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 // 그래프 x축에 쓸 짧은 라벨
 function trendShortLabel(p){
   var r=p.records[0]||{};
   if(r.name==='미니모의고사'){ var m=(r.week||'').match(/(\d+)/); return m?m[1]+'주':(r.week||''); }
   if(r.name==='기출 Test'){ return (r.examTerm2||'')+(r.examTerm||''); }
-  return (r.unit||p.label).slice(0,6);
+  var s=(r.unit||p.label||'');
+  return s.length>7 ? s.slice(0,6)+'…' : s;   // 긴 라벨은 말줄임
 }
 
 // 시험지 표 (행 클릭 시 상세 펼침)
