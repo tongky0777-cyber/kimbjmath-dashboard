@@ -601,7 +601,7 @@ textarea{resize:vertical;min-height:80px;}
       </div>
       <div class="form-row">
         <div class="form-group"><label>테스트명</label><select id="test-name"></select></div>
-        <div class="form-group"><label>교재</label><select id="test-book"></select></div>
+        <div class="form-group"><label>교재</label><select id="test-book" onchange="refreshUnits('test')"></select></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>과목</label><select id="test-subject" onchange="onSubjectChange('test')"></select></div>
@@ -633,7 +633,7 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>단원</label><select id="hw-unit"></select></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>교재</label><select id="hw-book"></select></div>
+        <div class="form-group"><label>교재</label><select id="hw-book" onchange="refreshUnits('hw')"></select></div>
         <div class="form-group"><label>페이지/범위</label><input id="hw-range" placeholder="p.45~50"></div>
       </div>
       <div class="form-row">
@@ -710,7 +710,7 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>단원</label><select id="ghw-unit"></select></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>교재</label><select id="ghw-book"></select></div>
+        <div class="form-group"><label>교재</label><select id="ghw-book" onchange="refreshUnits('ghw')"></select></div>
         <div class="form-group"><label>페이지/범위</label><input id="ghw-range" placeholder="p.45~50"></div>
       </div>
       <div class="form-row">
@@ -739,7 +739,7 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>단원</label><select id="prog-unit"></select></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>교재</label><select id="prog-book"></select></div>
+        <div class="form-group"><label>교재</label><select id="prog-book" onchange="refreshUnits('prog')"></select></div>
         <div class="form-group"><label>진도 (페이지/범위)</label><input id="prog-range" placeholder="p.45~62"></div>
       </div>
       <div class="form-group full"><label>메모</label><textarea id="prog-memo" placeholder="특이사항, 다음 수업 준비사항 등"></textarea></div>
@@ -874,7 +874,7 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>단원</label><select id="gp-unit"></select></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>교재</label><select id="gp-book"></select></div>
+        <div class="form-group"><label>교재</label><select id="gp-book" onchange="refreshUnits('gp')"></select></div>
         <div class="form-group"><label>진도 (페이지/범위)</label><input id="gp-range" placeholder="p.45~62"></div>
       </div>
       <div class="form-group full"><label>메모</label><textarea id="gp-memo" placeholder="다음 수업 준비사항 등" style="min-height:60px;"></textarea></div>
@@ -1272,24 +1272,57 @@ function toast(msg) {
 // 학원 사정에 맞게 자유롭게 수정하세요. 과목 > [단원...] 구조.
 // ※ 합본 단원: 고쟁이 등 일부 교재는 두 소단원을 한 단원으로 묶습니다.
 //   그런 경우를 위해 "(통합)" 항목을 함께 넣어두었습니다. 쪼갠 교재는 소단원을, 합친 교재는 통합 항목을 고르세요.
+// ===== 과목 기본 단원 (2022 개정) =====
+// 교재별 단원(BOOKUNITS)이 없을 때 사용하는 공통 단원. 통합 항목도 함께 둡니다.
 var CURRICULUM = {
-  "공통수학1": ["다항식의 연산","나머지정리와 인수분해","복소수","이차방정식","이차방정식과 이차함수","여러 가지 방정식","일차부등식","이차부등식","방정식과 부등식(통합)","순열","조합","순열과 조합(통합)","행렬과 그 연산","다항식의 연산(고쟁이)","항등식과 나머지정리(고쟁이)","인수분해(고쟁이)","복소수와 이차방정식(고쟁이)","이차방정식과 이차함수(고쟁이)","여러 가지 방정식(고쟁이)","여러 가지 부등식(고쟁이)","경우의 수(고쟁이)","순열과 조합(고쟁이)","행렬의 뜻과 연산(고쟁이)"],
-  "공통수학2": ["평면좌표","직선의 방정식","원의 방정식","도형의 이동","도형의 방정식(통합)","집합의 뜻과 포함관계","집합의 연산","명제","집합과 명제(통합)","함수","유리함수","무리함수","함수와 그래프(통합)","평면좌표(고쟁이)","직선의 방정식(고쟁이)","원의 방정식(고쟁이)","도형의 이동(고쟁이)","집합(고쟁이)","명제(고쟁이)","함수(고쟁이)","유리함수와 무리함수(고쟁이)"],
-  "대수": ["지수","로그","지수와 로그(통합)","지수함수","로그함수","지수함수와 로그함수(통합)","삼각함수의 뜻","삼각함수의 그래프","사인법칙과 코사인법칙","삼각함수(통합)","등차수열과 등비수열","수열의 합","수학적 귀납법","수열(통합)","지수와 로그(고쟁이)","지수함수와 로그함수(고쟁이)","삼각함수(고쟁이)","사인법칙과 코사인법칙(고쟁이)","등차수열과 등비수열(고쟁이)","수열의 합(고쟁이)","수학적 귀납법(고쟁이)"],
-  "미적분1": ["함수의 극한","함수의 연속","함수의 극한과 연속(통합)","미분계수와 도함수","도함수의 활용","미분(통합)","부정적분","정적분","정적분의 활용","적분(통합)","함수의 극한(고쟁이)","함수의 연속(고쟁이)","미분계수와 도함수(고쟁이)","도함수의 활용 (1)(고쟁이)","도함수의 활용 (2)(고쟁이)","도함수의 활용 (3)(고쟁이)","부정적분(고쟁이)","정적분(고쟁이)","정적분의 활용(고쟁이)"],
+  "공통수학1": ["다항식의 연산","나머지정리와 인수분해","복소수","이차방정식","이차방정식과 이차함수","여러 가지 방정식","일차부등식","이차부등식","방정식과 부등식(통합)","순열","조합","순열과 조합(통합)","행렬과 그 연산"],
+  "공통수학2": ["평면좌표","직선의 방정식","원의 방정식","도형의 이동","도형의 방정식(통합)","집합의 뜻과 포함관계","집합의 연산","명제","집합과 명제(통합)","함수","유리함수","무리함수","함수와 그래프(통합)"],
+  "대수": ["지수","로그","지수와 로그(통합)","지수함수","로그함수","지수함수와 로그함수(통합)","삼각함수의 뜻","삼각함수의 그래프","사인법칙과 코사인법칙","삼각함수(통합)","등차수열과 등비수열","수열의 합","수학적 귀납법","수열(통합)"],
+  "미적분1": ["함수의 극한","함수의 연속","함수의 극한과 연속(통합)","미분계수와 도함수","도함수의 활용","미분(통합)","부정적분","정적분","정적분의 활용","적분(통합)"],
   "확률과 통계": ["순열과 조합","이항정리","경우의 수(통합)","확률의 뜻과 활용","조건부확률","확률(통합)","확률분포","정규분포","통계적 추정","통계(통합)"]
+};
+
+// ===== 교재별 단원 =====
+// 구조: BOOKUNITS[교재명][과목] = [단원...]
+// 교재를 고르면 그 교재+과목에 등록된 단원이 있으면 그것만, 없으면 CURRICULUM(과목 기본)을 사용.
+// 새 교재 목차가 생기면 여기에 추가만 하면 됩니다.
+var BOOKUNITS = {
+  "고쟁이": {
+    "공통수학1": ["다항식의 연산","항등식과 나머지정리","인수분해","복소수와 이차방정식","이차방정식과 이차함수","여러 가지 방정식","여러 가지 부등식","경우의 수","순열과 조합","행렬의 뜻과 연산"],
+    "공통수학2": ["평면좌표","직선의 방정식","원의 방정식","도형의 이동","집합","명제","함수","유리함수와 무리함수"],
+    "대수": ["지수와 로그","지수함수와 로그함수","삼각함수","사인법칙과 코사인법칙","등차수열과 등비수열","수열의 합","수학적 귀납법"],
+    "미적분1": ["함수의 극한","함수의 연속","미분계수와 도함수","도함수의 활용 (1)","도함수의 활용 (2)","도함수의 활용 (3)","부정적분","정적분","정적분의 활용"]
+  },
+  "마플시너지": {
+    "공통수학1": ["다항식의 연산","항등식과 나머지정리","인수분해","복소수","이차방정식","이차방정식과 이차함수 펼치기","여러 가지 방정식","일차부등식","이차부등식","경우의 수","순열","조합","행렬과 그 연산"],
+    "공통수학2": ["평면좌표","직선의 방정식","원의 방정식","도형의 이동","집합의 뜻","집합의 연산","명제","절대부등식","함수","합성함수와 역함수","유리함수","무리함수"]
+  }
 };
 // 교재 목록 (학원에서 쓰는 책). 추가/삭제하세요.
 var BOOKLIST = ["내 교재","고쟁이","절대등급","개념원리","RPM","라이트쎈","쎈","개념+유형","마플시너지","자이스토리","완쏠","All in one","Only one"];
 // 테스트 이름 목록 (드롭다운). 추가/삭제하세요.
 var TESTLIST = ["개념반 Daily Test","문풀반 Daily Test - 기본","문풀반 Daily Test - 실전","문풀반 Daily Test - 심화","미니모의고사","기출 Test"];
 
-// 과목 선택 시 단원 드롭다운 채우기 (prefix = 'prog' 또는 'hw')
-function onSubjectChange(prefix){
-  var subj = document.getElementById(prefix+'-subject').value;
+// 교재+과목 기준으로 쓸 단원 목록 반환 (교재별 단원 우선, 없으면 과목 기본)
+function getUnitsFor(subject, book){
+  if(book && BOOKUNITS[book] && BOOKUNITS[book][subject]) return BOOKUNITS[book][subject];
+  return CURRICULUM[subject] || [];
+}
+// 과목/교재 선택 변화 시 단원 드롭다운 다시 채우기 (기존 선택값 가능하면 유지)
+function refreshUnits(prefix){
+  var subj = document.getElementById(prefix+'-subject') ? document.getElementById(prefix+'-subject').value : '';
+  var book = document.getElementById(prefix+'-book') ? document.getElementById(prefix+'-book').value : '';
   var unitSel = document.getElementById(prefix+'-unit');
-  var units = CURRICULUM[subj] || [];
+  if(!unitSel) return;
+  var prev = unitSel.value;
+  var units = getUnitsFor(subj, book);
   unitSel.innerHTML = units.map(function(u){ return '<option value="'+u+'">'+u+'</option>'; }).join('');
+  if(prev && units.indexOf(prev)>-1) unitSel.value = prev; // 같은 단원이 새 목록에도 있으면 유지
+}
+
+// 과목 선택 시 단원 드롭다운 채우기 (교재별 단원 우선)
+function onSubjectChange(prefix){
+  refreshUnits(prefix);
 }
 // 과목/교재 드롭다운 옵션 채우기
 function fillSubjectBookSelects(prefix){
@@ -1314,14 +1347,18 @@ function applyLastDefault(prefix, dataKey){
   // date 기준 최신 1건
   var last = recs.slice().sort(function(a,b){ return (b.date||b.due||'').localeCompare(a.date||a.due||''); })[0];
   if(!last) return;
-  var subjSel = document.getElementById(prefix+'-subject');
-  if(subjSel && last.subject && CURRICULUM[last.subject]){
-    subjSel.value = last.subject;
-    onSubjectChange(prefix);
-    if(last.unit){ var us=document.getElementById(prefix+'-unit'); if(us) us.value = last.unit; }
-  }
+  // 1) 교재 먼저 (단원 목록이 교재 기준으로 잡히도록)
   var bookSel = document.getElementById(prefix+'-book');
   if(bookSel && last.book && BOOKLIST.indexOf(last.book)>-1) bookSel.value = last.book;
+  // 2) 과목
+  var subjSel = document.getElementById(prefix+'-subject');
+  if(subjSel && last.subject && CURRICULUM[last.subject]) subjSel.value = last.subject;
+  // 3) 단원 목록 새로고침(교재+과목 기준) 후 단원값
+  refreshUnits(prefix);
+  if(last.unit){
+    var us=document.getElementById(prefix+'-unit');
+    if(us){ var has=Array.prototype.some.call(us.options,function(o){return o.value===last.unit;}); if(has) us.value=last.unit; }
+  }
 }
 
 // 학생 선택 셀렉트 채우기
@@ -1721,10 +1758,10 @@ function editTest(id) {
   document.getElementById('test-student').value = t.sid;
   fillTestNameSelect(t.name);
   fillSubjectBookSelects('test');
-  if(t.subject){ document.getElementById('test-subject').value = t.subject; }
-  onSubjectChange('test');
-  if(t.unit){ document.getElementById('test-unit').value = t.unit; }
   if(t.book){ document.getElementById('test-book').value = t.book; }
+  if(t.subject){ document.getElementById('test-subject').value = t.subject; }
+  refreshUnits('test');
+  if(t.unit){ var tu=document.getElementById('test-unit'); var th=Array.prototype.some.call(tu.options,function(o){return o.value===t.unit;}); if(th) tu.value=t.unit; }
   document.getElementById('test-date-input').value = t.date;
   document.getElementById('test-correct').value = t.correct||'';
   document.getElementById('test-total').value = t.total||'';
@@ -2200,11 +2237,11 @@ function editProgress(id) {
   document.getElementById('prog-id').value    = r.id;
   document.getElementById('prog-student').value = r.sid;
   document.getElementById('prog-date').value  = r.date || '';
-  // 과목 → 단원 순으로 세팅
-  if(r.subject){ document.getElementById('prog-subject').value = r.subject; }
-  onSubjectChange('prog');
-  if(r.unit){ document.getElementById('prog-unit').value = r.unit; }
+  // 교재 먼저 → 과목 → 단원 순 (교재별 단원 반영)
   if(r.book){ document.getElementById('prog-book').value = r.book; }
+  if(r.subject){ document.getElementById('prog-subject').value = r.subject; }
+  refreshUnits('prog');
+  if(r.unit){ var pu=document.getElementById('prog-unit'); var h=Array.prototype.some.call(pu.options,function(o){return o.value===r.unit;}); if(h) pu.value=r.unit; }
   document.getElementById('prog-range').value = r.range || '';
   document.getElementById('prog-memo').value  = r.memo || '';
   var titleEl = document.getElementById('prog-modal-title');
@@ -2372,10 +2409,10 @@ function editGroupProgress(rowData) {
   if(matchGroup) sel.value = matchGroup.id;
 
   document.getElementById('gp-date').value  = rowData.date  || '';
-  if(rowData.subject){ document.getElementById('gp-subject').value = rowData.subject; }
-  onSubjectChange('gp');
-  if(rowData.unit){ document.getElementById('gp-unit').value = rowData.unit; }
   if(rowData.book){ document.getElementById('gp-book').value = rowData.book; }
+  if(rowData.subject){ document.getElementById('gp-subject').value = rowData.subject; }
+  refreshUnits('gp');
+  if(rowData.unit){ var gu=document.getElementById('gp-unit'); var gh=Array.prototype.some.call(gu.options,function(o){return o.value===rowData.unit;}); if(gh) gu.value=rowData.unit; }
   document.getElementById('gp-range').value = rowData.range || '';
   document.getElementById('gp-memo').value  = rowData.memo  || '';
 
