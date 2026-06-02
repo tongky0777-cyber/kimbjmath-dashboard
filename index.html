@@ -223,6 +223,7 @@ textarea{resize:vertical;min-height:80px;}
 <div class="sb-item" onclick="showView('students',this)"><span class="sb-icon">👥</span> 학생 목록</div>
     <div class="sb-item" onclick="showView('attendance',this)"><span class="sb-icon">✅</span> 출결 관리</div>
     <div class="sb-item" onclick="showView('homework',this)"><span class="sb-icon">📚</span> 숙제 관리</div>
+    <div class="sb-item" onclick="showView('prep',this)"><span class="sb-icon">🎯</span> 다음 수업 준비</div>
     <div class="sb-item" onclick="showView('progress',this)"><span class="sb-icon">📖</span> 진도 관리</div>
     <div class="sb-item" onclick="showView('tests',this)"><span class="sb-icon">📝</span> 테스트 결과</div>
     <div class="sb-item" onclick="showView('groups',this)"><span class="sb-icon">🏫</span> 반 관리</div>
@@ -422,6 +423,20 @@ textarea{resize:vertical;min-height:80px;}
 
     <!-- 진도 관리 -->
       <!-- 진도 관리 -->
+    <div class="view" id="view-prep">
+      <div class="sec-hd"><h2>🎯 다음 수업 준비</h2><div class="actions">
+        <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap;">표시 기간
+        <select id="prep-range-days" onchange="renderPrep()" style="font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:3px;background:var(--white);cursor:pointer;font-family:var(--sans);">
+          <option value="7">이번 주 (7일)</option>
+          <option value="3">향후 3일</option>
+          <option value="1">다음 수업 1회</option>
+          <option value="14">향후 2주</option>
+        </select></label>
+      </div></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">각 반·학생이 다음에 오는 날과 마지막 진도를 모아 보여줍니다. 이걸 보고 테스트를 준비하세요.</div>
+      <div id="prep-body"></div>
+    </div>
+
     <div class="view" id="view-progress">
       <div class="sec-hd"><h2>📖 진도 관리</h2><div class="actions"><button class="btn-sm sec" onclick="openGroupProgressModal()">👥 반별 진도</button><button class="btn-sm" onclick="openProgressModal()">+ 개별 진도</button></div></div>
 
@@ -1062,7 +1077,7 @@ function activateMemo() {
   }
 }
 
-var viewTitles = {dashboard:'📊 전체 현황',progress:'📖 진도 관리',groups:'🏫 반 관리',students:'👥 학생 목록',attendance:'✅ 출결 관리',tests:'📝 테스트 결과',homework:'📚 숙제 관리',schedule:'📅 보강 · 일정',memo:'🗒️ 메모'};
+var viewTitles = {dashboard:'📊 전체 현황',prep:'🎯 다음 수업 준비',progress:'📖 진도 관리',groups:'🏫 반 관리',students:'👥 학생 목록',attendance:'✅ 출결 관리',tests:'📝 테스트 결과',homework:'📚 숙제 관리',schedule:'📅 보강 · 일정',memo:'🗒️ 메모'};
 
 
 // ===== 시험 일정 =====
@@ -1201,6 +1216,7 @@ function showView(id, el) {
   if(id==='schedule')   { renderSchedule(); }
   if(id==='memo')       activateMemo();
   if(id==='dashboard')  renderDashboard();
+  if(id==='prep')       renderPrep();
   if(id==='progress')   { renderProgress(); progCalYear=new Date().getFullYear(); progCalMonth=new Date().getMonth(); renderProgCalendar(); }
   if(id==='groups')     renderGroups();
   if(id==='exam')       renderExam();
@@ -1946,6 +1962,129 @@ function renderSchedule() {
 }
 
 // 대시보드
+// ===== 다음 수업 준비 보드 =====
+var PREP_DAYNAMES = ['일','월','화','수','목','금','토'];
+// 특정 반(요일 배열)의 오늘 이후 N일 내 가장 가까운 수업 날짜 반환 (없으면 null)
+function nextClassDate(daysArr, withinDays){
+  if(!daysArr || !daysArr.length) return null;
+  var today = new Date(); today.setHours(0,0,0,0);
+  for(var i=0; i<=withinDays; i++){
+    var d = new Date(today); d.setDate(today.getDate()+i);
+    var dn = PREP_DAYNAMES[d.getDay()];
+    if(daysArr.indexOf(dn)>-1) return d;
+  }
+  return null;
+}
+// 날짜를 "6/5(목)" 형태로
+function fmtPrepDate(d){
+  return (d.getMonth()+1)+'/'+d.getDate()+'('+PREP_DAYNAMES[d.getDay()]+')';
+}
+// 오늘로부터 며칠 뒤인지 라벨
+function relDayLabel(d){
+  var today=new Date(); today.setHours(0,0,0,0);
+  var diff=Math.round((d-today)/86400000);
+  if(diff===0) return '오늘';
+  if(diff===1) return '내일';
+  return diff+'일 뒤';
+}
+
+function renderPrep(){
+  var body = document.getElementById('prep-body');
+  if(!body) return;
+  var withinDays = parseInt((document.getElementById('prep-range-days')||{}).value || '7');
+  var groups   = DB.get('groups') || [];
+  var students = DB.get('students') || [];
+  var progress = DB.get('progress') || [];
+  var tests    = DB.get('tests') || [];
+
+  // 각 반의 다음 수업 + 마지막 진도(반별 그룹 진도 기준, 교재별로 최신 1건씩)
+  var cards = [];
+  groups.forEach(function(g){
+    var nd = nextClassDate(g.days, withinDays===1?14:withinDays); // 1회 모드는 14일 안에서 1번
+    if(!nd) return;
+    // 이 반의 진도 기록 (groupName 일치). 교재별 최신만.
+    var recs = progress.filter(function(p){ return p.groupName===g.name; })
+                       .sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+    var byBook = {};
+    recs.forEach(function(p){ var k=p.book||'(교재없음)'; if(!byBook[k]) byBook[k]=p; });
+    var lastProg = Object.keys(byBook).map(function(k){ return byBook[k]; });
+    // 최근 테스트 1건
+    var gTest = tests.filter(function(t){ return getStudentGroupsSafe(t.sid).indexOf(g.name)>-1; })
+                     .sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); })[0];
+    cards.push({
+      kind: (g.students&&g.students.length===1)?'개인':'반',
+      name: g.name,
+      date: nd,
+      time: (g.startTime&&g.endTime)? g.startTime+'~'+g.endTime : '',
+      studentsCount: (g.students||[]).length,
+      lastProg: lastProg,
+      lastTest: gTest
+    });
+  });
+
+  // 날짜 가까운 순 정렬
+  cards.sort(function(a,b){ return a.date - b.date; });
+
+  if(!cards.length){
+    body.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px;border:1px dashed var(--line);border-radius:8px;">해당 기간에 예정된 수업이 없습니다.<br><span style="font-size:12px;">반 관리에서 반의 요일·시간을 입력하면 여기에 표시됩니다.</span></div>';
+    return;
+  }
+
+  // 날짜별로 그룹핑
+  var byDate = {};
+  cards.forEach(function(c){ var key=fmtPrepDate(c.date); if(!byDate[key]) byDate[key]=[]; byDate[key].push(c); });
+
+  var html = '';
+  Object.keys(byDate).forEach(function(dateKey){
+    var list = byDate[dateKey];
+    var rel = relDayLabel(list[0].date);
+    html += '<div style="margin-bottom:18px;">';
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
+         +'<span style="font-size:14px;font-weight:700;color:var(--ink);">'+dateKey+'</span>'
+         +'<span style="font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-bg);padding:2px 8px;border-radius:100px;">'+rel+'</span>'
+         +'<span style="font-size:11px;color:var(--muted);">'+list.length+'개 수업</span></div>';
+    list.forEach(function(c){
+      var kindColor = c.kind==='개인' ? 'var(--gold)' : 'var(--teal)';
+      var kindBg    = c.kind==='개인' ? 'var(--gold-bg)' : 'var(--teal-bg)';
+      html += '<div style="background:var(--white);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:8px;">';
+      // 헤더: 반 이름 + 시간
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">'
+           +'<span style="background:'+kindBg+';color:'+kindColor+';font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;">'+c.kind+'</span>'
+           +'<span style="font-size:14px;font-weight:700;color:var(--ink);">'+c.name+'</span>'
+           +(c.time?'<span style="font-size:12px;color:var(--muted);">'+c.time+'</span>':'')
+           +(c.kind==='반'?'<span style="font-size:11px;color:var(--muted);">'+c.studentsCount+'명</span>':'')
+           +'</div>';
+      // 마지막 진도
+      if(c.lastProg.length){
+        html += '<div style="font-size:12px;color:var(--ink2);margin-bottom:4px;font-weight:700;">📖 지난 진도</div>';
+        c.lastProg.forEach(function(p){
+          html += '<div style="font-size:12px;color:var(--ink2);padding:3px 0 3px 8px;">'
+               +(p.book||'')+(p.subject?' · '+p.subject:'')+(p.unit?' · '+p.unit:'')
+               +(p.range?' · <b>'+p.range+'</b>':'')
+               +' <span style="color:var(--muted);font-size:11px;">('+(p.date||'')+')</span></div>';
+        });
+        html += '<div style="font-size:11px;color:var(--teal);padding:4px 0 0 8px;">→ 다음 진도/테스트 범위를 여기서부터 잡으세요</div>';
+      } else {
+        html += '<div style="font-size:12px;color:var(--muted);padding:3px 0;">아직 입력된 진도가 없습니다.</div>';
+      }
+      // 최근 테스트
+      if(c.lastTest){
+        html += '<div style="font-size:11px;color:var(--muted);margin-top:6px;padding-left:8px;">최근 테스트: '+(c.lastTest.name||'')+' '+(c.lastTest.score!=null?c.lastTest.score+'점':'')+' ('+(c.lastTest.date||'')+')</div>';
+      }
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+}
+
+// 학생 id로 소속 반 이름 배열 (안전 버전)
+function getStudentGroupsSafe(sid){
+  try {
+    return (DB.get('groups')||[]).filter(function(g){ return (g.students||[]).indexOf(sid)>-1; }).map(function(g){ return g.name; });
+  } catch(e){ return []; }
+}
+
 function renderDashboard() {
   var students = DB.get('students');
   var homework = DB.get('homework');
