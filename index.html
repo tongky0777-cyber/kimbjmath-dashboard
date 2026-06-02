@@ -600,7 +600,7 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>날짜</label><input type="date" id="test-date-input"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>테스트명</label><input id="test-name" placeholder="5월 2주차 단원 테스트"></div>
+        <div class="form-group"><label>테스트명</label><select id="test-name"></select></div>
         <div class="form-group"></div>
       </div>
       <div class="form-row">
@@ -1238,7 +1238,7 @@ function openStudentModal() {
   openModal('modal-student');
 }
 function openAttModal() { populateSel(); openModal('modal-att'); }
-function openTestModal() { populateSel(); openModal('modal-test'); }
+function openTestModal() { populateSel(); fillTestNameSelect(); openModal('modal-test'); }
 function openHwModal() {
   populateSel();
   fillSubjectBookSelects('hw');
@@ -1260,15 +1260,19 @@ function toast(msg) {
 
 // ===== 교육과정 단원 데이터 (2022 개정) =====
 // 학원 사정에 맞게 자유롭게 수정하세요. 과목 > [단원...] 구조.
+// ※ 합본 단원: 고쟁이 등 일부 교재는 두 소단원을 한 단원으로 묶습니다.
+//   그런 경우를 위해 "(통합)" 항목을 함께 넣어두었습니다. 쪼갠 교재는 소단원을, 합친 교재는 통합 항목을 고르세요.
 var CURRICULUM = {
-  "공통수학1": ["다항식의 연산","나머지정리와 인수분해","복소수","이차방정식","이차방정식과 이차함수","여러 가지 방정식","일차부등식","이차부등식","순열","조합","행렬과 그 연산"],
-  "공통수학2": ["평면좌표","직선의 방정식","원의 방정식","도형의 이동","집합의 뜻과 포함관계","집합의 연산","명제","함수","유리함수","무리함수"],
-  "대수": ["지수","로그","지수함수","로그함수","삼각함수의 뜻","삼각함수의 그래프","사인법칙과 코사인법칙","등차수열과 등비수열","수열의 합","수학적 귀납법"],
-  "미적분1": ["함수의 극한","함수의 연속","미분계수와 도함수","도함수의 활용","부정적분","정적분","정적분의 활용"],
-  "확률과 통계": ["순열과 조합","이항정리","확률의 뜻과 활용","조건부확률","확률분포","정규분포","통계적 추정"]
+  "공통수학1": ["다항식의 연산","나머지정리와 인수분해","복소수","이차방정식","이차방정식과 이차함수","여러 가지 방정식","일차부등식","이차부등식","방정식과 부등식(통합)","순열","조합","순열과 조합(통합)","행렬과 그 연산"],
+  "공통수학2": ["평면좌표","직선의 방정식","원의 방정식","도형의 이동","도형의 방정식(통합)","집합의 뜻과 포함관계","집합의 연산","명제","집합과 명제(통합)","함수","유리함수","무리함수","함수와 그래프(통합)"],
+  "대수": ["지수","로그","지수와 로그(통합)","지수함수","로그함수","지수함수와 로그함수(통합)","삼각함수의 뜻","삼각함수의 그래프","사인법칙과 코사인법칙","삼각함수(통합)","등차수열과 등비수열","수열의 합","수학적 귀납법","수열(통합)"],
+  "미적분1": ["함수의 극한","함수의 연속","함수의 극한과 연속(통합)","미분계수와 도함수","도함수의 활용","미분(통합)","부정적분","정적분","정적분의 활용","적분(통합)"],
+  "확률과 통계": ["순열과 조합","이항정리","경우의 수(통합)","확률의 뜻과 활용","조건부확률","확률(통합)","확률분포","정규분포","통계적 추정","통계(통합)"]
 };
 // 교재 목록 (학원에서 쓰는 책). 추가/삭제하세요.
-var BOOKLIST = ["내 교재","쎈 공통수학1","쎈 공통수학2","쎈 대수","마플 공통수학1","마플 공통수학2","개념원리 공통수학1","개념원리 공통수학2","RPM 공통수학1","RPM 공통수학2"];
+var BOOKLIST = ["내 교재","고쟁이","절대등급","개념원리","RPM","라이트쎈","쎈","개념+유형","마플시너지","자이스토리","완쏠","All in one","Only one"];
+// 테스트 이름 목록 (드롭다운). 추가/삭제하세요.
+var TESTLIST = ["개념반 Daily Test","문풀반 Daily Test - 기본","문풀반 Daily Test - 실전","문풀반 Daily Test - 심화","미니모의고사","기출 Test"];
 
 // 과목 선택 시 단원 드롭다운 채우기 (prefix = 'prog' 또는 'hw')
 function onSubjectChange(prefix){
@@ -1283,6 +1287,15 @@ function fillSubjectBookSelects(prefix){
   var bookSel = document.getElementById(prefix+'-book');
   if(subjSel) subjSel.innerHTML = Object.keys(CURRICULUM).map(function(s){ return '<option value="'+s+'">'+s+'</option>'; }).join('');
   if(bookSel) bookSel.innerHTML = BOOKLIST.map(function(b){ return '<option value="'+b+'">'+b+'</option>'; }).join('');
+}
+// 테스트명 드롭다운 채우기. keepValue=기존에 저장된 이름(목록에 없으면 임시 옵션으로 추가)
+function fillTestNameSelect(keepValue){
+  var sel = document.getElementById('test-name');
+  if(!sel) return;
+  var list = TESTLIST.slice();
+  if(keepValue && list.indexOf(keepValue)===-1) list.unshift(keepValue); // 옛 자유입력 값 보존
+  sel.innerHTML = list.map(function(n){ return '<option value="'+n+'">'+n+'</option>'; }).join('');
+  if(keepValue) sel.value = keepValue;
 }
 // 직전 기록(가장 최근 진도/숙제)의 과목·단원·교재를 기본값으로 세팅
 function applyLastDefault(prefix, dataKey){
@@ -1692,7 +1705,7 @@ function editTest(id) {
   if(!t) return;
   populateSel();
   document.getElementById('test-student').value = t.sid;
-  document.getElementById('test-name').value = t.name;
+  fillTestNameSelect(t.name);
   document.getElementById('test-date-input').value = t.date;
   document.getElementById('test-correct').value = t.correct||'';
   document.getElementById('test-total').value = t.total||'';
@@ -2516,7 +2529,7 @@ function selectTestDay(dateStr) {
 }
 
 function openTestModalForDate() {
-  populateSel(); openModal('modal-test');
+  populateSel(); fillTestNameSelect(); openModal('modal-test');
   var el=document.getElementById('test-date-input');
   if(el&&testSelectedDate) el.value=testSelectedDate;
 }
