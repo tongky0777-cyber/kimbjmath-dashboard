@@ -377,8 +377,8 @@ textarea{resize:vertical;min-height:80px;}
       <!-- 전체 목록 -->
       <div class="sec-hd"><h2>📋 전체 테스트 기록</h2></div>
       <div class="tbl-wrap">
-        <table><thead><tr><th>이름</th><th>반</th><th>테스트명</th><th>날짜</th><th>점수</th><th>메모</th><th></th></tr></thead>
-        <tbody id="test-body"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px;">테스트 결과를 입력해보세요</td></tr></tbody></table>
+        <table><thead><tr><th>이름</th><th>반</th><th>테스트명</th><th>단원</th><th>날짜</th><th>점수</th><th>메모</th><th></th></tr></thead>
+        <tbody id="test-body"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">테스트 결과를 입력해보세요</td></tr></tbody></table>
       </div>
     </div>
 
@@ -601,7 +601,11 @@ textarea{resize:vertical;min-height:80px;}
       </div>
       <div class="form-row">
         <div class="form-group"><label>테스트명</label><select id="test-name"></select></div>
-        <div class="form-group"></div>
+        <div class="form-group"><label>교재</label><select id="test-book"></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>과목</label><select id="test-subject" onchange="onSubjectChange('test')"></select></div>
+        <div class="form-group"><label>단원</label><select id="test-unit"></select></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>맞힌 개수</label><input type="number" id="test-correct" min="0" placeholder="18" oninput="calcTestPct()"></div>
@@ -1238,7 +1242,13 @@ function openStudentModal() {
   openModal('modal-student');
 }
 function openAttModal() { populateSel(); openModal('modal-att'); }
-function openTestModal() { populateSel(); fillTestNameSelect(); openModal('modal-test'); }
+function openTestModal() {
+  populateSel(); fillTestNameSelect();
+  fillSubjectBookSelects('test');
+  onSubjectChange('test');
+  applyLastDefault('test','tests'); // 직전 테스트의 과목·단원·교재 기본값
+  openModal('modal-test');
+}
 function openHwModal() {
   populateSel();
   fillSubjectBookSelects('hw');
@@ -1263,10 +1273,10 @@ function toast(msg) {
 // ※ 합본 단원: 고쟁이 등 일부 교재는 두 소단원을 한 단원으로 묶습니다.
 //   그런 경우를 위해 "(통합)" 항목을 함께 넣어두었습니다. 쪼갠 교재는 소단원을, 합친 교재는 통합 항목을 고르세요.
 var CURRICULUM = {
-  "공통수학1": ["다항식의 연산","나머지정리와 인수분해","복소수","이차방정식","이차방정식과 이차함수","여러 가지 방정식","일차부등식","이차부등식","방정식과 부등식(통합)","순열","조합","순열과 조합(통합)","행렬과 그 연산"],
-  "공통수학2": ["평면좌표","직선의 방정식","원의 방정식","도형의 이동","도형의 방정식(통합)","집합의 뜻과 포함관계","집합의 연산","명제","집합과 명제(통합)","함수","유리함수","무리함수","함수와 그래프(통합)"],
-  "대수": ["지수","로그","지수와 로그(통합)","지수함수","로그함수","지수함수와 로그함수(통합)","삼각함수의 뜻","삼각함수의 그래프","사인법칙과 코사인법칙","삼각함수(통합)","등차수열과 등비수열","수열의 합","수학적 귀납법","수열(통합)"],
-  "미적분1": ["함수의 극한","함수의 연속","함수의 극한과 연속(통합)","미분계수와 도함수","도함수의 활용","미분(통합)","부정적분","정적분","정적분의 활용","적분(통합)"],
+  "공통수학1": ["다항식의 연산","나머지정리와 인수분해","복소수","이차방정식","이차방정식과 이차함수","여러 가지 방정식","일차부등식","이차부등식","방정식과 부등식(통합)","순열","조합","순열과 조합(통합)","행렬과 그 연산","다항식의 연산(고쟁이)","항등식과 나머지정리(고쟁이)","인수분해(고쟁이)","복소수와 이차방정식(고쟁이)","이차방정식과 이차함수(고쟁이)","여러 가지 방정식(고쟁이)","여러 가지 부등식(고쟁이)","경우의 수(고쟁이)","순열과 조합(고쟁이)","행렬의 뜻과 연산(고쟁이)"],
+  "공통수학2": ["평면좌표","직선의 방정식","원의 방정식","도형의 이동","도형의 방정식(통합)","집합의 뜻과 포함관계","집합의 연산","명제","집합과 명제(통합)","함수","유리함수","무리함수","함수와 그래프(통합)","평면좌표(고쟁이)","직선의 방정식(고쟁이)","원의 방정식(고쟁이)","도형의 이동(고쟁이)","집합(고쟁이)","명제(고쟁이)","함수(고쟁이)","유리함수와 무리함수(고쟁이)"],
+  "대수": ["지수","로그","지수와 로그(통합)","지수함수","로그함수","지수함수와 로그함수(통합)","삼각함수의 뜻","삼각함수의 그래프","사인법칙과 코사인법칙","삼각함수(통합)","등차수열과 등비수열","수열의 합","수학적 귀납법","수열(통합)","지수와 로그(고쟁이)","지수함수와 로그함수(고쟁이)","삼각함수(고쟁이)","사인법칙과 코사인법칙(고쟁이)","등차수열과 등비수열(고쟁이)","수열의 합(고쟁이)","수학적 귀납법(고쟁이)"],
+  "미적분1": ["함수의 극한","함수의 연속","함수의 극한과 연속(통합)","미분계수와 도함수","도함수의 활용","미분(통합)","부정적분","정적분","정적분의 활용","적분(통합)","함수의 극한(고쟁이)","함수의 연속(고쟁이)","미분계수와 도함수(고쟁이)","도함수의 활용 (1)(고쟁이)","도함수의 활용 (2)(고쟁이)","도함수의 활용 (3)(고쟁이)","부정적분(고쟁이)","정적분(고쟁이)","정적분의 활용(고쟁이)"],
   "확률과 통계": ["순열과 조합","이항정리","경우의 수(통합)","확률의 뜻과 활용","조건부확률","확률(통합)","확률분포","정규분포","통계적 추정","통계(통합)"]
 };
 // 교재 목록 (학원에서 쓰는 책). 추가/삭제하세요.
@@ -1688,7 +1698,11 @@ function saveTest() {
   if(isNaN(correct)||isNaN(total)||total<=0) { toast('맞힌 개수와 전체 문항을 입력해주세요'); return; }
   var pct = Math.round(correct/total*100);
   var recs = DB.get('tests');
-  recs.push({id:Date.now().toString(), sid:sid, name:name, score:pct, correct:correct, total:total, date:date, memo:memo});
+  recs.push({id:Date.now().toString(), sid:sid, name:name,
+    subject:document.getElementById('test-subject').value,
+    unit:document.getElementById('test-unit').value,
+    book:document.getElementById('test-book').value,
+    score:pct, correct:correct, total:total, date:date, memo:memo});
   DB.set('tests', recs);
   updateTestFilter();
   closeModal('modal-test');
@@ -1706,6 +1720,11 @@ function editTest(id) {
   populateSel();
   document.getElementById('test-student').value = t.sid;
   fillTestNameSelect(t.name);
+  fillSubjectBookSelects('test');
+  if(t.subject){ document.getElementById('test-subject').value = t.subject; }
+  onSubjectChange('test');
+  if(t.unit){ document.getElementById('test-unit').value = t.unit; }
+  if(t.book){ document.getElementById('test-book').value = t.book; }
   document.getElementById('test-date-input').value = t.date;
   document.getElementById('test-correct').value = t.correct||'';
   document.getElementById('test-total').value = t.total||'';
@@ -1727,7 +1746,11 @@ function editTest(id) {
       var pct = Math.round(correct/total*100);
       var recs = DB.get('tests');
       var idx = recs.findIndex(function(x){ return x.id===id; });
-      if(idx>-1) recs[idx] = {id:id, sid:sid, name:name, score:pct, correct:correct, total:total, date:date, memo:memo};
+      if(idx>-1) recs[idx] = {id:id, sid:sid, name:name,
+        subject:document.getElementById('test-subject').value,
+        unit:document.getElementById('test-unit').value,
+        book:document.getElementById('test-book').value,
+        score:pct, correct:correct, total:total, date:date, memo:memo};
       DB.set('tests', recs);
       saveBtn.textContent = '저장';
       saveBtn.onclick = saveTest;
@@ -1746,12 +1769,13 @@ function renderTests() {
   var filtered = filter ? tests.filter(function(t){ return t.name===filter; }) : tests;
   var tbody = document.getElementById('test-body');
   if(!tbody) return;
-  if(!filtered.length) { tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px;">테스트 결과를 입력해보세요</td></tr>'; return; }
+  if(!filtered.length) { tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">테스트 결과를 입력해보세요</td></tr>'; return; }
   tbody.innerHTML = filtered.sort(function(a,b){ return b.date.localeCompare(a.date); }).map(function(t){
     var student = students.find(function(s){ return s.id===t.sid; });
     var cls = t.score>=90?'high':t.score>=70?'mid':'low';
     var fillColor = t.score>=90?'var(--green)':t.score>=70?'var(--gold)':'var(--red)';
-    return '<tr><td class="student-name">'+(student?student.name:'—')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+t.name+'</td><td style="font-size:12px;color:var(--muted);">'+t.date+'</td><td><span class="score '+cls+'">'+t.score+'점</span><div class="score-bar"><div class="score-fill" style="width:'+t.score+'%;background:'+fillColor+'"></div></div></td><td style="font-size:12px;color:var(--muted);">'+(t.memo||'—')+'</td><td><div class="row-action"><button class="icon-btn" onclick="editTest(\''+t.id+'\')">✏️</button><button class="icon-btn" onclick="deleteTest(\''+t.id+'\')">🗑️</button></div></td></tr>';
+    var unitStr = (t.unit||'') + (t.book? (t.unit?' · ':'')+t.book : '');
+    return '<tr><td class="student-name">'+(student?student.name:'—')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+t.name+'</td><td style="font-size:12px;color:var(--muted);">'+(unitStr||'—')+'</td><td style="font-size:12px;color:var(--muted);">'+t.date+'</td><td><span class="score '+cls+'">'+t.score+'점</span><div class="score-bar"><div class="score-fill" style="width:'+t.score+'%;background:'+fillColor+'"></div></div></td><td style="font-size:12px;color:var(--muted);">'+(t.memo||'—')+'</td><td><div class="row-action"><button class="icon-btn" onclick="editTest(\''+t.id+'\')">✏️</button><button class="icon-btn" onclick="deleteTest(\''+t.id+'\')">🗑️</button></div></td></tr>';
   }).join('');
 }
 function updateTestFilter() {
@@ -2529,7 +2553,11 @@ function selectTestDay(dateStr) {
 }
 
 function openTestModalForDate() {
-  populateSel(); fillTestNameSelect(); openModal('modal-test');
+  populateSel(); fillTestNameSelect();
+  fillSubjectBookSelects('test');
+  onSubjectChange('test');
+  applyLastDefault('test','tests');
+  openModal('modal-test');
   var el=document.getElementById('test-date-input');
   if(el&&testSelectedDate) el.value=testSelectedDate;
 }
