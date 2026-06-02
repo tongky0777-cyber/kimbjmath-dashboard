@@ -1467,6 +1467,20 @@ var BOOKLIST = BOOKLIST_HIGH.concat(BOOKLIST_MID.filter(function(b){ return BOOK
 // 테스트 이름 목록 (드롭다운). 추가/삭제하세요.
 var TESTLIST = ["개념반 Daily Test","문풀반 Daily Test - 기본","문풀반 Daily Test - 실전","문풀반 Daily Test - 심화","미니모의고사","기출 Test","모의고사 기출"];
 
+// 개념반 Daily Test 전용 범위 목록 (테스트명 = "개념반 Daily Test" 선택 시 과목별로 이 목록을 단원 자리에 표시).
+// 교재 무관, 과목별 공통. 순서대로 표시됨.
+var DAILY_TESTS = {
+  "개념반 Daily Test": {
+    "공통수학1": ["다항식의 연산","항등식과 나머지정리(1)","항등식과 나머지정리(2)","인수분해","복소수(1)","복소수(2)","이차방정식(1)","이차방정식(2)","이차방정식과 이차함수","이차함수~최대최소","여러가지 방정식(1)","여러가지 방정식(2)","여러가지 방정식(3)","일차부등식","이차부등식","연립이차부등식","경우의 수 & 순열","조합","행렬"],
+    "공통수학2": ["평면좌표(1)","평면좌표(2)","직선의 방정식(1)","직선의 방정식(2)","직선의 방정식(3)","원의 방정식(1)","원의 방정식(2)","원의 방정식(3)","도형의 이동(1)","도형의 이동(2)","집합의 뜻과 표현","집합의 포함관계","집합의 연산","명제와 조건","명제의 역과 대우","함수(1)","함수(2)","함수(3)","함수(4)","유리함수","무리함수","절대부등식"]
+  }
+};
+// 테스트명+과목에 등록된 데일리 범위 목록 반환 (없으면 null)
+function getDailyTestsFor(testName, subject){
+  if(DAILY_TESTS[testName] && DAILY_TESTS[testName][subject]) return DAILY_TESTS[testName][subject];
+  return null;
+}
+
 // ===== 기출 Test용 학교 목록 =====
 // 학교급(고/중)별 목록. 추후 추가만 하면 됩니다.
 var SCHOOLS = {
@@ -1608,7 +1622,14 @@ function refreshUnits(prefix){
   unitSel.style.display='';
   if(unitTxt) unitTxt.style.display='none';
   var prev = unitSel.value;
-  var units = getUnitsFor(subj, book);
+  // 테스트 모달에서 "개념반 Daily Test" 선택 시: 데일리 전용 범위 목록 우선 사용 (교재 무관)
+  var units = null;
+  if(prefix==='test'){
+    var tn = document.getElementById('test-name') ? document.getElementById('test-name').value : '';
+    var daily = getDailyTestsFor(tn, subj);
+    if(daily) units = daily;
+  }
+  if(!units) units = getUnitsFor(subj, book);
   unitSel.innerHTML = units.map(function(u){ return '<option value="'+u+'">'+u+'</option>'; }).join('');
   if(prev && units.indexOf(prev)>-1) unitSel.value = prev;
 }
@@ -3509,6 +3530,7 @@ function onTestNameChange(){
     // 데일리류 — 교재 + 과목/단원
     if(bookCell) bookCell.style.display='';
     unitRow.style.display='flex';
+    refreshUnits('test'); // 개념반 Daily Test면 전용 범위 목록으로 갱신
   }
 
   // 점수 입력 방식 전환: 기출/모의고사 기출 = 점수 직접입력, 그 외 = 전체문항+틀린번호
