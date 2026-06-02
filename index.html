@@ -640,7 +640,7 @@ textarea{resize:vertical;min-height:80px;}
       </div>
       <div class="form-row">
         <div class="form-group"><label>테스트명</label><select id="test-name" onchange="onTestNameChange()"></select></div>
-        <div class="form-group" id="test-book-cell"><label>교재</label><select id="test-book" onchange="refreshUnits('test')"></select></div>
+        <div class="form-group" id="test-book-cell"><label>교재</label><select id="test-book" onchange="onBookChange('test')"></select><input type="text" id="test-book-text" placeholder="교재명 직접 입력" style="display:none;margin-top:6px;"></div>
       </div>
 
       <!-- 데일리류: 과목/단원 -->
@@ -719,7 +719,7 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>단원</label><select id="hw-unit"></select></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>교재</label><select id="hw-book" onchange="refreshUnits('hw')"></select></div>
+        <div class="form-group"><label>교재</label><select id="hw-book" onchange="onBookChange('hw')"></select><input type="text" id="hw-book-text" placeholder="교재명 직접 입력" style="display:none;margin-top:6px;"></div>
         <div class="form-group"><label>페이지/범위</label><input id="hw-range" placeholder="p.45~50"></div>
       </div>
       <div class="form-row">
@@ -796,7 +796,7 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>단원</label><select id="ghw-unit"></select></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>교재</label><select id="ghw-book" onchange="refreshUnits('ghw')"></select></div>
+        <div class="form-group"><label>교재</label><select id="ghw-book" onchange="onBookChange('ghw')"></select><input type="text" id="ghw-book-text" placeholder="교재명 직접 입력" style="display:none;margin-top:6px;"></div>
         <div class="form-group"><label>페이지/범위</label><input id="ghw-range" placeholder="p.45~50"></div>
       </div>
       <div class="form-row">
@@ -825,7 +825,7 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>단원</label><select id="prog-unit"></select><input id="prog-unit-text" placeholder="단원 직접 입력" style="display:none;"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>교재</label><select id="prog-book" onchange="refreshUnits('prog')"></select></div>
+        <div class="form-group"><label>교재</label><select id="prog-book" onchange="onBookChange('prog')"></select><input type="text" id="prog-book-text" placeholder="교재명 직접 입력" style="display:none;margin-top:6px;"></div>
         <div class="form-group"><label>진도 (페이지/범위)</label><input id="prog-range" placeholder="p.45~62"></div>
       </div>
       <div class="form-group full"><label>메모</label><textarea id="prog-memo" placeholder="특이사항, 다음 수업 준비사항 등"></textarea></div>
@@ -880,7 +880,7 @@ textarea{resize:vertical;min-height:80px;}
       </div>
       <div class="form-row">
         <div class="form-group"><label>테스트명 *</label><select id="gt-name" onchange="onGroupTestNameChange()"></select></div>
-        <div class="form-group" id="gt-book-cell"><label>교재</label><select id="gt-book" onchange="refreshUnits('gt')"></select></div>
+        <div class="form-group" id="gt-book-cell"><label>교재</label><select id="gt-book" onchange="onBookChange('gt')"></select><input type="text" id="gt-book-text" placeholder="교재명 직접 입력" style="display:none;margin-top:6px;"></div>
       </div>
 
       <!-- 데일리류: 과목/단원 -->
@@ -997,7 +997,7 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>단원</label><select id="gp-unit"></select></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>교재</label><select id="gp-book" onchange="refreshUnits('gp')"></select></div>
+        <div class="form-group"><label>교재</label><select id="gp-book" onchange="onBookChange('gp')"></select><input type="text" id="gp-book-text" placeholder="교재명 직접 입력" style="display:none;margin-top:6px;"></div>
         <div class="form-group"><label>진도 (페이지/범위)</label><input id="gp-range" placeholder="p.45~62"></div>
       </div>
       <div class="form-group full"><label>메모</label><textarea id="gp-memo" placeholder="다음 수업 준비사항 등" style="min-height:60px;"></textarea></div>
@@ -1529,8 +1529,40 @@ function refreshBooks(prefix){
   var subj = subjSel ? subjSel.value : '';
   var prev = bookSel.value;
   var list = getBookListFor(subj);
-  bookSel.innerHTML = list.map(function(b){ return '<option value="'+b+'">'+b+'</option>'; }).join('');
-  if(prev && list.indexOf(prev)>-1) bookSel.value = prev;
+  bookSel.innerHTML = list.map(function(b){ return '<option value="'+b+'">'+b+'</option>'; }).join('')
+    + '<option value="__free__">직접 입력</option>';
+  if(prev && (list.indexOf(prev)>-1 || prev==='__free__')) bookSel.value = prev;
+  onBookChange(prefix);
+}
+// 교재 '직접 입력' 선택 시 자유 입력칸 토글
+function onBookChange(prefix){
+  var bookSel = document.getElementById(prefix+'-book');
+  var bookTxt = document.getElementById(prefix+'-book-text');
+  if(!bookSel) return;
+  var free = (bookSel.value==='__free__');
+  if(bookTxt) bookTxt.style.display = free ? '' : 'none';
+  refreshUnits(prefix);
+}
+// 교재 값 읽기 (직접 입력이면 input)
+function getBookValue(prefix){
+  var bookSel = document.getElementById(prefix+'-book');
+  if(!bookSel) return '';
+  if(bookSel.value==='__free__'){
+    var t = document.getElementById(prefix+'-book-text');
+    return t ? t.value.trim() : '';
+  }
+  return bookSel.value;
+}
+// 교재 값 세팅 (수정 시) — 목록에 없으면 '직접 입력'으로
+function setBookValue(prefix, val){
+  var bookSel = document.getElementById(prefix+'-book');
+  var bookTxt = document.getElementById(prefix+'-book-text');
+  if(!bookSel) return;
+  if(!val){ onBookChange(prefix); return; }
+  var inList = Array.prototype.some.call(bookSel.options, function(o){ return o.value===val && o.value!=='__free__'; });
+  if(inList){ bookSel.value = val; }
+  else { bookSel.value='__free__'; if(bookTxt) bookTxt.value=val; }
+  onBookChange(prefix);
 }
 // 단원이 자유입력(테마수업 등)인 과목인지
 function isFreeUnitSubject(subj){ return subj==='테마수업'; }
@@ -1582,6 +1614,8 @@ function onSubjectChange(prefix){
 function fillSubjectBookSelects(prefix){
   var subjSel = document.getElementById(prefix+'-subject');
   var bookSel = document.getElementById(prefix+'-book');
+  var bookTxt = document.getElementById(prefix+'-book-text');
+  if(bookTxt) bookTxt.value='';
   if(subjSel) subjSel.innerHTML = Object.keys(CURRICULUM).map(function(s){ return '<option value="'+s+'">'+s+'</option>'; }).join('');
   // 교재 목록은 현재 선택된 과목(기본=첫 과목)에 맞춰 채운다
   refreshBooks(prefix);
@@ -1605,10 +1639,9 @@ function applyLastDefault(prefix, dataKey){
   // 1) 과목 먼저 (교재 목록이 고/중에 맞게 잡히도록)
   var subjSel = document.getElementById(prefix+'-subject');
   if(subjSel && last.subject && CURRICULUM[last.subject]) subjSel.value = last.subject;
-  // 2) 교재 목록 갱신 후 교재값
+  // 2) 교재 목록 갱신 후 교재값 (목록에 없으면 직접 입력으로 복원)
   refreshBooks(prefix);
-  var bookSel = document.getElementById(prefix+'-book');
-  if(bookSel && last.book){ var lbh=Array.prototype.some.call(bookSel.options,function(o){return o.value===last.book;}); if(lbh) bookSel.value=last.book; }
+  if(last.book) setBookValue(prefix, last.book);
   // 3) 단원 목록 새로고침(교재+과목 기준) 후 단원값
   refreshUnits(prefix);
   if(last.unit){
@@ -1987,7 +2020,7 @@ function collectTestData(){
   var data = {
     sid: document.getElementById('test-student').value,
     name: name,
-    book: document.getElementById('test-book').value,
+    book: getBookValue('test'),
     date: document.getElementById('test-date-input').value,
     memo: document.getElementById('test-memo').value,
     total: total
@@ -2100,7 +2133,7 @@ function editTest(id) {
   } else {
     if(t.subject){ document.getElementById('test-subject').value = t.subject; }
     refreshBooks('test');
-    if(t.book){ var tb=document.getElementById('test-book'); var tbh=Array.prototype.some.call(tb.options,function(o){return o.value===t.book;}); if(tbh) tb.value=t.book; }
+    setBookValue('test', t.book);
     refreshUnits('test');
     if(t.unit){ var tu=document.getElementById('test-unit'); var th=Array.prototype.some.call(tu.options,function(o){return o.value===t.unit;}); if(th) tu.value=t.unit; }
   }
@@ -2478,7 +2511,7 @@ function saveHw() {
   var sid = document.getElementById('hw-student').value;
   var subject = document.getElementById('hw-subject').value;
   var unit = document.getElementById('hw-unit').value;
-  var book = document.getElementById('hw-book').value;
+  var book = getBookValue('hw');
   var range = document.getElementById('hw-range').value.trim();
   if(!sid || !book || !range) { toast('학생·교재·페이지를 입력해주세요'); return; }
   // 과제명 = "교재 단원 페이지" 조합 (기존 목록/달력이 name을 표시하므로 호환 유지)
@@ -3001,7 +3034,7 @@ function saveGroupHw() {
   var gid = document.getElementById('ghw-group').value;
   var subject = document.getElementById('ghw-subject').value;
   var unit = document.getElementById('ghw-unit').value;
-  var book = document.getElementById('ghw-book').value;
+  var book = getBookValue('ghw');
   var range = document.getElementById('ghw-range').value.trim();
   if(!gid||!book||!range) { toast('반·교재·페이지를 입력해주세요'); return; }
   var groups = DB.get('groups');
@@ -3053,7 +3086,7 @@ function editProgress(id) {
   // 과목 먼저 → 교재 목록 갱신(고/중 분리) → 교재 → 단원 순
   if(r.subject){ document.getElementById('prog-subject').value = r.subject; }
   refreshBooks('prog');
-  if(r.book){ var pb=document.getElementById('prog-book'); var pbh=Array.prototype.some.call(pb.options,function(o){return o.value===r.book;}); if(pbh) pb.value=r.book; }
+  setBookValue('prog', r.book);
   refreshUnits('prog');
   setUnitValue('prog', (r.subject||''), r.unit);
   document.getElementById('prog-range').value = r.range || '';
@@ -3065,7 +3098,7 @@ function editProgress(id) {
 
 function saveProgress() {
   var sid  = document.getElementById('prog-student').value;
-  var book = document.getElementById('prog-book').value;
+  var book = getBookValue('prog');
   if(!sid||!book) { toast('학생과 교재를 선택해주세요'); return; }
   var dateEl = document.getElementById('prog-date');
   if(dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0,10); // 날짜 비면 오늘로
@@ -3312,7 +3345,7 @@ function editGroupProgress(rowData) {
   document.getElementById('gp-date').value  = rowData.date  || '';
   if(rowData.subject){ document.getElementById('gp-subject').value = rowData.subject; }
   refreshBooks('gp');
-  if(rowData.book){ var gpb=document.getElementById('gp-book'); var gpbh=Array.prototype.some.call(gpb.options,function(o){return o.value===rowData.book;}); if(gpbh) gpb.value=rowData.book; }
+  setBookValue('gp', rowData.book);
   refreshUnits('gp');
   if(rowData.unit){ var gu=document.getElementById('gp-unit'); var gh=Array.prototype.some.call(gu.options,function(o){return o.value===rowData.unit;}); if(gh) gu.value=rowData.unit; }
   document.getElementById('gp-range').value = rowData.range || '';
@@ -3326,7 +3359,7 @@ function editGroupProgress(rowData) {
     saveBtn.onclick = function(){
       var recs = DB.get('progress');
       var subject = document.getElementById('gp-subject').value;
-      var book  = document.getElementById('gp-book').value;
+      var book  = getBookValue('gp');
       var unit  = document.getElementById('gp-unit').value;
       var range = document.getElementById('gp-range').value;
       var date  = document.getElementById('gp-date').value;
@@ -4020,7 +4053,7 @@ function updateGroupProgressList() {
 
 function saveGroupProgress() {
   var gid  = document.getElementById('gp-group').value;
-  var book = document.getElementById('gp-book').value;
+  var book = getBookValue('gp');
   if(!gid || !book) { toast('반과 교재를 선택해주세요'); return; }
   var groups = DB.get('groups');
   var g = groups.find(function(x){ return x.id===gid; });
@@ -4635,7 +4668,7 @@ function gtMetaForRecord(){
     meta.examYear=document.getElementById('gt-mock-year').value;
     meta.mockRound=document.getElementById('gt-mock-round').value;
   } else {
-    meta.book=document.getElementById('gt-book').value;
+    meta.book=getBookValue('gt');
     meta.subject=document.getElementById('gt-subject').value;
     meta.unit=getUnitValue('gt');
   }
