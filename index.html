@@ -2766,44 +2766,71 @@ function renderPrepDayDetail(dateStr){
   var progress=DB.get('progress')||[];
   var tests=DB.get('tests')||[];
   var dObj=new Date(dateStr+'T00:00:00');
-  var head='<div style="font-size:14px;font-weight:700;margin-bottom:10px;">'+(dObj.getMonth()+1)+'/'+dObj.getDate()+'('+PREP_DAYNAMES[dObj.getDay()]+') 수업</div>';
+  var head='<div style="font-size:16px;font-weight:700;margin-bottom:12px;">'+(dObj.getMonth()+1)+'/'+dObj.getDate()+'('+PREP_DAYNAMES[dObj.getDay()]+') 수업</div>';
   if(!cls.length){ wrap.innerHTML=head+'<div style="text-align:center;color:var(--muted);padding:30px;border:1px dashed var(--line);border-radius:8px;">이 날은 예정된 수업이 없습니다.</div>'; return; }
-  var html=head;
+  var html=head+'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:10px;align-items:start;">';
   cls.forEach(function(g){
     var isIndiv=(g.students&&g.students.length===1);
     var kindColor=isIndiv?'var(--gold)':'var(--teal)';
     var kindBg=isIndiv?'var(--gold-bg)':'var(--teal-bg)';
-    // 이 반의 교재별 마지막 진도 (날짜+입력순 안정정렬)
-    var recs=progress.filter(function(p){ return p.groupName===g.name; })
-      .sort(function(a,b){ var dc=(b.date||'').localeCompare(a.date||''); if(dc!==0) return dc; return (b.id||'').localeCompare(a.id||''); });
+    var stableSort=function(a,b){ var dc=(b.date||'').localeCompare(a.date||''); if(dc!==0) return dc; return (b.id||'').localeCompare(a.id||''); };
+    // (1) 반 공통 진도: groupName 이 이 반인 기록 → 교재별 최신
+    var recs=progress.filter(function(p){ return p.groupName===g.name; }).sort(stableSort);
     var byBook={}; recs.forEach(function(p){ var k=p.book||'(교재없음)'; if(!byBook[k]) byBook[k]=p; });
     var lastProg=Object.keys(byBook).map(function(k){ return byBook[k]; });
+    // (2) 이 반 안에서 개별로 움직이는 학생 진도: groupName 없고 sid 가 이 반 소속 → 학생별·교재별 최신
+    var memberIds=(g.students||[]);
+    var indivByStudent={};
+    progress.filter(function(p){ return !p.groupName && memberIds.indexOf(p.sid)>-1; })
+      .sort(stableSort)
+      .forEach(function(p){
+        if(!indivByStudent[p.sid]) indivByStudent[p.sid]={};
+        var k=p.book||'(교재없음)';
+        if(!indivByStudent[p.sid][k]) indivByStudent[p.sid][k]=p; // 교재별 최신 1건
+      });
+    var indivStudentIds=Object.keys(indivByStudent);
+    var allStudents=DB.get('students')||[];
+    var nameOf=function(sid){ var s=allStudents.find(function(x){ return x.id===sid; }); return s?s.name:'(이름없음)'; };
     var gTest=tests.filter(function(t){ return getStudentGroupsSafe(t.sid).indexOf(g.name)>-1; })
       .sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); })[0];
-    html+='<div style="background:var(--white);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:8px;">';
+    html+='<div style="background:var(--white);border:1px solid var(--line);border-radius:8px;padding:14px 16px;">';
     html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">'
-      +'<span style="background:'+kindBg+';color:'+kindColor+';font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;">'+(isIndiv?'개인':'반')+'</span>'
-      +'<span style="font-size:14px;font-weight:700;color:var(--ink);">'+g.name+'</span>'
-      +((g.startTime&&g.endTime)?'<span style="font-size:12px;color:var(--muted);">'+g.startTime+'~'+g.endTime+'</span>':'')
-      +(!isIndiv?'<span style="font-size:11px;color:var(--muted);">'+(g.students||[]).length+'명</span>':'')
+      +'<span style="background:'+kindBg+';color:'+kindColor+';font-size:11px;font-weight:700;padding:2px 8px;border-radius:100px;">'+(isIndiv?'개인':'반')+'</span>'
+      +'<span style="font-size:16px;font-weight:700;color:var(--ink);">'+g.name+'</span>'
+      +((g.startTime&&g.endTime)?'<span style="font-size:13px;color:var(--muted);">'+g.startTime+'~'+g.endTime+'</span>':'')
+      +(!isIndiv?'<span style="font-size:12px;color:var(--muted);">'+(g.students||[]).length+'명</span>':'')
       +'</div>';
-    if(lastProg.length){
-      html+='<div style="font-size:12px;color:var(--ink2);margin-bottom:4px;font-weight:700;">📖 지난 진도</div>';
-      lastProg.forEach(function(p){
-        html+='<div style="font-size:12px;color:var(--ink2);padding:3px 0 3px 8px;">'
-          +(p.book||'')+(p.subject?' · '+p.subject:'')+(p.unit?' · '+p.unit:'')
-          +(p.range?' · <b>'+p.range+'</b>':'')
-          +' <span style="color:var(--muted);font-size:11px;">('+(p.date||'날짜없음')+')</span></div>';
+    var progRow=function(p){
+      return '<div style="font-size:13px;color:var(--ink2);padding:3px 0 3px 8px;line-height:1.5;">'
+        +(p.book||'')+(p.subject?' · '+p.subject:'')+(p.unit?' · '+p.unit:'')
+        +(p.range?' · <b>'+p.range+'</b>':'')
+        +' <span style="color:var(--muted);font-size:12px;">('+(p.date||'날짜없음')+')</span></div>';
+    };
+    var hasAny = lastProg.length || indivStudentIds.length;
+    if(hasAny){
+      html+='<div style="font-size:13px;color:var(--ink2);margin-bottom:4px;font-weight:700;">📖 지난 진도</div>';
+      // 반 공통 진도 (반별로 등록한 것)
+      if(lastProg.length){
+        if(!isIndiv && indivStudentIds.length){ // 개별과 섞일 때만 구분 라벨
+          html+='<div style="font-size:12px;color:var(--teal);font-weight:700;padding:2px 0 0 4px;">👥 '+g.name+' 공통</div>';
+        }
+        lastProg.forEach(function(p){ html+=progRow(p); });
+      }
+      // 반 안에서 개별로 움직이는 학생별 진도
+      indivStudentIds.forEach(function(sid){
+        html+='<div style="font-size:12px;color:var(--gold);font-weight:700;padding:'+(lastProg.length||indivStudentIds.length>1?'5':'2')+'px 0 0 4px;">🙋 '+nameOf(sid)+'</div>';
+        Object.keys(indivByStudent[sid]).forEach(function(k){ html+=progRow(indivByStudent[sid][k]); });
       });
-      html+='<div style="font-size:11px;color:var(--teal);padding:4px 0 0 8px;">→ 다음 진도/테스트 범위를 여기서부터 잡으세요</div>';
+      html+='<div style="font-size:12px;color:var(--teal);padding:4px 0 0 8px;">→ 다음 진도/테스트 범위를 여기서부터 잡으세요</div>';
     } else {
-      html+='<div style="font-size:12px;color:var(--muted);padding:3px 0;">아직 입력된 진도가 없습니다.</div>';
+      html+='<div style="font-size:13px;color:var(--muted);padding:3px 0;">아직 입력된 진도가 없습니다.</div>';
     }
     if(gTest){
-      html+='<div style="font-size:11px;color:var(--muted);margin-top:6px;padding-left:8px;">최근 테스트: '+(gTest.name||'')+' '+(gTest.score!=null?gTest.score+'점':'')+' ('+(gTest.date||'')+')</div>';
+      html+='<div style="font-size:12px;color:var(--muted);margin-top:6px;padding-left:8px;">최근 테스트: '+(gTest.name||'')+' '+(gTest.score!=null?gTest.score+'점':'')+' ('+(gTest.date||'')+')</div>';
     }
     html+='</div>';
   });
+  html+='</div>';
   wrap.innerHTML=html;
 }
 
