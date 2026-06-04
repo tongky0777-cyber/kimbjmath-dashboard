@@ -349,6 +349,7 @@ body.role-assistant .teacher-only{ display:none !important; }
     <div class="view" id="view-tests">
       <div class="sec-hd"><h2>📝 테스트 결과</h2><div class="actions">
         <select id="test-filter" onchange="renderTests()" style="font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:3px;background:var(--white);cursor:pointer;font-family:var(--sans);"><option value="">전체 테스트</option></select>
+        <button class="btn-sm sec" onclick="cleanGhostTests()" title="삭제(퇴원)된 학생의 테스트 기록을 한 번에 정리">🧹 삭제학생 정리</button>
         <button class="btn-sm sec" onclick="openGroupTestModal()">👥 반별 입력</button>
         <button class="btn-sm" onclick="openTestModal()">+ 개별 입력</button>
       </div></div>
@@ -2108,8 +2109,26 @@ function saveTest() {
 }
 
 function deleteTest(id) {
+  if(!confirm('이 테스트 기록을 삭제할까요?')) return;
   DB.set('tests', DB.get('tests').filter(function(t){ return t.id!==id; }));
-  renderTests(); toast('삭제되었습니다');
+  renderTests(); renderTestCalendar();
+  if(testSelectedDate) selectTestDay(testSelectedDate);
+  toast('삭제되었습니다');
+}
+
+// 삭제(퇴원)된 학생의 테스트 기록 일괄 정리 — sid가 현재 학생목록에 없는 것
+function cleanGhostTests(){
+  if(isAssistant()){ toast('정리는 선생님만 할 수 있어요'); return; }
+  var students = DB.get('students');
+  var tests = DB.get('tests');
+  var ghosts = tests.filter(function(t){ return !students.find(function(s){ return s.id===t.sid; }); });
+  if(!ghosts.length){ toast('정리할 기록이 없어요'); return; }
+  if(!confirm('삭제된 학생의 테스트 기록 '+ghosts.length+'건을 정리할까요?\n(현재 등록된 학생 기록은 그대로 남아요)')) return;
+  DB.set('tests', tests.filter(function(t){ return students.find(function(s){ return s.id===t.sid; }); }));
+  updateTestFilter();
+  renderTests(); renderTestCalendar();
+  if(testSelectedDate) selectTestDay(testSelectedDate);
+  toast(ghosts.length+'건을 정리했어요');
 }
 function editTest(id) {
   var t = DB.get('tests').find(function(x){ return x.id===id; });
@@ -3632,21 +3651,25 @@ function selectTestDay(dateStr) {
   } else {
     recs.sort(function(a,b){return a.name.localeCompare(b.name);}).forEach(function(r){
       var s=students.find(function(x){return x.id===r.sid;});
-      var pct=r.score;
-      var color=pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
-      var bg=pct>=90?'var(--green-bg)':pct>=70?'var(--gold-bg)':'var(--red-bg)';
       var card=document.createElement('div');
-      card.style.cssText='display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 14px;';
+      card.style.cssText='display:flex;align-items:center;gap:12px;background:'+((r.pending||r.score==null)?'#fffdf5':'var(--bg)')+';border:1px solid var(--line);border-radius:6px;padding:10px 14px;';
+      var scoreHtml;
+      if(r.pending || r.score==null){
+        scoreHtml='<div style="background:var(--gold-bg);color:var(--gold);font-size:12px;font-weight:700;padding:6px 12px;border-radius:4px;">미채점</div>';
+      } else {
+        var pct=r.score;
+        var color=pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
+        var bg=pct>=90?'var(--green-bg)':pct>=70?'var(--gold-bg)':'var(--red-bg)';
+        scoreHtml='<div style="background:'+bg+';color:'+color+';font-size:14px;font-weight:700;padding:6px 12px;border-radius:4px;">'
+          +(r.correct!==undefined&&r.correct!==null?r.correct+'/'+r.total+' ('+pct+'%)':pct+'%')+'</div>'
+          +(r.memo?'<div style="font-size:10px;color:var(--muted);margin-top:3px;">'+r.memo+'</div>':'');
+      }
       card.innerHTML='<div style="flex:1;">'
-        +'<div style="font-size:13px;font-weight:700;color:var(--ink);">'+(s?s.name:'—')+'<span style="font-size:11px;color:var(--muted);margin-left:6px;">'+(s?s.grade:'')+'</span></div>'
+        +'<div style="font-size:13px;font-weight:700;color:var(--ink);">'+(s?s.name:'<span style="color:var(--red);">삭제된 학생</span>')+'<span style="font-size:11px;color:var(--muted);margin-left:6px;">'+(s?s.grade:'')+'</span></div>'
         +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+r.name+'</div>'
         +'</div>'
-        +'<div style="text-align:center;">'
-        +'<div style="background:'+bg+';color:'+color+';font-size:14px;font-weight:700;padding:6px 12px;border-radius:4px;">'
-        +(r.correct!==undefined?r.correct+'/'+r.total+' ('+pct+'%)':pct+'%')
-        +'</div>'
-        +(r.memo?'<div style="font-size:10px;color:var(--muted);margin-top:3px;">'+r.memo+'</div>':'')
-        +'</div>';
+        +'<div style="text-align:center;">'+scoreHtml+'</div>'
+        +'<button class="icon-btn" title="삭제" onclick="deleteTest(\''+r.id+'\')" style="flex-shrink:0;">🗑️</button>';
       list.appendChild(card);
     });
   }
