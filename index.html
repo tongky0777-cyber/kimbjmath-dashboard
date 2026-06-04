@@ -2413,7 +2413,26 @@ function updateHwStatus(id, status) {
   var recs = DB.get('homework');
   var idx = recs.findIndex(function(r){ return r.id===id; });
   if(idx>-1) { recs[idx].status=status; DB.set('homework', recs); }
+  // 클래스룸 완료체크와 동기화 — 연결된 학생이면 class_hw_done에도 반영
+  syncHwDoneToClass(id, status);
   renderHw(); renderDashboard();
+}
+
+// 대시보드 status → 클래스룸 완료체크(class_hw_done) 반영
+function syncHwDoneToClass(hwId, status){
+  var rec = DB.get('homework').find(function(r){ return r.id===hwId; });
+  if(!rec || !rec.sid) return;
+  var s = DB.get('students').find(function(x){ return x.id===rec.sid; });
+  if(!s || !s.classKey) return; // 연결 안 된 학생이면 동기화 대상 아님
+  try{
+    if(typeof firebase==='undefined' || !firebase.apps || !firebase.apps.length) return;
+    var ref = firebase.database().ref('class_hw_done/'+hwId+'/'+s.classKey);
+    var done = (status==='done');
+    var val = { done:done, at:new Date().toISOString(), by:'teacher' };
+    ref.set(val);
+    if(!HW_DONE[hwId]) HW_DONE[hwId]={};
+    HW_DONE[hwId][s.classKey]=val;
+  }catch(e){}
 }
 
 function editHw(id) {
@@ -4496,8 +4515,9 @@ function openClassLinkPicker(sid){
     var html = keys.sort(function(a,b){ return (CLASS_USERS[a].name||a).localeCompare(CLASS_USERS[b].name||b); }).map(function(k){
       var u=CLASS_USERS[k];
       var used=usedMap[k];
+      var gradeTag = u.grade ? '<span style="font-size:11px;color:var(--teal);font-weight:600;">'+u.grade+'</span> ' : '';
       return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--line);border-radius:6px;margin-bottom:6px;'+(used?'opacity:.5;':'')+'">'
-        +'<div><b>'+(u.name||k)+'</b> <span style="font-size:11px;color:var(--muted);">'+(u.createdAt||'')+' 가입'+(used?' · 이미 '+used+'에 연결됨':'')+'</span></div>'
+        +'<div>'+gradeTag+'<b>'+(u.name||k)+'</b> <span style="font-size:11px;color:var(--muted);">'+(u.createdAt||'')+' 가입'+(used?' · 이미 '+used+'에 연결됨':'')+'</span></div>'
         +(used?'<span style="font-size:11px;color:var(--muted);">사용중</span>':'<button class="btn-sm" onclick="linkClass(\''+sid+'\',\''+k.replace(/'/g,"\\'")+'\')">선택</button>')
         +'</div>';
     }).join('');
