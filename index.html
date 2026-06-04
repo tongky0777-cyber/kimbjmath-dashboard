@@ -70,7 +70,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 /* 테이블 */
 .tbl-wrap{background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:24px;}
 table{width:100%;border-collapse:collapse;}
-th{background:var(--bg2);font-size:11px;font-weight:700;color:var(--muted);padding:10px 14px;text-align:left;letter-spacing:.04em;border-bottom:1px solid var(--line);}
+th{background:var(--bg2);font-size:11px;font-weight:700;color:var(--muted);padding:10px 14px;text-align:left;letter-spacing:.04em;border-bottom:1px solid var(--line);white-space:nowrap;}
 td{padding:11px 14px;font-size:13px;color:var(--ink2);border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap;}
 tr:last-child td{border-bottom:0;}
 tr:hover td{background:#fafaf8;}
@@ -419,7 +419,7 @@ body.role-assistant .teacher-only{ display:none !important; }
       <!-- 전체 목록 -->
       <div class="sec-hd"><h2>📋 전체 숙제 목록</h2></div>
       <div class="tbl-wrap">
-        <table><thead><tr><th>이름</th><th>반</th><th>과제명</th><th>마감일</th><th>학생 체크</th><th>제출 여부</th><th>메모</th><th></th></tr></thead>
+        <table><thead><tr><th>이름</th><th>반</th><th style="width:100%;">과제명</th><th>마감일</th><th>학생 체크</th><th>제출 여부</th><th>메모</th><th></th></tr></thead>
         <tbody id="hw-body"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">숙제를 추가해보세요</td></tr></tbody></table>
       </div>
     </div>
