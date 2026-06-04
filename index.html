@@ -873,12 +873,51 @@ body.role-assistant .teacher-only{ display:none !important; }
         <div class="form-group"><label>날짜</label><input type="date" id="gt-date"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>테스트명 *</label><input id="gt-name" placeholder="5월 2주차 단원 테스트"></div>
-        <div class="form-group"></div>
+        <div class="form-group"><label>테스트명 *</label><select id="gt-name" onchange="onGroupTestNameChange()"></select></div>
+        <div class="form-group" id="gt-book-cell"><label>교재</label><select id="gt-book" onchange="refreshUnits('gt')"></select></div>
       </div>
+
+      <!-- 데일리류: 과목/단원 -->
+      <div class="form-row" id="gt-unit-row">
+        <div class="form-group"><label>과목</label><select id="gt-subject" onchange="onSubjectChange('gt')"></select></div>
+        <div class="form-group"><label>단원</label><select id="gt-unit"></select></div>
+      </div>
+
+      <!-- 미니모의고사: 대상 + 주차 -->
+      <div class="form-row" id="gt-week-row" style="display:none;">
+        <div class="form-group"><label>대상</label><select id="gt-mini-target" onchange="syncGtWeekLabel()"></select></div>
+        <div class="form-group"><label>주차 (숫자만)</label><input type="number" id="gt-week-num" min="1" placeholder="예) 3" oninput="syncGtWeekLabel()"></div>
+      </div>
+      <div id="gt-week-label" style="display:none;font-size:13px;font-weight:700;color:var(--teal);margin:-4px 0 8px;">—</div>
+
+      <!-- 기출 Test -->
+      <div id="gt-gicul-rows" style="display:none;">
+        <div class="form-row">
+          <div class="form-group"><label>연도</label><select id="gt-exam-year"></select></div>
+          <div class="form-group"><label>학교급</label><select id="gt-exam-level" onchange="fillGtExamSchools()"></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>학교</label><select id="gt-exam-school"></select></div>
+          <div class="form-group"><label>과목</label><select id="gt-exam-subject" onchange="fillGtExamTerms()"></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>학기</label><select id="gt-exam-term2"></select></div>
+          <div class="form-group"><label>중간/기말</label><select id="gt-exam-term"></select></div>
+        </div>
+      </div>
+
+      <!-- 모의고사 기출 -->
+      <div class="form-row" id="gt-mock-row" style="display:none;">
+        <div class="form-group"><label>연도</label><select id="gt-mock-year"></select></div>
+        <div class="form-group"><label>회차/월</label><input id="gt-mock-round" placeholder="예) 3월, 6월"></div>
+      </div>
+
+      <div class="form-group full" id="gt-total-cell" style="margin-bottom:8px;display:none;"><label>전체 문항</label><input type="number" id="gt-total" min="1" placeholder="20" oninput="updateGroupTestList()"></div>
+
+      <div style="font-size:12px;color:var(--muted);margin:6px 0 4px;" id="gt-scores-hint"></div>
       <div id="gt-student-scores" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;padding:4px;"></div>
     </div>
-    <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-group-test')">취소</button><button class="btn-save" onclick="saveGroupTest()">전체 저장</button></div>
+    <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-group-test')">취소</button><button class="btn-sm sec" onclick="saveGroupTestPending()" style="margin-right:auto;">점수 나중에 (미채점 저장)</button><button class="btn-save" onclick="saveGroupTest()">전체 저장</button></div>
   </div>
 </div>
 
@@ -3451,6 +3490,42 @@ function fillExamTerms(){
   sel.innerHTML=terms.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('');
 }
 
+function onGroupTestNameChange(){
+  var name = document.getElementById('gt-name').value;
+  var unitRow = document.getElementById('gt-unit-row');
+  var weekRow = document.getElementById('gt-week-row');
+  var giculRows = document.getElementById('gt-gicul-rows');
+  var mockRow = document.getElementById('gt-mock-row');
+  var bookCell = document.getElementById('gt-book-cell');
+  var totalCell = document.getElementById('gt-total-cell');
+  unitRow.style.display='none'; weekRow.style.display='none'; giculRows.style.display='none'; mockRow.style.display='none';
+  document.getElementById('gt-week-label').style.display='none';
+  if(bookCell) bookCell.style.display='none';
+  if(!name){ if(totalCell) totalCell.style.display='none'; updateGroupTestList(); return; }
+  if(totalCell) totalCell.style.display='';
+  if(name==='미니모의고사'){ weekRow.style.display='flex'; fillGtMiniTargets(); document.getElementById('gt-week-label').style.display='block'; syncGtWeekLabel(); }
+  else if(name==='기출 Test'){ giculRows.style.display='block'; fillGtExamYears(); fillGtExamLevels(); }
+  else if(name==='모의고사 기출'){ mockRow.style.display='flex'; fillGtMockYears(); }
+  else { if(bookCell) bookCell.style.display=''; unitRow.style.display='flex'; }
+  updateGroupTestList();
+}
+function fillGtMiniTargets(){ var sel=document.getElementById('gt-mini-target'); if(sel && !sel.options.length){ sel.innerHTML=MINI_TARGETS.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join(''); } }
+function syncGtWeekLabel(){ var n=document.getElementById('gt-week-num').value; var tg=document.getElementById('gt-mini-target')?document.getElementById('gt-mini-target').value:''; document.getElementById('gt-week-label').textContent = n? ((tg?tg+' ':'')+'미니모의고사 '+n+'주차') : '—'; }
+function fillGtExamYears(){ var sel=document.getElementById('gt-exam-year'); if(sel.options.length) return; sel.innerHTML=examYearOptions().map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join(''); }
+function fillGtMockYears(){ var sel=document.getElementById('gt-mock-year'); if(sel.options.length) return; sel.innerHTML=examYearOptions().map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join(''); }
+function fillGtExamLevels(){ var sel=document.getElementById('gt-exam-level'); if(!sel.options.length){ sel.innerHTML=Object.keys(SCHOOLS).map(function(l){return '<option value="'+l+'">'+l+'</option>';}).join(''); } fillGtExamSchools(); var subjSel=document.getElementById('gt-exam-subject'); if(!subjSel.options.length){ subjSel.innerHTML=Object.keys(EXAM_SUBJECTS).map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join(''); } fillGtExamTerms(); var termSel=document.getElementById('gt-exam-term'); if(!termSel.options.length){ termSel.innerHTML=EXAM_TERMS.map(function(t){return '<option value="'+t+'">'+t+'고사</option>';}).join(''); } }
+function fillGtExamSchools(){ var level=document.getElementById('gt-exam-level').value; var sel=document.getElementById('gt-exam-school'); var list=SCHOOLS[level]||[]; sel.innerHTML=list.map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join(''); }
+function fillGtExamTerms(){ var subj=document.getElementById('gt-exam-subject').value; var sel=document.getElementById('gt-exam-term2'); var terms=EXAM_SUBJECTS[subj]||["1학기","2학기"]; sel.innerHTML=terms.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join(''); }
+function collectGtMeta(){
+  var name=document.getElementById('gt-name').value;
+  var m={ name:name, date:document.getElementById('gt-date').value, total:parseInt(document.getElementById('gt-total').value) };
+  if(name==='미니모의고사'){ var wn=document.getElementById('gt-week-num').value; m.week=wn?(wn+'주차'):''; m.miniTarget=document.getElementById('gt-mini-target').value; m.subject=''; m.unit=''; }
+  else if(name==='기출 Test'){ m.examYear=document.getElementById('gt-exam-year').value; m.examLevel=document.getElementById('gt-exam-level').value; m.examSchool=document.getElementById('gt-exam-school').value; m.examSubject=document.getElementById('gt-exam-subject').value; m.examTerm2=document.getElementById('gt-exam-term2').value; m.examTerm=document.getElementById('gt-exam-term').value; m.subject=m.examSubject; m.unit=''; }
+  else if(name==='모의고사 기출'){ m.examYear=document.getElementById('gt-mock-year').value; m.mockRound=document.getElementById('gt-mock-round').value; m.subject=''; m.unit=''; }
+  else { m.book=document.getElementById('gt-book').value; m.subject=document.getElementById('gt-subject').value; m.unit=document.getElementById('gt-unit').value; }
+  return m;
+}
+
 function calcGtPct(sid) {
   var correct = parseInt(document.getElementById('gt-correct-'+sid).value);
   var total   = parseInt(document.getElementById('gt-total-'+sid).value);
@@ -4351,10 +4426,26 @@ function openGroupTestModal() {
   sel.innerHTML = groups.length
     ? groups.map(function(g){ return '<option value="'+g.id+'">'+g.name+'</option>'; }).join('')
     : '<option value="">반 없음 (반 관리에서 먼저 생성)</option>';
-  document.getElementById('gt-name').value = '';
+  // 테스트명 목록 (개별과 동일)
+  fillGtNameSelect();
+  fillSubjectBookSelects('gt');
   document.getElementById('gt-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('gt-total').value = '';
+  // 메타 칸 초기화
+  onGroupTestNameChange();
   updateGroupTestList();
   openModal('modal-group-test');
+}
+
+// 반별 테스트명 select 채우기 (개별 test-name과 같은 목록)
+function fillGtNameSelect(){
+  var src = document.getElementById('test-name');
+  var sel = document.getElementById('gt-name');
+  if(!sel) return;
+  // 개별 test-name이 비어있으면 먼저 채움
+  if(src && !src.options.length){ fillTestNameSelect(); }
+  if(src){ sel.innerHTML = src.innerHTML; }
+  sel.value = '';
 }
 
 function updateGroupTestList() {
@@ -4363,10 +4454,20 @@ function updateGroupTestList() {
   var students = DB.get('students');
   var g = groups.find(function(x){ return x.id===gid; });
   var el = document.getElementById('gt-student-scores');
+  var name = document.getElementById('gt-name') ? document.getElementById('gt-name').value : '';
+  var total = parseInt(document.getElementById('gt-total') ? document.getElementById('gt-total').value : '');
+  var isPoints = (name==='기출 Test' || name==='모의고사 기출');  // 점수 직접 입력 유형
+  var hint = document.getElementById('gt-scores-hint');
   el.innerHTML = '';
+  if(!name){ if(hint) hint.textContent=''; el.innerHTML='<div style="text-align:center;color:var(--muted);padding:16px;font-size:12px;">테스트명을 먼저 선택하세요</div>'; return; }
   if(!g || !g.students || !g.students.length) {
+    if(hint) hint.textContent='';
     el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:16px;font-size:12px;">반에 학생이 없습니다</div>';
     return;
+  }
+  if(hint){
+    hint.textContent = isPoints ? '학생별 점수(100점 만점)를 입력하세요'
+      : (!isNaN(total)&&total>0 ? ('학생별 틀린 개수를 입력하세요 (전체 '+total+'문항)') : '위에서 전체 문항을 입력하면 틀린 개수로 채점됩니다');
   }
   g.students.forEach(function(sid) {
     var s = students.find(function(x){ return x.id===sid; });
@@ -4379,49 +4480,38 @@ function updateGroupTestList() {
     nameEl.textContent = s.name;
     row.appendChild(nameEl);
 
-    var correctEl = document.createElement('input');
-    correctEl.type = 'number'; correctEl.min = '0'; correctEl.placeholder = '맞힌 수';
-    correctEl.id = 'gt-correct-' + sid;
-    correctEl.style.cssText = 'width:80px;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:13px;font-family:var(--sans);background:var(--white);';
-    row.appendChild(correctEl);
-
-    var slash = document.createElement('span');
-    slash.style.cssText = 'color:var(--muted);font-size:13px;';
-    slash.textContent = '/';
-    row.appendChild(slash);
-
-    var totalEl = document.createElement('input');
-    totalEl.type = 'number'; totalEl.min = '1'; totalEl.placeholder = '전체';
-    totalEl.id = 'gt-total-' + sid;
-    totalEl.style.cssText = 'width:70px;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:13px;font-family:var(--sans);background:var(--white);';
-    row.appendChild(totalEl);
-
-    var pctEl = document.createElement('span');
-    pctEl.id = 'gt-pct-' + sid;
-    pctEl.style.cssText = 'width:50px;font-size:12px;font-weight:700;color:var(--teal);text-align:center;';
-    pctEl.textContent = '—';
-    row.appendChild(pctEl);
-
-    // oninput 이벤트 - 클로저로 sid 고정
-    (function(sidVal, pEl) {
-      correctEl.oninput = totalEl.oninput = function() {
-        var c = parseInt(correctEl.value);
-        var t = parseInt(totalEl.value);
-        if(!isNaN(c) && !isNaN(t) && t > 0) {
-          var pct = Math.round(c/t*100);
-          pEl.textContent = pct + '%';
-          pEl.style.color = pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
-        } else {
-          pEl.textContent = '—';
-          pEl.style.color = 'var(--teal)';
-        }
-      };
-    })(sid, pctEl);
+    if(isPoints){
+      // 점수 직접 입력
+      var scoreEl = document.createElement('input');
+      scoreEl.type='number'; scoreEl.min='0'; scoreEl.max='100'; scoreEl.placeholder='점수';
+      scoreEl.id='gt-score-'+sid;
+      scoreEl.style.cssText='width:90px;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:13px;font-family:var(--sans);background:var(--white);';
+      row.appendChild(scoreEl);
+      var unitTxt=document.createElement('span'); unitTxt.style.cssText='color:var(--muted);font-size:13px;'; unitTxt.textContent='점'; row.appendChild(unitTxt);
+    } else {
+      // 틀린 개수 입력 → 점수 자동
+      var wrongEl = document.createElement('input');
+      wrongEl.type='number'; wrongEl.min='0'; wrongEl.placeholder='틀린 수';
+      wrongEl.id='gt-wrong-'+sid;
+      wrongEl.style.cssText='width:80px;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:13px;font-family:var(--sans);background:var(--white);';
+      row.appendChild(wrongEl);
+      var slash=document.createElement('span'); slash.style.cssText='color:var(--muted);font-size:13px;'; slash.textContent='/ '+(!isNaN(total)&&total>0?total:'?'); row.appendChild(slash);
+      var pctEl=document.createElement('span'); pctEl.id='gt-pct-'+sid; pctEl.style.cssText='width:50px;font-size:12px;font-weight:700;color:var(--teal);text-align:center;'; pctEl.textContent='—'; row.appendChild(pctEl);
+      (function(pEl){
+        wrongEl.oninput=function(){
+          var wcnt=parseInt(wrongEl.value);
+          if(!isNaN(wcnt)&&!isNaN(total)&&total>0){
+            var pct=Math.round((total-wcnt)/total*100);
+            pEl.textContent=pct+'%'; pEl.style.color=pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
+          } else { pEl.textContent='—'; pEl.style.color='var(--teal)'; }
+        };
+      })(pctEl);
+    }
 
     var memoEl = document.createElement('input');
-    memoEl.type = 'text'; memoEl.placeholder = '메모';
-    memoEl.id = 'gt-memo-' + sid;
-    memoEl.style.cssText = 'flex:1;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:12px;font-family:var(--sans);background:var(--white);';
+    memoEl.type='text'; memoEl.placeholder='메모';
+    memoEl.id='gt-memo-'+sid;
+    memoEl.style.cssText='flex:1;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:12px;font-family:var(--sans);background:var(--white);';
     row.appendChild(memoEl);
 
     el.appendChild(row);
@@ -4430,31 +4520,64 @@ function updateGroupTestList() {
 
 function saveGroupTest() {
   var gid = document.getElementById('gt-group').value;
-  var name = document.getElementById('gt-name').value.trim();
-  var date = document.getElementById('gt-date').value;
-  if(!gid || !name) { toast('반과 테스트명을 입력해주세요'); return; }
+  var name = document.getElementById('gt-name').value;
+  if(!gid || !name) { toast('반과 테스트명을 선택해주세요'); return; }
+  var meta = collectGtMeta();
+  if(name==='미니모의고사' && !meta.miniTarget){ toast('대상을 선택해주세요'); return; }
   var groups = DB.get('groups');
   var g = groups.find(function(x){ return x.id===gid; });
   if(!g || !g.students || !g.students.length) { toast('반에 학생이 없습니다'); return; }
+  var isPoints = (name==='기출 Test' || name==='모의고사 기출');
+  var total = parseInt(document.getElementById('gt-total').value);
+  if(!isPoints && (isNaN(total)||total<=0)){ toast('전체 문항을 입력해주세요'); return; }
   var recs = DB.get('tests');
   var saved = 0;
   g.students.forEach(function(sid){
-    var correctEl = document.getElementById('gt-correct-'+sid);
-    var totalEl   = document.getElementById('gt-total-'+sid);
-    var memoEl    = document.getElementById('gt-memo-'+sid);
-    if(!correctEl || correctEl.value==='') return;
-    var correct = parseInt(correctEl.value);
-    var total   = parseInt(totalEl ? totalEl.value : '0');
-    if(isNaN(correct)||isNaN(total)||total<=0) return;
-    var pct = Math.round(correct/total*100);
-    recs.push({id:Date.now().toString()+sid, sid:sid, name:name, score:pct, correct:correct, total:total, date:date, memo:memoEl?memoEl.value:''});
+    var memoEl = document.getElementById('gt-memo-'+sid);
+    var rec = Object.assign({}, meta, { id:Date.now().toString()+sid, sid:sid, memo:memoEl?memoEl.value:'' });
+    if(isPoints){
+      var scoreEl = document.getElementById('gt-score-'+sid);
+      if(!scoreEl || scoreEl.value==='') return;
+      var sc = parseInt(scoreEl.value); if(isNaN(sc)) return;
+      if(sc<0)sc=0; if(sc>100)sc=100;
+      rec.score = sc; rec.correct = (typeof total==='number'&&total>0)?Math.round(total*sc/100):null; rec.pending=false;
+    } else {
+      var wrongEl = document.getElementById('gt-wrong-'+sid);
+      if(!wrongEl || wrongEl.value==='') return;
+      var wcnt = parseInt(wrongEl.value); if(isNaN(wcnt)) return;
+      rec.total = total; rec.correct = total - wcnt; rec.score = Math.round((total-wcnt)/total*100); rec.pending=false;
+    }
+    recs.push(rec);
     saved++;
+  });
+  if(!saved){ toast('입력된 점수가 없어요'); return; }
+  DB.set('tests', recs);
+  updateTestFilter();
+  closeModal('modal-group-test');
+  renderTests(); renderTestCalendar(); if(testSelectedDate) selectTestDay(testSelectedDate);
+  toast(name+' 결과 '+saved+'명 저장 완료!');
+}
+
+// 반별 미채점 저장 (점수 비우고 메타만) — 수업 전 준비
+function saveGroupTestPending(){
+  var gid = document.getElementById('gt-group').value;
+  var name = document.getElementById('gt-name').value;
+  if(!gid || !name){ toast('반과 테스트명을 선택해주세요'); return; }
+  var meta = collectGtMeta();
+  if(name==='미니모의고사' && !meta.miniTarget){ toast('대상을 선택해주세요'); return; }
+  var groups = DB.get('groups');
+  var g = groups.find(function(x){ return x.id===gid; });
+  if(!g || !g.students || !g.students.length){ toast('반에 학생이 없습니다'); return; }
+  var recs = DB.get('tests');
+  g.students.forEach(function(sid){
+    var rec = Object.assign({}, meta, { id:Date.now().toString()+sid, sid:sid, score:null, correct:null, pending:true, memo:'' });
+    recs.push(rec);
   });
   DB.set('tests', recs);
   updateTestFilter();
   closeModal('modal-group-test');
-  renderTests();
-  toast(name+' 테스트 결과 '+saved+'명 저장 완료!');
+  renderTests(); renderTestCalendar(); if(testSelectedDate) selectTestDay(testSelectedDate);
+  toast(g.students.length+'명 미채점 저장 완료. 수업 중 점수만 입력하세요');
 }
 
 // ══ 학생 상세 (꺾은선 그래프) ════════════════════
