@@ -227,6 +227,7 @@ textarea{resize:vertical;min-height:80px;}
     <div class="sb-item" onclick="showView('progress',this)"><span class="sb-icon">📖</span> 진도 관리</div>
     <div class="sb-item" onclick="showView('tests',this)"><span class="sb-icon">📝</span> 테스트 결과</div>
     <div class="sb-item" onclick="showView('papers',this)"><span class="sb-icon">📊</span> 시험지 분석</div>
+    <div class="sb-item" onclick="showView('studylog',this)"><span class="sb-icon">📒</span> 학생 학습기록</div>
     <div class="sb-item" onclick="showView('groups',this)"><span class="sb-icon">🏫</span> 반 관리</div>
     <div class="sb-section">일정</div>
     <div class="sb-item" onclick="showView('schedule',this)"><span class="sb-icon">📅</span> 보강 · 일정</div>
@@ -416,8 +417,8 @@ textarea{resize:vertical;min-height:80px;}
       <!-- 전체 목록 -->
       <div class="sec-hd"><h2>📋 전체 숙제 목록</h2></div>
       <div class="tbl-wrap">
-        <table><thead><tr><th>이름</th><th>반</th><th>과제명</th><th>마감일</th><th>제출 여부</th><th>메모</th><th></th></tr></thead>
-        <tbody id="hw-body"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px;">숙제를 추가해보세요</td></tr></tbody></table>
+        <table><thead><tr><th>이름</th><th>반</th><th>과제명</th><th>마감일</th><th>학생 체크</th><th>제출 여부</th><th>메모</th><th></th></tr></thead>
+        <tbody id="hw-body"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">숙제를 추가해보세요</td></tr></tbody></table>
       </div>
     </div>
 
@@ -448,9 +449,6 @@ textarea{resize:vertical;min-height:80px;}
 
     <div class="view" id="view-progress">
       <div class="sec-hd"><h2>📖 진도 관리</h2><div class="actions"><button class="btn-sm sec" onclick="openGroupProgressModal()">👥 반별 진도</button><button class="btn-sm" onclick="openProgressModal()">+ 개별 진도</button></div></div>
-
-      <!-- 날짜 없는 진도 알림 -->
-      <div id="undated-box" style="display:none;margin-bottom:16px;"></div>
 
       <!-- 진도 달력 -->
       <div style="background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:16px;">
@@ -504,6 +502,11 @@ textarea{resize:vertical;min-height:80px;}
         <div id="papers-subject-tabs" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
         <div id="paper-stats-list"></div>
       </div>
+    </div>
+    <div class="view" id="view-studylog">
+      <div class="sec-hd"><h2 id="studylog-title">📒 학생 학습기록</h2><div class="actions"><input type="date" id="studylog-date" onchange="renderStudyLog()" style="font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:3px;background:var(--white);cursor:pointer;font-family:var(--sans);"></div></div>
+      <p style="font-size:12px;color:var(--muted);margin:-4px 0 14px;">학생들이 클래스룸 플래너에 올린 공부 기록입니다. 학원/자습으로 구분돼요. (선생님 진도 기록과는 별개)</p>
+      <div id="studylog-list"></div>
     </div>
     <div class="view" id="view-exam"><div class="sec-hd"><h2>📝 학교 시험 일정</h2><div class="actions"><button class="btn-sm" onclick="openExamModal()">+ 시험 추가</button></div></div><div id="exam-calendar" style="margin-bottom:20px;"></div><div class="sec-hd" style="margin-top:8px;"><h2 style="font-size:14px;">전체 목록</h2></div><div id="exam-list"></div></div>
     <!-- 반 관리 -->
@@ -640,7 +643,7 @@ textarea{resize:vertical;min-height:80px;}
       </div>
       <div class="form-row">
         <div class="form-group"><label>테스트명</label><select id="test-name" onchange="onTestNameChange()"></select></div>
-        <div class="form-group" id="test-book-cell"><label>교재</label><select id="test-book" onchange="onBookChange('test')"></select><input type="text" id="test-book-text" placeholder="교재명 직접 입력" style="display:none;margin-top:6px;"></div>
+        <div class="form-group" id="test-book-cell"><label>교재</label><select id="test-book" onchange="refreshUnits('test')"></select></div>
       </div>
 
       <!-- 데일리류: 과목/단원 -->
@@ -664,7 +667,7 @@ textarea{resize:vertical;min-height:80px;}
         </div>
         <div class="form-row">
           <div class="form-group"><label>학교</label><select id="test-exam-school"></select></div>
-          <div class="form-group" id="test-exam-subject-cell"><label>과목</label><select id="test-exam-subject" onchange="fillExamTerms()"></select></div>
+          <div class="form-group"><label>과목</label><select id="test-exam-subject" onchange="fillExamTerms()"></select></div>
         </div>
         <div class="form-row">
           <div class="form-group"><label>학기</label><select id="test-exam-term2"></select></div>
@@ -684,16 +687,6 @@ textarea{resize:vertical;min-height:80px;}
       <div id="test-wrong-wrap" style="display:none;margin-bottom:12px;">
         <label style="display:block;font-size:11px;color:var(--muted);margin-bottom:6px;">틀린 문항 번호를 탭하세요 (탭하면 빨갛게 표시)</label>
         <div id="test-wrong-grid" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
-      </div>
-
-      <!-- 점수 직접 입력 (기출/모의고사 기출 — 문항별 배점이 달라 100점 만점 환산) -->
-      <div id="test-points-cell" style="display:none;margin-bottom:12px;">
-        <label style="display:block;font-size:11px;color:var(--muted);margin-bottom:6px;">받은 점수 / 총점</label>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <input type="number" id="test-got" min="0" step="0.5" placeholder="받은 점수" style="flex:1;" oninput="calcTestPct()">
-          <span style="color:var(--muted);font-weight:700;">/</span>
-          <input type="number" id="test-max" min="1" step="0.5" value="100" placeholder="총점" style="flex:1;" oninput="calcTestPct()">
-        </div>
       </div>
 
       <div id="test-pct-preview" style="display:none;background:var(--teal-bg);border-radius:4px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--teal);text-align:center;"></div>
@@ -719,7 +712,7 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>단원</label><select id="hw-unit"></select></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>교재</label><select id="hw-book" onchange="onBookChange('hw')"></select><input type="text" id="hw-book-text" placeholder="교재명 직접 입력" style="display:none;margin-top:6px;"></div>
+        <div class="form-group"><label>교재</label><select id="hw-book" onchange="refreshUnits('hw')"></select></div>
         <div class="form-group"><label>페이지/범위</label><input id="hw-range" placeholder="p.45~50"></div>
       </div>
       <div class="form-row">
@@ -796,7 +789,7 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>단원</label><select id="ghw-unit"></select></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>교재</label><select id="ghw-book" onchange="onBookChange('ghw')"></select><input type="text" id="ghw-book-text" placeholder="교재명 직접 입력" style="display:none;margin-top:6px;"></div>
+        <div class="form-group"><label>교재</label><select id="ghw-book" onchange="refreshUnits('ghw')"></select></div>
         <div class="form-group"><label>페이지/범위</label><input id="ghw-range" placeholder="p.45~50"></div>
       </div>
       <div class="form-row">
@@ -825,7 +818,7 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>단원</label><select id="prog-unit"></select><input id="prog-unit-text" placeholder="단원 직접 입력" style="display:none;"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>교재</label><select id="prog-book" onchange="onBookChange('prog')"></select><input type="text" id="prog-book-text" placeholder="교재명 직접 입력" style="display:none;margin-top:6px;"></div>
+        <div class="form-group"><label>교재</label><select id="prog-book" onchange="refreshUnits('prog')"></select></div>
         <div class="form-group"><label>진도 (페이지/범위)</label><input id="prog-range" placeholder="p.45~62"></div>
       </div>
       <div class="form-group full"><label>메모</label><textarea id="prog-memo" placeholder="특이사항, 다음 수업 준비사항 등"></textarea></div>
@@ -879,46 +872,9 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>날짜</label><input type="date" id="gt-date"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>테스트명 *</label><select id="gt-name" onchange="onGroupTestNameChange()"></select></div>
-        <div class="form-group" id="gt-book-cell"><label>교재</label><select id="gt-book" onchange="onBookChange('gt')"></select><input type="text" id="gt-book-text" placeholder="교재명 직접 입력" style="display:none;margin-top:6px;"></div>
+        <div class="form-group"><label>테스트명 *</label><input id="gt-name" placeholder="5월 2주차 단원 테스트"></div>
+        <div class="form-group"></div>
       </div>
-
-      <!-- 데일리류: 과목/단원 -->
-      <div class="form-row" id="gt-unit-row">
-        <div class="form-group"><label>과목</label><select id="gt-subject" onchange="onSubjectChange('gt')"></select></div>
-        <div class="form-group"><label>단원</label><select id="gt-unit"></select><input type="text" id="gt-unit-text" placeholder="단원 직접 입력" style="display:none;"></div>
-      </div>
-
-      <!-- 미니모의고사: 대상 + 주차 -->
-      <div class="form-row" id="gt-week-row" style="display:none;">
-        <div class="form-group"><label>대상</label><select id="gt-mini-target" onchange="syncGtWeekLabel()"></select></div>
-        <div class="form-group"><label>주차 (숫자만)</label><input type="number" id="gt-week-num" min="1" placeholder="예) 3" oninput="syncGtWeekLabel()"></div>
-      </div>
-      <div id="gt-week-label" style="display:none;font-size:13px;font-weight:700;color:var(--teal);margin:-4px 0 8px;">—</div>
-
-      <!-- 기출 Test -->
-      <div id="gt-gicul-rows" style="display:none;">
-        <div class="form-row">
-          <div class="form-group"><label>연도</label><select id="gt-exam-year"></select></div>
-          <div class="form-group"><label>학교급</label><select id="gt-exam-level" onchange="fillGtExamSchools()"></select></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>학교</label><select id="gt-exam-school"></select></div>
-          <div class="form-group" id="gt-exam-subject-cell"><label>과목</label><select id="gt-exam-subject" onchange="fillGtExamTerms()"></select></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>학기</label><select id="gt-exam-term2"></select></div>
-          <div class="form-group"><label>중간/기말</label><select id="gt-exam-term"></select></div>
-        </div>
-      </div>
-
-      <!-- 모의고사 기출 -->
-      <div class="form-row" id="gt-mock-row" style="display:none;">
-        <div class="form-group"><label>연도</label><select id="gt-mock-year"></select></div>
-        <div class="form-group"><label>회차/월</label><input id="gt-mock-round" placeholder="예) 3월, 6월"></div>
-      </div>
-
-      <div id="gt-mode-hint" style="display:none;font-size:11px;color:var(--muted);margin:4px 0 8px;"></div>
       <div id="gt-student-scores" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;padding:4px;"></div>
     </div>
     <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-group-test')">취소</button><button class="btn-save" onclick="saveGroupTest()">전체 저장</button></div>
@@ -939,6 +895,8 @@ textarea{resize:vertical;min-height:80px;}
       </div>
     </div>
     <div class="modal-body" style="gap:12px;">
+      <!-- 클래스룸 계정 연결 -->
+      <div id="detail-class-link" style="background:var(--teal-bg);border:1px solid var(--teal);border-radius:6px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;"></div>
       <!-- 요약 카드 -->
       <div id="detail-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;"></div>
       <!-- 테스트 그래프 -->
@@ -982,6 +940,17 @@ textarea{resize:vertical;min-height:80px;}
   </div>
 </div>
 
+<!-- 모달: 클래스룸 계정 연결 -->
+<div class="modal-bg" id="modal-class-link">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-hd"><h3>🔗 클래스룸 계정 연결</h3><button class="modal-close" onclick="closeModal('modal-class-link')">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">이 학생과 같은 사람인 클래스룸 가입 계정을 선택하세요. 연결하면 숙제 체크와 학습기록이 연동됩니다.</p>
+      <div id="class-link-list"></div>
+    </div>
+  </div>
+</div>
+
 
 <!-- 모달: 반별 진도 입력 -->
 <div class="modal-bg" id="modal-group-progress">
@@ -997,7 +966,7 @@ textarea{resize:vertical;min-height:80px;}
         <div class="form-group"><label>단원</label><select id="gp-unit"></select></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>교재</label><select id="gp-book" onchange="onBookChange('gp')"></select><input type="text" id="gp-book-text" placeholder="교재명 직접 입력" style="display:none;margin-top:6px;"></div>
+        <div class="form-group"><label>교재</label><select id="gp-book" onchange="refreshUnits('gp')"></select></div>
         <div class="form-group"><label>진도 (페이지/범위)</label><input id="gp-range" placeholder="p.45~62"></div>
       </div>
       <div class="form-group full"><label>메모</label><textarea id="gp-memo" placeholder="다음 수업 준비사항 등" style="min-height:60px;"></textarea></div>
@@ -1321,7 +1290,14 @@ function showView(id, el) {
   if(id==='attendance') { renderAttendance(); attCalYear=new Date().getFullYear(); attCalMonth=new Date().getMonth(); renderAttCalendar(); }
   if(id==='tests')      { renderTests(); testCalYear=new Date().getFullYear(); testCalMonth=new Date().getMonth(); renderTestCalendar(); }
   if(id==='papers')     { renderPaperFolders(); }
-  if(id==='homework')   { renderHw(); hwCalYear=new Date().getFullYear(); hwCalMonth=new Date().getMonth(); renderHwCalendar(); }
+  if(id==='studylog')   {
+    var dEl=document.getElementById('studylog-date');
+    if(dEl && !dEl.value) dEl.value=new Date().toISOString().slice(0,10);
+    document.getElementById('studylog-list').innerHTML='<div style="text-align:center;color:var(--muted);padding:40px;">불러오는 중…</div>';
+    var afterLoad=function(){ if(classUsersLoaded) renderStudyLog(); else loadClassUsers(function(){ renderStudyLog(); }); };
+    loadClassPlanners(afterLoad);
+  }
+  if(id==='homework')   { renderHw(); hwCalYear=new Date().getFullYear(); hwCalMonth=new Date().getMonth(); renderHwCalendar(); loadClassHwDone(function(){ renderHw(); }); }
   if(id==='schedule')   { renderSchedule(); }
   if(id==='memo')       activateMemo();
   if(id==='dashboard')  renderDashboard();
@@ -1374,8 +1350,6 @@ function openTestModal() {
   document.getElementById('test-name').value = '';
   testWrongSet = {};
   document.getElementById('test-total').value='';
-  var gg=document.getElementById('test-got'); if(gg) gg.value='';
-  var mx=document.getElementById('test-max'); if(mx) mx.value='100';
   document.getElementById('test-memo').value='';
   var wd=document.getElementById('test-date-input'); wd.value=new Date().toISOString().slice(0,10);
   var wn=document.getElementById('test-week-num'); if(wn) wn.value='';
@@ -1421,12 +1395,6 @@ var CURRICULUM = {
   "대수": ["지수","로그","지수와 로그(통합)","지수함수","로그함수","지수함수와 로그함수(통합)","삼각함수의 뜻","삼각함수의 그래프","사인법칙과 코사인법칙","삼각함수(통합)","등차수열과 등비수열","수열의 합","수학적 귀납법","수열(통합)"],
   "미적분1": ["함수의 극한","함수의 연속","함수의 극한과 연속(통합)","미분계수와 도함수","도함수의 활용","미분(통합)","부정적분","정적분","정적분의 활용","적분(통합)"],
   "확률과 통계": ["순열과 조합","이항정리","경우의 수(통합)","확률의 뜻과 활용","조건부확률","확률(통합)","확률분포","정규분포","통계적 추정","통계(통합)"],
-  "중1-1": ["소인수분해","최대공약수와 최소공배수","정수와 유리수","정수와 유리수의 계산","문자의 사용과 식의 값","일차식의 계산","일차방정식","일차방정식의 활용","좌표평면과 그래프","정비례와 반비례"],
-  "중1-2": ["기본 도형","위치 관계","작도와 합동","다각형","원과 부채꼴","다면체","회전체","입체도형의 겉넓이와 부피","줄기와 잎 그림과 도수분포표","상대도수와 그래프"],
-  "중2-1": ["유리수와 순환소수","단항식의 계산","다항식의 계산","일차부등식","일차부등식의 활용","연립일차방정식","연립방정식의 활용","일차함수와 그래프","일차함수와 일차방정식의 관계"],
-  "중2-2": ["삼각형의 성질","삼각형의 외심과 내심","사각형의 성질","도형의 닮음","평행선과 선분의 길이의 비","닮음의 활용","피타고라스 정리","경우의 수","확률"],
-  "중3-1": ["제곱근과 실수","근호를 포함한 식의 계산","다항식의 곱셈","인수분해","이차방정식","이차방정식의 활용","이차함수와 그래프","이차함수의 최댓값과 최솟값"],
-  "중3-2": ["삼각비","삼각비의 활용","원과 직선","원주각","원주각의 활용","대푯값과 산포도","산점도와 상관관계"],
   "테마수업": []
 };
 
@@ -1435,9 +1403,6 @@ var CURRICULUM = {
 // 교재를 고르면 그 교재+과목에 등록된 단원이 있으면 그것만, 없으면 CURRICULUM(과목 기본)을 사용.
 // 새 교재 목차가 생기면 여기에 추가만 하면 됩니다.
 var BOOKUNITS = {
-  "개념원리": {
-    "공통수학1": ["다항식의 연산","항등식","나머지정리와 인수정리","인수분해","복소수","i의 거듭제곱·음수의 제곱근","이차방정식","이차방정식의 근과 계수의 관계","이차방정식과 이차함수","이차함수의 최대·최소","여러 가지 방정식","삼차방정식의 근과 계수의 관계·방정식 x³=1의 허근","미지수가 2개인 연립이차방정식","일차부등식·연립일차부등식","절댓값 기호를 포함한 일차부등식","이차부등식·이차부등식의 해의 조건","연립이차부등식","이차방정식의 실근의 조건","경우의 수와 순열","조합","행렬·행렬의 덧셈·뺄셈과 실수배","행렬의 곱셈·곱셈의 성질"]
-  },
   "고쟁이": {
     "공통수학1": ["다항식의 연산","항등식과 나머지정리","인수분해","복소수와 이차방정식","이차방정식과 이차함수","여러 가지 방정식","여러 가지 부등식","경우의 수","순열과 조합","행렬의 뜻과 연산"],
     "공통수학2": ["평면좌표","직선의 방정식","원의 방정식","도형의 이동","집합","명제","함수","유리함수와 무리함수"],
@@ -1459,27 +1424,9 @@ var BOOKUNITS = {
   }
 };
 // 교재 목록 (학원에서 쓰는 책). 추가/삭제하세요.
-// 교재 목록 (학원에서 쓰는 책). 고등/중등으로 분리. 공통 교재는 양쪽에 둔다.
-var BOOKLIST_HIGH = ["내 교재","고쟁이","절대등급","개념원리","RPM","라이트쎈","쎈","개념+유형","마플시너지","자이스토리","완쏠","All in one","Only one"];
-var BOOKLIST_MID  = ["내 교재","우공비Q","개념+유형","개념원리","RPM","쎈","자이스토리","일등급수학","절대등급","최상위수학","에이급","최고득점"];
-// 검증/기존 참조용 통합 목록 (중복 제거)
-var BOOKLIST = BOOKLIST_HIGH.concat(BOOKLIST_MID.filter(function(b){ return BOOKLIST_HIGH.indexOf(b)===-1; }));
+var BOOKLIST = ["내 교재","고쟁이","절대등급","개념원리","RPM","라이트쎈","쎈","개념+유형","마플시너지","자이스토리","완쏠","All in one","Only one"];
 // 테스트 이름 목록 (드롭다운). 추가/삭제하세요.
 var TESTLIST = ["개념반 Daily Test","문풀반 Daily Test - 기본","문풀반 Daily Test - 실전","문풀반 Daily Test - 심화","미니모의고사","기출 Test","모의고사 기출"];
-
-// 개념반 Daily Test 전용 범위 목록 (테스트명 = "개념반 Daily Test" 선택 시 과목별로 이 목록을 단원 자리에 표시).
-// 교재 무관, 과목별 공통. 순서대로 표시됨.
-var DAILY_TESTS = {
-  "개념반 Daily Test": {
-    "공통수학1": ["다항식의 연산","항등식과 나머지정리(1)","항등식과 나머지정리(2)","인수분해","복소수(1)","복소수(2)","이차방정식(1)","이차방정식(2)","이차방정식과 이차함수","이차함수~최대최소","여러가지 방정식(1)","여러가지 방정식(2)","여러가지 방정식(3)","일차부등식","이차부등식","연립이차부등식","경우의 수 & 순열","조합","행렬"],
-    "공통수학2": ["평면좌표(1)","평면좌표(2)","직선의 방정식(1)","직선의 방정식(2)","직선의 방정식(3)","원의 방정식(1)","원의 방정식(2)","원의 방정식(3)","도형의 이동(1)","도형의 이동(2)","집합의 뜻과 표현","집합의 포함관계","집합의 연산","명제와 조건","명제의 역과 대우","함수(1)","함수(2)","함수(3)","함수(4)","유리함수","무리함수","절대부등식"]
-  }
-};
-// 테스트명+과목에 등록된 데일리 범위 목록 반환 (없으면 null)
-function getDailyTestsFor(testName, subject){
-  if(DAILY_TESTS[testName] && DAILY_TESTS[testName][subject]) return DAILY_TESTS[testName][subject];
-  return null;
-}
 
 // ===== 기출 Test용 학교 목록 =====
 // 학교급(고/중)별 목록. 추후 추가만 하면 됩니다.
@@ -1529,62 +1476,10 @@ function getPaperKey(t){
   return { key:'unit||'+name+'||'+(t.unit||''), label:name+(t.unit?' · '+t.unit:'') };
 }
 
-// 시험대비 등에서 쓰는 공통 범위 (모든 과목 단원 목록에 추가)
-var EXAM_PREP_UNITS = ["중간범위","기말범위"];
 // 교재+과목 기준으로 쓸 단원 목록 반환 (교재별 단원 우선, 없으면 과목 기본)
 function getUnitsFor(subject, book){
-  var base;
-  if(book && BOOKUNITS[book] && BOOKUNITS[book][subject]) base = BOOKUNITS[book][subject];
-  else base = CURRICULUM[subject] || [];
-  // 시험대비 범위를 뒤에 덧붙임 (중복 방지)
-  return base.concat(EXAM_PREP_UNITS.filter(function(u){ return base.indexOf(u)===-1; }));
-}
-// 과목이 중등 학기(중1-1 ~ 중3-2)인지
-function isMiddleSubject(subj){ return /^중[1-3]-[12]$/.test(subj||''); }
-// 과목에 맞는 교재 목록 (중등이면 중등용, 아니면 고등용). 테마수업은 고등 목록 사용.
-function getBookListFor(subj){ return isMiddleSubject(subj) ? BOOKLIST_MID : BOOKLIST_HIGH; }
-// 과목에 맞는 교재 드롭다운 다시 채우기 (가능하면 기존 선택값 유지)
-function refreshBooks(prefix){
-  var subjSel = document.getElementById(prefix+'-subject');
-  var bookSel = document.getElementById(prefix+'-book');
-  if(!bookSel) return;
-  var subj = subjSel ? subjSel.value : '';
-  var prev = bookSel.value;
-  var list = getBookListFor(subj);
-  bookSel.innerHTML = list.map(function(b){ return '<option value="'+b+'">'+b+'</option>'; }).join('')
-    + '<option value="__free__">직접 입력</option>';
-  if(prev && (list.indexOf(prev)>-1 || prev==='__free__')) bookSel.value = prev;
-  onBookChange(prefix);
-}
-// 교재 '직접 입력' 선택 시 자유 입력칸 토글
-function onBookChange(prefix){
-  var bookSel = document.getElementById(prefix+'-book');
-  var bookTxt = document.getElementById(prefix+'-book-text');
-  if(!bookSel) return;
-  var free = (bookSel.value==='__free__');
-  if(bookTxt) bookTxt.style.display = free ? '' : 'none';
-  refreshUnits(prefix);
-}
-// 교재 값 읽기 (직접 입력이면 input)
-function getBookValue(prefix){
-  var bookSel = document.getElementById(prefix+'-book');
-  if(!bookSel) return '';
-  if(bookSel.value==='__free__'){
-    var t = document.getElementById(prefix+'-book-text');
-    return t ? t.value.trim() : '';
-  }
-  return bookSel.value;
-}
-// 교재 값 세팅 (수정 시) — 목록에 없으면 '직접 입력'으로
-function setBookValue(prefix, val){
-  var bookSel = document.getElementById(prefix+'-book');
-  var bookTxt = document.getElementById(prefix+'-book-text');
-  if(!bookSel) return;
-  if(!val){ onBookChange(prefix); return; }
-  var inList = Array.prototype.some.call(bookSel.options, function(o){ return o.value===val && o.value!=='__free__'; });
-  if(inList){ bookSel.value = val; }
-  else { bookSel.value='__free__'; if(bookTxt) bookTxt.value=val; }
-  onBookChange(prefix);
+  if(book && BOOKUNITS[book] && BOOKUNITS[book][subject]) return BOOKUNITS[book][subject];
+  return CURRICULUM[subject] || [];
 }
 // 단원이 자유입력(테마수업 등)인 과목인지
 function isFreeUnitSubject(subj){ return subj==='테마수업'; }
@@ -1622,32 +1517,21 @@ function refreshUnits(prefix){
   unitSel.style.display='';
   if(unitTxt) unitTxt.style.display='none';
   var prev = unitSel.value;
-  // 테스트 모달에서 "개념반 Daily Test" 선택 시: 데일리 전용 범위 목록 우선 사용 (교재 무관)
-  var units = null;
-  if(prefix==='test'){
-    var tn = document.getElementById('test-name') ? document.getElementById('test-name').value : '';
-    var daily = getDailyTestsFor(tn, subj);
-    if(daily) units = daily;
-  }
-  if(!units) units = getUnitsFor(subj, book);
+  var units = getUnitsFor(subj, book);
   unitSel.innerHTML = units.map(function(u){ return '<option value="'+u+'">'+u+'</option>'; }).join('');
   if(prev && units.indexOf(prev)>-1) unitSel.value = prev;
 }
 
 // 과목 선택 시 단원 드롭다운 채우기 (교재별 단원 우선)
 function onSubjectChange(prefix){
-  refreshBooks(prefix);
   refreshUnits(prefix);
 }
 // 과목/교재 드롭다운 옵션 채우기
 function fillSubjectBookSelects(prefix){
   var subjSel = document.getElementById(prefix+'-subject');
   var bookSel = document.getElementById(prefix+'-book');
-  var bookTxt = document.getElementById(prefix+'-book-text');
-  if(bookTxt) bookTxt.value='';
   if(subjSel) subjSel.innerHTML = Object.keys(CURRICULUM).map(function(s){ return '<option value="'+s+'">'+s+'</option>'; }).join('');
-  // 교재 목록은 현재 선택된 과목(기본=첫 과목)에 맞춰 채운다
-  refreshBooks(prefix);
+  if(bookSel) bookSel.innerHTML = BOOKLIST.map(function(b){ return '<option value="'+b+'">'+b+'</option>'; }).join('');
 }
 // 테스트명 드롭다운 채우기. keepValue=기존에 저장된 이름(목록에 없으면 임시 옵션으로 추가)
 function fillTestNameSelect(keepValue){
@@ -1665,12 +1549,12 @@ function applyLastDefault(prefix, dataKey){
   // date 기준 최신 1건
   var last = recs.slice().sort(function(a,b){ return (b.date||b.due||'').localeCompare(a.date||a.due||''); })[0];
   if(!last) return;
-  // 1) 과목 먼저 (교재 목록이 고/중에 맞게 잡히도록)
+  // 1) 교재 먼저 (단원 목록이 교재 기준으로 잡히도록)
+  var bookSel = document.getElementById(prefix+'-book');
+  if(bookSel && last.book && BOOKLIST.indexOf(last.book)>-1) bookSel.value = last.book;
+  // 2) 과목
   var subjSel = document.getElementById(prefix+'-subject');
   if(subjSel && last.subject && CURRICULUM[last.subject]) subjSel.value = last.subject;
-  // 2) 교재 목록 갱신 후 교재값 (목록에 없으면 직접 입력으로 복원)
-  refreshBooks(prefix);
-  if(last.book) setBookValue(prefix, last.book);
   // 3) 단원 목록 새로고침(교재+과목 기준) 후 단원값
   refreshUnits(prefix);
   if(last.unit){
@@ -2049,7 +1933,7 @@ function collectTestData(){
   var data = {
     sid: document.getElementById('test-student').value,
     name: name,
-    book: getBookValue('test'),
+    book: document.getElementById('test-book').value,
     date: document.getElementById('test-date-input').value,
     memo: document.getElementById('test-memo').value,
     total: total
@@ -2063,8 +1947,7 @@ function collectTestData(){
     data.examYear=document.getElementById('test-exam-year').value;
     data.examLevel=document.getElementById('test-exam-level').value;
     data.examSchool=document.getElementById('test-exam-school').value;
-    // 중학교는 과목 선택 없음
-    data.examSubject = (data.examLevel==='중학교') ? '' : document.getElementById('test-exam-subject').value;
+    data.examSubject=document.getElementById('test-exam-subject').value;
     data.examTerm2=document.getElementById('test-exam-term2').value;
     data.examTerm=document.getElementById('test-exam-term').value;
     data.subject=data.examSubject; data.unit='';
@@ -2076,34 +1959,15 @@ function collectTestData(){
     data.subject=document.getElementById('test-subject').value;
     data.unit=document.getElementById('test-unit').value;
   }
-  if(isPointsMode(name)){
-    // 기출/모의고사 기출 — 받은 점수/총점 직접 입력
-    var got = parseFloat(document.getElementById('test-got').value);
-    var max = parseFloat(document.getElementById('test-max').value);
-    data.scoreMode = 'points';
-    data.got = isNaN(got) ? null : got;
-    data.max = isNaN(max) ? null : max;
-    data.total = null; data.wrong = []; data.correct = null;
-    data.score = (!isNaN(got) && !isNaN(max) && max>0) ? Math.round(got/max*100) : null;
-  } else {
-    var wrong = getWrongList().filter(function(n){ return n<=total; });
-    data.scoreMode = 'count';
-    data.total = total;
-    data.wrong = wrong;
-    data.correct = total - wrong.length;
-    data.score = Math.round(data.correct/total*100);
-  }
+  var wrong = getWrongList().filter(function(n){ return n<=total; });
+  data.wrong = wrong;
+  data.correct = total - wrong.length;
+  data.score = Math.round(data.correct/total*100);
   return data;
 }
 function validateTestData(d){
   if(!d.sid||!d.name){ toast('학생과 테스트명을 입력해주세요'); return false; }
-  if(d.scoreMode==='points'){
-    if(d.got===null||isNaN(d.got)){ toast('받은 점수를 입력해주세요'); return false; }
-    if(d.max===null||isNaN(d.max)||d.max<=0){ toast('총점을 입력해주세요'); return false; }
-    if(d.got>d.max){ toast('받은 점수가 총점보다 클 수 없습니다'); return false; }
-  } else {
-    if(isNaN(d.total)||d.total<=0){ toast('전체 문항을 입력해주세요'); return false; }
-  }
+  if(isNaN(d.total)||d.total<=0){ toast('전체 문항을 입력해주세요'); return false; }
   if(d.name==='미니모의고사' && !d.week){ toast('주차를 입력해주세요'); return false; }
   if(d.name==='미니모의고사' && !d.miniTarget){ toast('대상을 선택해주세요'); return false; }
   return true;
@@ -2133,10 +1997,9 @@ function editTest(id) {
   fillTestNameSelect(t.name);
   fillSubjectBookSelects('test');
   document.getElementById('test-student').value = t.sid;
+  if(t.book){ document.getElementById('test-book').value = t.book; }
   document.getElementById('test-date-input').value = t.date||'';
   document.getElementById('test-total').value = t.total||'';
-  document.getElementById('test-got').value = (t.got!==undefined && t.got!==null) ? t.got : '';
-  document.getElementById('test-max').value = (t.max!==undefined && t.max!==null) ? t.max : 100;
   document.getElementById('test-memo').value = t.memo||'';
   // 틀린 번호 복원 (옛 데이터엔 wrong 없을 수 있음)
   testWrongSet = {};
@@ -2161,13 +2024,10 @@ function editTest(id) {
     document.getElementById('test-mock-round').value=t.mockRound||'';
   } else {
     if(t.subject){ document.getElementById('test-subject').value = t.subject; }
-    refreshBooks('test');
-    setBookValue('test', t.book);
     refreshUnits('test');
     if(t.unit){ var tu=document.getElementById('test-unit'); var th=Array.prototype.some.call(tu.options,function(o){return o.value===t.unit;}); if(th) tu.value=t.unit; }
   }
   buildWrongGrid();
-  calcTestPct();
   var saveBtn = document.querySelector('#modal-test .btn-save');
   if(saveBtn) {
     saveBtn.textContent = '수정 저장';
@@ -2201,13 +2061,7 @@ function renderTests() {
     var cls = t.score>=90?'high':t.score>=70?'mid':'low';
     var fillColor = t.score>=90?'var(--green)':t.score>=70?'var(--gold)':'var(--red)';
     var unitStr = (t.unit||'') + (t.book? (t.unit?' · ':'')+t.book : '');
-    var hasScore = (typeof t.score==='number' && !isNaN(t.score));
-    var rawLine = (t.scoreMode==='points' && t.got!=null && t.max!=null)
-      ? '<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+t.got+' / '+t.max+'점</div>' : '';
-    var scoreCell = hasScore
-      ? '<span class="score '+cls+'">'+t.score+'점</span>'+rawLine+'<div class="score-bar"><div class="score-fill" style="width:'+t.score+'%;background:'+fillColor+'"></div></div>'
-      : '<span style="color:var(--muted);">—</span>';
-    return '<tr><td class="student-name">'+(student?student.name:'—')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+t.name+'</td><td style="font-size:12px;color:var(--muted);">'+(unitStr||'—')+'</td><td style="font-size:12px;color:var(--muted);">'+t.date+'</td><td>'+scoreCell+'</td><td style="font-size:12px;color:var(--muted);">'+(t.memo||'—')+'</td><td><div class="row-action"><button class="icon-btn" onclick="editTest(\''+t.id+'\')">✏️</button><button class="icon-btn" onclick="deleteTest(\''+t.id+'\')">🗑️</button></div></td></tr>';
+    return '<tr><td class="student-name">'+(student?student.name:'—')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+t.name+'</td><td style="font-size:12px;color:var(--muted);">'+(unitStr||'—')+'</td><td style="font-size:12px;color:var(--muted);">'+t.date+'</td><td><span class="score '+cls+'">'+t.score+'점</span><div class="score-bar"><div class="score-fill" style="width:'+t.score+'%;background:'+fillColor+'"></div></div></td><td style="font-size:12px;color:var(--muted);">'+(t.memo||'—')+'</td><td><div class="row-action"><button class="icon-btn" onclick="editTest(\''+t.id+'\')">✏️</button><button class="icon-btn" onclick="deleteTest(\''+t.id+'\')">🗑️</button></div></td></tr>';
   }).join('');
 }
 
@@ -2409,13 +2263,10 @@ function renderPaperStats(){
 // 평균 점수 추세 꺾은선 (SVG)
 function paperTrendGraph(arr){
   if(arr.length<2) return ''; // 1개면 추세 의미 없음
-  var padL=45, padR=27, padT=28, padB=62;
-  var STEP=105;                      // 점 간격 고정폭 (가로는 유지)
-  var plotW=STEP*(arr.length-1);     // 점 개수에 비례한 그림 폭
-  var W=padL+padR+plotW, H=340;      // 세로만 더 길게 (plot 영역 확대)
-  var plotH=H-padT-padB;
+  var W=Math.max(360, arr.length*90), H=190, padL=36, padR=16, padT=18, padB=46;
+  var plotW=W-padL-padR, plotH=H-padT-padB;
   var pts=arr.map(function(p,i){
-    var x=padL + STEP*i;             // 고정 간격, 양 끝으로 벌어지지 않음
+    var x=padL + (arr.length===1?plotW/2:plotW*i/(arr.length-1));
     var y=padT + plotH*(1 - p.stat.avg/100);
     return {x:x, y:y, p:p};
   });
@@ -2424,32 +2275,30 @@ function paperTrendGraph(arr){
   [0,50,100].forEach(function(v){
     var y=padT+plotH*(1-v/100);
     grid+='<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="var(--line)" stroke-width="1"/>'
-        +'<text x="'+(padL-7)+'" y="'+(y+4)+'" text-anchor="end" font-size="11" fill="var(--muted)">'+v+'</text>';
+        +'<text x="'+(padL-6)+'" y="'+(y+3)+'" text-anchor="end" font-size="9" fill="var(--muted)">'+v+'</text>';
   });
   var line='';
   for(var i=0;i<pts.length-1;i++){
-    line+='<line x1="'+pts[i].x+'" y1="'+pts[i].y+'" x2="'+pts[i+1].x+'" y2="'+pts[i+1].y+'" stroke="var(--teal)" stroke-width="2.25"/>';
+    line+='<line x1="'+pts[i].x+'" y1="'+pts[i].y+'" x2="'+pts[i+1].x+'" y2="'+pts[i+1].y+'" stroke="var(--teal)" stroke-width="2"/>';
   }
   var dots=pts.map(function(pt){
     var col=pt.p.stat.avg>=90?'var(--green)':pt.p.stat.avg>=70?'var(--gold)':'var(--red)';
     var shortLbl=trendShortLabel(pt.p);
-    return '<circle cx="'+pt.x+'" cy="'+pt.y+'" r="4.5" fill="'+col+'"/>'
-      +'<text x="'+pt.x+'" y="'+(pt.y-10)+'" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">'+pt.p.stat.avg+'</text>'
-      +'<text x="'+pt.x+'" y="'+(H-padB+20)+'" text-anchor="middle" font-size="11" fill="var(--muted)">'+trendEsc(shortLbl)+'</text>';
+    return '<circle cx="'+pt.x+'" cy="'+pt.y+'" r="4" fill="'+col+'"/>'
+      +'<text x="'+pt.x+'" y="'+(pt.y-9)+'" text-anchor="middle" font-size="10" font-weight="700" fill="var(--ink)">'+pt.p.stat.avg+'</text>'
+      +'<text x="'+pt.x+'" y="'+(H-padB+16)+'" text-anchor="middle" font-size="9" fill="var(--muted)">'+shortLbl+'</text>';
   }).join('');
   return '<div style="background:var(--white);border:1px solid var(--line);border-radius:8px;padding:14px 16px 6px;margin-bottom:14px;overflow-x:auto;">'
     +'<div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:4px;">📈 평균 점수 추세</div>'
-    +'<svg viewBox="0 0 '+W+' '+H+'" style="display:block;width:'+W+'px;max-width:100%;height:auto;">'+grid+line+dots+'</svg>'
+    +'<svg viewBox="0 0 '+W+' '+H+'" style="min-width:'+W+'px;width:100%;height:auto;">'+grid+line+dots+'</svg>'
     +'</div>';
 }
-function trendEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 // 그래프 x축에 쓸 짧은 라벨
 function trendShortLabel(p){
   var r=p.records[0]||{};
   if(r.name==='미니모의고사'){ var m=(r.week||'').match(/(\d+)/); return m?m[1]+'주':(r.week||''); }
   if(r.name==='기출 Test'){ return (r.examTerm2||'')+(r.examTerm||''); }
-  var s=(r.unit||p.label||'');
-  return s.length>7 ? s.slice(0,6)+'…' : s;   // 긴 라벨은 말줄임
+  return (r.unit||p.label).slice(0,6);
 }
 
 // 시험지 표 (행 클릭 시 상세 펼침)
@@ -2545,7 +2394,7 @@ function saveHw() {
   var sid = document.getElementById('hw-student').value;
   var subject = document.getElementById('hw-subject').value;
   var unit = document.getElementById('hw-unit').value;
-  var book = getBookValue('hw');
+  var book = document.getElementById('hw-book').value;
   var range = document.getElementById('hw-range').value.trim();
   if(!sid || !book || !range) { toast('학생·교재·페이지를 입력해주세요'); return; }
   // 과제명 = "교재 단원 페이지" 조합 (기존 목록/달력이 name을 표시하므로 호환 유지)
@@ -2592,13 +2441,18 @@ function renderHw() {
   var recs = DB.get('homework');
   var tbody = document.getElementById('hw-body');
   if(!tbody) return;
-  if(!recs.length) { tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px;">숙제를 추가해보세요</td></tr>'; return; }
+  if(!recs.length) { tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">숙제를 추가해보세요</td></tr>'; return; }
   var today = new Date().toISOString().slice(0,10);
-  tbody.innerHTML = recs.sort(function(a,b){ return a.due.localeCompare(b.due); }).map(function(r){
+  tbody.innerHTML = recs.sort(function(a,b){ return (a.due||'').localeCompare(b.due||''); }).map(function(r){
     var student = students.find(function(s){ return s.id===r.sid; });
     var overdue = r.status!=='done' && r.due<today;
-    var badge = r.status==='done'?'<span class="hw-tag hw-done">✓ 제출</span>':r.status==='half'?'<span class="hw-tag hw-half">△ 부분</span>':'<span class="hw-tag hw-miss">✗ 미제출</span>';
-    return '<tr style="'+(overdue?'background:#fffaf9;':'')+'"><td class="student-name">'+(student?student.name:'—')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+r.name+(overdue?' <span style="color:var(--red);font-size:10px;">⚠ 기한 초과</span>':'')+'</td><td style="font-size:12px;color:'+(overdue?'var(--red)':'var(--muted)')+';">'+r.due+'</td><td><select onchange="updateHwStatus(\''+r.id+'\',this.value)" style="font-size:12px;padding:4px 8px;border:1px solid var(--line);border-radius:3px;cursor:pointer;font-family:var(--sans);"><option value="pending"'+(r.status==='pending'?' selected':'')+'>미제출</option><option value="done"'+(r.status==='done'?' selected':'')+'>제출 완료</option><option value="half"'+(r.status==='half'?' selected':'')+'>부분 제출</option></select></td><td style="font-size:12px;color:var(--muted);">'+(r.memo||'—')+'</td><td><div class="row-action"><button class="icon-btn" onclick="deleteHw(\''+r.id+'\')">🗑️</button></div></td></tr>';
+    // 학생이 클래스룸에서 체크했는지
+    var sdone = hwDoneBySid(r.id, r.sid);
+    var checkCell;
+    if(sdone===null){ checkCell = '<span style="font-size:11px;color:var(--muted);">—</span>'; }
+    else if(sdone.done){ var at=(sdone.at||'').replace('T',' ').slice(5,16); checkCell = '<span style="font-size:11px;color:var(--green);font-weight:700;">✓ 학생완료</span>'+(at?'<div style="font-size:10px;color:var(--muted);">'+at+'</div>':''); }
+    else { checkCell = '<span style="font-size:11px;color:var(--muted);">미완료</span>'; }
+    return '<tr style="'+(overdue?'background:#fffaf9;':'')+'"><td class="student-name">'+(student?student.name:'—')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+r.name+(overdue?' <span style="color:var(--red);font-size:10px;">⚠ 기한 초과</span>':'')+'</td><td style="font-size:12px;color:'+(overdue?'var(--red)':'var(--muted)')+';">'+r.due+'</td><td style="text-align:center;">'+checkCell+'</td><td><select onchange="updateHwStatus(\''+r.id+'\',this.value)" style="font-size:12px;padding:4px 8px;border:1px solid var(--line);border-radius:3px;cursor:pointer;font-family:var(--sans);"><option value="pending"'+(r.status==='pending'?' selected':'')+'>미제출</option><option value="done"'+(r.status==='done'?' selected':'')+'>제출 완료</option><option value="half"'+(r.status==='half'?' selected':'')+'>부분 제출</option></select></td><td style="font-size:12px;color:var(--muted);">'+(r.memo||'—')+'</td><td><div class="row-action"><button class="icon-btn" onclick="deleteHw(\''+r.id+'\')">🗑️</button></div></td></tr>';
   }).join('');
 }
 
@@ -2766,71 +2620,44 @@ function renderPrepDayDetail(dateStr){
   var progress=DB.get('progress')||[];
   var tests=DB.get('tests')||[];
   var dObj=new Date(dateStr+'T00:00:00');
-  var head='<div style="font-size:16px;font-weight:700;margin-bottom:12px;">'+(dObj.getMonth()+1)+'/'+dObj.getDate()+'('+PREP_DAYNAMES[dObj.getDay()]+') 수업</div>';
+  var head='<div style="font-size:14px;font-weight:700;margin-bottom:10px;">'+(dObj.getMonth()+1)+'/'+dObj.getDate()+'('+PREP_DAYNAMES[dObj.getDay()]+') 수업</div>';
   if(!cls.length){ wrap.innerHTML=head+'<div style="text-align:center;color:var(--muted);padding:30px;border:1px dashed var(--line);border-radius:8px;">이 날은 예정된 수업이 없습니다.</div>'; return; }
-  var html=head+'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:10px;align-items:start;">';
+  var html=head;
   cls.forEach(function(g){
     var isIndiv=(g.students&&g.students.length===1);
     var kindColor=isIndiv?'var(--gold)':'var(--teal)';
     var kindBg=isIndiv?'var(--gold-bg)':'var(--teal-bg)';
-    var stableSort=function(a,b){ var dc=(b.date||'').localeCompare(a.date||''); if(dc!==0) return dc; return (b.id||'').localeCompare(a.id||''); };
-    // (1) 반 공통 진도: groupName 이 이 반인 기록 → 교재별 최신
-    var recs=progress.filter(function(p){ return p.groupName===g.name; }).sort(stableSort);
+    // 이 반의 교재별 마지막 진도 (날짜+입력순 안정정렬)
+    var recs=progress.filter(function(p){ return p.groupName===g.name; })
+      .sort(function(a,b){ var dc=(b.date||'').localeCompare(a.date||''); if(dc!==0) return dc; return (b.id||'').localeCompare(a.id||''); });
     var byBook={}; recs.forEach(function(p){ var k=p.book||'(교재없음)'; if(!byBook[k]) byBook[k]=p; });
     var lastProg=Object.keys(byBook).map(function(k){ return byBook[k]; });
-    // (2) 이 반 안에서 개별로 움직이는 학생 진도: groupName 없고 sid 가 이 반 소속 → 학생별·교재별 최신
-    var memberIds=(g.students||[]);
-    var indivByStudent={};
-    progress.filter(function(p){ return !p.groupName && memberIds.indexOf(p.sid)>-1; })
-      .sort(stableSort)
-      .forEach(function(p){
-        if(!indivByStudent[p.sid]) indivByStudent[p.sid]={};
-        var k=p.book||'(교재없음)';
-        if(!indivByStudent[p.sid][k]) indivByStudent[p.sid][k]=p; // 교재별 최신 1건
-      });
-    var indivStudentIds=Object.keys(indivByStudent);
-    var allStudents=DB.get('students')||[];
-    var nameOf=function(sid){ var s=allStudents.find(function(x){ return x.id===sid; }); return s?s.name:'(이름없음)'; };
     var gTest=tests.filter(function(t){ return getStudentGroupsSafe(t.sid).indexOf(g.name)>-1; })
       .sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); })[0];
-    html+='<div style="background:var(--white);border:1px solid var(--line);border-radius:8px;padding:14px 16px;">';
+    html+='<div style="background:var(--white);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:8px;">';
     html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">'
-      +'<span style="background:'+kindBg+';color:'+kindColor+';font-size:11px;font-weight:700;padding:2px 8px;border-radius:100px;">'+(isIndiv?'개인':'반')+'</span>'
-      +'<span style="font-size:16px;font-weight:700;color:var(--ink);">'+g.name+'</span>'
-      +((g.startTime&&g.endTime)?'<span style="font-size:13px;color:var(--muted);">'+g.startTime+'~'+g.endTime+'</span>':'')
-      +(!isIndiv?'<span style="font-size:12px;color:var(--muted);">'+(g.students||[]).length+'명</span>':'')
+      +'<span style="background:'+kindBg+';color:'+kindColor+';font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;">'+(isIndiv?'개인':'반')+'</span>'
+      +'<span style="font-size:14px;font-weight:700;color:var(--ink);">'+g.name+'</span>'
+      +((g.startTime&&g.endTime)?'<span style="font-size:12px;color:var(--muted);">'+g.startTime+'~'+g.endTime+'</span>':'')
+      +(!isIndiv?'<span style="font-size:11px;color:var(--muted);">'+(g.students||[]).length+'명</span>':'')
       +'</div>';
-    var progRow=function(p){
-      return '<div style="font-size:13px;color:var(--ink2);padding:3px 0 3px 8px;line-height:1.5;">'
-        +(p.book||'')+(p.subject?' · '+p.subject:'')+(p.unit?' · '+p.unit:'')
-        +(p.range?' · <b>'+p.range+'</b>':'')
-        +' <span style="color:var(--muted);font-size:12px;">('+(p.date||'날짜없음')+')</span></div>';
-    };
-    var hasAny = lastProg.length || indivStudentIds.length;
-    if(hasAny){
-      html+='<div style="font-size:13px;color:var(--ink2);margin-bottom:4px;font-weight:700;">📖 지난 진도</div>';
-      // 반 공통 진도 (반별로 등록한 것)
-      if(lastProg.length){
-        if(!isIndiv && indivStudentIds.length){ // 개별과 섞일 때만 구분 라벨
-          html+='<div style="font-size:12px;color:var(--teal);font-weight:700;padding:2px 0 0 4px;">👥 '+g.name+' 공통</div>';
-        }
-        lastProg.forEach(function(p){ html+=progRow(p); });
-      }
-      // 반 안에서 개별로 움직이는 학생별 진도
-      indivStudentIds.forEach(function(sid){
-        html+='<div style="font-size:12px;color:var(--gold);font-weight:700;padding:'+(lastProg.length||indivStudentIds.length>1?'5':'2')+'px 0 0 4px;">🙋 '+nameOf(sid)+'</div>';
-        Object.keys(indivByStudent[sid]).forEach(function(k){ html+=progRow(indivByStudent[sid][k]); });
+    if(lastProg.length){
+      html+='<div style="font-size:12px;color:var(--ink2);margin-bottom:4px;font-weight:700;">📖 지난 진도</div>';
+      lastProg.forEach(function(p){
+        html+='<div style="font-size:12px;color:var(--ink2);padding:3px 0 3px 8px;">'
+          +(p.book||'')+(p.subject?' · '+p.subject:'')+(p.unit?' · '+p.unit:'')
+          +(p.range?' · <b>'+p.range+'</b>':'')
+          +' <span style="color:var(--muted);font-size:11px;">('+(p.date||'날짜없음')+')</span></div>';
       });
-      html+='<div style="font-size:12px;color:var(--teal);padding:4px 0 0 8px;">→ 다음 진도/테스트 범위를 여기서부터 잡으세요</div>';
+      html+='<div style="font-size:11px;color:var(--teal);padding:4px 0 0 8px;">→ 다음 진도/테스트 범위를 여기서부터 잡으세요</div>';
     } else {
-      html+='<div style="font-size:13px;color:var(--muted);padding:3px 0;">아직 입력된 진도가 없습니다.</div>';
+      html+='<div style="font-size:12px;color:var(--muted);padding:3px 0;">아직 입력된 진도가 없습니다.</div>';
     }
     if(gTest){
-      html+='<div style="font-size:12px;color:var(--muted);margin-top:6px;padding-left:8px;">최근 테스트: '+(gTest.name||'')+' '+(gTest.score!=null?gTest.score+'점':'')+' ('+(gTest.date||'')+')</div>';
+      html+='<div style="font-size:11px;color:var(--muted);margin-top:6px;padding-left:8px;">최근 테스트: '+(gTest.name||'')+' '+(gTest.score!=null?gTest.score+'점':'')+' ('+(gTest.date||'')+')</div>';
     }
     html+='</div>';
   });
-  html+='</div>';
   wrap.innerHTML=html;
 }
 
@@ -3095,7 +2922,7 @@ function saveGroupHw() {
   var gid = document.getElementById('ghw-group').value;
   var subject = document.getElementById('ghw-subject').value;
   var unit = document.getElementById('ghw-unit').value;
-  var book = getBookValue('ghw');
+  var book = document.getElementById('ghw-book').value;
   var range = document.getElementById('ghw-range').value.trim();
   if(!gid||!book||!range) { toast('반·교재·페이지를 입력해주세요'); return; }
   var groups = DB.get('groups');
@@ -3144,10 +2971,9 @@ function editProgress(id) {
   document.getElementById('prog-id').value    = r.id;
   document.getElementById('prog-student').value = r.sid;
   document.getElementById('prog-date').value  = r.date || '';
-  // 과목 먼저 → 교재 목록 갱신(고/중 분리) → 교재 → 단원 순
+  // 교재 먼저 → 과목 → 단원 순 (교재별 단원 반영)
+  if(r.book){ document.getElementById('prog-book').value = r.book; }
   if(r.subject){ document.getElementById('prog-subject').value = r.subject; }
-  refreshBooks('prog');
-  setBookValue('prog', r.book);
   refreshUnits('prog');
   setUnitValue('prog', (r.subject||''), r.unit);
   document.getElementById('prog-range').value = r.range || '';
@@ -3159,7 +2985,7 @@ function editProgress(id) {
 
 function saveProgress() {
   var sid  = document.getElementById('prog-student').value;
-  var book = getBookValue('prog');
+  var book = document.getElementById('prog-book').value;
   if(!sid||!book) { toast('학생과 교재를 선택해주세요'); return; }
   var dateEl = document.getElementById('prog-date');
   if(dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0,10); // 날짜 비면 오늘로
@@ -3193,94 +3019,9 @@ function deleteProgress(id) {
   renderProgress(); toast('삭제되었습니다');
 }
 
-// ── 날짜 없는 진도 정리 ──────────────────────────
-// 달력은 날짜로 칸을 나누므로 date 가 없는 진도는 달력에서 보이지 않는다.
-// 여기서 모아 보여주고 바로 날짜를 채워 저장한다.
-var _undatedExpanded = false;
-
-function getUndatedRecords(){
-  return DB.get('progress').filter(function(r){ return !r.date; });
-}
-
-function toggleUndated(){
-  _undatedExpanded = !_undatedExpanded;
-  renderUndatedBox();
-}
-
-function renderUndatedBox(){
-  var box = document.getElementById('undated-box');
-  if(!box) return;
-  var students = DB.get('students');
-  var undated = getUndatedRecords();
-  if(!undated.length){ box.style.display='none'; box.innerHTML=''; return; }
-  box.style.display='block';
-
-  // 반별 진도는 하나로 묶어 보여준다 (개별 행마다 중복 표시 방지)
-  var seenGroupKey = {};
-  var rows = [];
-  undated.forEach(function(r){
-    if(r.groupName){
-      var key = r.groupName+'||'+(r.book||'')+'||'+(r.unit||'')+'||'+(r.range||'');
-      if(seenGroupKey[key]){ seenGroupKey[key].ids.push(r.id); return; }
-      var item = {type:'group', groupName:r.groupName, book:r.book, unit:r.unit, range:r.range, ids:[r.id]};
-      seenGroupKey[key]=item; rows.push(item);
-    } else {
-      var s = students.find(function(x){ return x.id===r.sid; });
-      rows.push({type:'individual', name:(s?s.name:'—'), book:r.book, unit:r.unit, range:r.range, ids:[r.id]});
-    }
-  });
-
-  var head =
-    '<div onclick="toggleUndated()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;'
-    +'background:var(--gold-bg);border:1px solid var(--gold);border-radius:6px;padding:12px 16px;">'
-    +'<span style="font-size:13px;font-weight:700;color:var(--gold);">⚠️ 날짜 없는 진도 '+undated.length+'건</span>'
-    +'<span style="font-size:12px;color:var(--gold);">'+(_undatedExpanded?'▲ 접기':'▼ 펼쳐서 정리')+'</span>'
-    +'</div>';
-
-  if(!_undatedExpanded){ box.innerHTML = head; return; }
-
-  var todayStr = new Date().toISOString().slice(0,10);
-  var listHtml = rows.map(function(row, i){
-    var who = row.type==='group'
-      ? '<span class="class-tag ct-1">'+row.groupName+'</span> <span style="font-size:10px;color:var(--muted);">반 전체</span>'
-      : '<span style="font-weight:600;">'+row.name+'</span>';
-    var info = [row.book, row.unit, row.range].filter(Boolean).join(' · ') || '—';
-    var idsAttr = row.ids.join(',');
-    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);flex-wrap:wrap;">'
-      +'<div style="flex:1 1 180px;min-width:140px;">'+who+'<div style="font-size:12px;color:var(--muted);margin-top:2px;">'+info+'</div></div>'
-      +'<input type="date" id="undated-date-'+i+'" value="'+todayStr+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:5px;font-size:12px;">'
-      +'<button class="btn-sm" data-ids="'+idsAttr+'" data-idx="'+i+'" onclick="saveUndatedDate(this)">저장</button>'
-      +'</div>';
-  }).join('');
-
-  box.innerHTML = head
-    + '<div style="background:var(--white);border:1px solid var(--gold);border-top:none;border-radius:0 0 6px 6px;padding:4px 16px 12px;">'
-    + '<div style="font-size:11px;color:var(--muted);padding:8px 0;">날짜를 정하고 저장하면 달력에도 표시됩니다.</div>'
-    + listHtml
-    + '</div>';
-}
-
-function saveUndatedDate(btn){
-  var idx = btn.getAttribute('data-idx');
-  var ids = (btn.getAttribute('data-ids')||'').split(',').filter(Boolean);
-  var input = document.getElementById('undated-date-'+idx);
-  var date = input ? input.value : '';
-  if(!date){ toast('날짜를 선택해주세요'); return; }
-  var recs = DB.get('progress').map(function(r){
-    if(ids.indexOf(r.id)>-1) return Object.assign({}, r, {date:date});
-    return r;
-  });
-  DB.set('progress', recs);
-  renderUndatedBox();
-  renderProgress();
-  renderProgCalendar();
-  toast('날짜가 저장되었습니다');
-}
-
 function renderProgress() {
-  renderUndatedBox();
   var students = DB.get('students');
-  var recs = DB.get('progress').slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+  var recs = DB.get('progress').sort(function(a,b){ return b.date.localeCompare(a.date); });
   var tbody = document.getElementById('progress-body');
   if(!tbody) return;
   tbody.innerHTML = '';
@@ -3404,9 +3145,8 @@ function editGroupProgress(rowData) {
   if(matchGroup) sel.value = matchGroup.id;
 
   document.getElementById('gp-date').value  = rowData.date  || '';
+  if(rowData.book){ document.getElementById('gp-book').value = rowData.book; }
   if(rowData.subject){ document.getElementById('gp-subject').value = rowData.subject; }
-  refreshBooks('gp');
-  setBookValue('gp', rowData.book);
   refreshUnits('gp');
   if(rowData.unit){ var gu=document.getElementById('gp-unit'); var gh=Array.prototype.some.call(gu.options,function(o){return o.value===rowData.unit;}); if(gh) gu.value=rowData.unit; }
   document.getElementById('gp-range').value = rowData.range || '';
@@ -3420,7 +3160,7 @@ function editGroupProgress(rowData) {
     saveBtn.onclick = function(){
       var recs = DB.get('progress');
       var subject = document.getElementById('gp-subject').value;
-      var book  = getBookValue('gp');
+      var book  = document.getElementById('gp-book').value;
       var unit  = document.getElementById('gp-unit').value;
       var range = document.getElementById('gp-range').value;
       var date  = document.getElementById('gp-date').value;
@@ -3486,26 +3226,10 @@ function getWrongList(){
 }
 
 function calcTestPct() {
-  var name = document.getElementById('test-name') ? document.getElementById('test-name').value : '';
+  var total = parseInt(document.getElementById('test-total').value);
   var preview = document.getElementById('test-pct-preview');
   var scoreEl = document.getElementById('test-score');
   var correctEl = document.getElementById('test-correct');
-
-  // 점수 직접 입력 방식 (기출/모의고사 기출)
-  if(isPointsMode(name)){
-    var got = parseFloat(document.getElementById('test-got').value);
-    var max = parseFloat(document.getElementById('test-max').value);
-    if(isNaN(got) || isNaN(max) || max<=0){ preview.style.display='none'; scoreEl.value=''; correctEl.value=''; return; }
-    var pctP = Math.round(got/max*100);
-    scoreEl.value=pctP; correctEl.value='';
-    preview.style.display='block';
-    preview.style.background = pctP>=90?'var(--green-bg)':pctP>=70?'var(--gold-bg)':'var(--red-bg)';
-    preview.style.color = pctP>=90?'var(--green)':pctP>=70?'var(--gold)':'var(--red)';
-    preview.textContent = got + ' / ' + max + '점  (100점 환산 ' + pctP + '점)';
-    return;
-  }
-
-  var total = parseInt(document.getElementById('test-total').value);
   if(isNaN(total) || total<=0){ preview.style.display='none'; scoreEl.value=''; correctEl.value=''; return; }
   var wrong = getWrongList().filter(function(n){ return n<=total; }).length;
   var correct = total - wrong;
@@ -3516,9 +3240,6 @@ function calcTestPct() {
   preview.style.color = pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
   preview.textContent = correct + ' / ' + total + ' = ' + pct + '점  (틀린 '+wrong+'개'+(wrong?': '+getWrongList().filter(function(n){return n<=total;}).join(', ')+'번':'')+')';
 }
-
-// 점수 직접 입력 방식인 테스트 (문항별 배점이 달라 맞은개수 환산이 부적절)
-function isPointsMode(name){ return name==='기출 Test' || name==='모의고사 기출'; }
 
 // 테스트명 바뀌면 입력 칸 전환
 function onTestNameChange(){
@@ -3532,7 +3253,6 @@ function onTestNameChange(){
   var memoCell = document.getElementById('test-memo-cell');
   var wrongWrap = document.getElementById('test-wrong-wrap');
   var preview = document.getElementById('test-pct-preview');
-  var pointsCell = document.getElementById('test-points-cell');
 
   // 일단 전부 숨김
   unitRow.style.display='none'; weekRow.style.display='none'; giculRows.style.display='none'; mockRow.style.display='none';
@@ -3545,11 +3265,11 @@ function onTestNameChange(){
     if(memoCell) memoCell.style.display='none';
     if(wrongWrap) wrongWrap.style.display='none';
     if(preview) preview.style.display='none';
-    if(pointsCell) pointsCell.style.display='none';
     return;
   }
 
-  // 테스트명 선택됨 — 메모는 공통 표시
+  // 테스트명 선택됨 — 공통 칸 표시
+  if(totalCell) totalCell.style.display='';
   if(memoCell) memoCell.style.display='';
 
   if(name==='미니모의고사'){
@@ -3562,20 +3282,8 @@ function onTestNameChange(){
     // 데일리류 — 교재 + 과목/단원
     if(bookCell) bookCell.style.display='';
     unitRow.style.display='flex';
-    refreshUnits('test'); // 개념반 Daily Test면 전용 범위 목록으로 갱신
   }
-
-  // 점수 입력 방식 전환: 기출/모의고사 기출 = 점수 직접입력, 그 외 = 전체문항+틀린번호
-  if(isPointsMode(name)){
-    if(totalCell) totalCell.style.display='none';
-    if(wrongWrap) wrongWrap.style.display='none';
-    if(pointsCell) pointsCell.style.display='block';
-    calcTestPct();
-  } else {
-    if(totalCell) totalCell.style.display='';
-    if(pointsCell) pointsCell.style.display='none';
-    buildWrongGrid();
-  }
+  buildWrongGrid();
 }
 function fillMiniTargets(){
   var sel=document.getElementById('test-mini-target');
@@ -3624,23 +3332,10 @@ function fillExamSchools(){
   var sel=document.getElementById('test-exam-school');
   var list=SCHOOLS[level]||[];
   sel.innerHTML=list.map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join('');
-  // 중학교는 과목 선택 없음 → 과목 칸 숨김. 고등학교는 표시.
-  var subjCell=document.getElementById('test-exam-subject-cell');
-  if(subjCell) subjCell.style.display = (level==='중학교') ? 'none' : '';
-  fillExamTerms();
-}
-function isMiddleExamLevel(){
-  var lv=document.getElementById('test-exam-level');
-  return lv && lv.value==='중학교';
 }
 function fillExamTerms(){
-  var sel=document.getElementById('test-exam-term2');
-  // 중학교: 과목 구분 없이 1·2학기 모두
-  if(isMiddleExamLevel()){
-    sel.innerHTML=["1학기","2학기"].map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('');
-    return;
-  }
   var subj=document.getElementById('test-exam-subject').value;
+  var sel=document.getElementById('test-exam-term2');
   var terms=EXAM_SUBJECTS[subj]||["1학기","2학기"];
   sel.innerHTML=terms.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('');
 }
@@ -4115,7 +3810,7 @@ function updateGroupProgressList() {
 
 function saveGroupProgress() {
   var gid  = document.getElementById('gp-group').value;
-  var book = getBookValue('gp');
+  var book = document.getElementById('gp-book').value;
   if(!gid || !book) { toast('반과 교재를 선택해주세요'); return; }
   var groups = DB.get('groups');
   var g = groups.find(function(x){ return x.id===gid; });
@@ -4539,115 +4234,25 @@ function openScheduleModalForDate() {
 
 
 // ══ 반별 테스트 입력 ══════════════════════════════
-// 개별 입력과 동일한 테스트명 드롭다운 + 메타 + 점수방식(기출=점수직접입력)
-
-function fillGtExamYears(){
-  var sel=document.getElementById('gt-exam-year');
-  if(sel && !sel.options.length) sel.innerHTML=examYearOptions().map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join('');
-}
-function fillGtExamLevels(){
-  var sel=document.getElementById('gt-exam-level');
-  if(sel && !sel.options.length) sel.innerHTML=Object.keys(SCHOOLS).map(function(l){return '<option value="'+l+'">'+l+'</option>';}).join('');
-}
-function fillGtExamSubjects(){
-  var sel=document.getElementById('gt-exam-subject');
-  if(sel && !sel.options.length) sel.innerHTML=Object.keys(EXAM_SUBJECTS).map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join('');
-}
-function fillGtExamTermsList(){
-  var sel=document.getElementById('gt-exam-term');
-  if(sel && !sel.options.length) sel.innerHTML=EXAM_TERMS.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('');
-}
-function fillGtExamSchools(){
-  var level=document.getElementById('gt-exam-level').value;
-  var sel=document.getElementById('gt-exam-school');
-  var list=SCHOOLS[level]||[];
-  sel.innerHTML=list.map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join('');
-  var subjCell=document.getElementById('gt-exam-subject-cell');
-  if(subjCell) subjCell.style.display=(level==='중학교')?'none':'';
-  fillGtExamTerms();
-}
-function isMiddleGtExamLevel(){ var lv=document.getElementById('gt-exam-level'); return lv&&lv.value==='중학교'; }
-function fillGtExamTerms(){
-  var sel=document.getElementById('gt-exam-term2');
-  if(isMiddleGtExamLevel()){
-    sel.innerHTML=["1학기","2학기"].map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join(''); return;
-  }
-  var subj=document.getElementById('gt-exam-subject').value;
-  var terms=EXAM_SUBJECTS[subj]||["1학기","2학기"];
-  sel.innerHTML=terms.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('');
-}
-function fillGtMiniTargets(){
-  var sel=document.getElementById('gt-mini-target');
-  if(sel && !sel.options.length) sel.innerHTML=MINI_TARGETS.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('');
-}
-function fillGtMockYears(){
-  var sel=document.getElementById('gt-mock-year');
-  if(sel && !sel.options.length) sel.innerHTML=examYearOptions().map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join('');
-}
-function syncGtWeekLabel(){
-  var n=document.getElementById('gt-week-num').value;
-  var tg=document.getElementById('gt-mini-target') ? document.getElementById('gt-mini-target').value : '';
-  document.getElementById('gt-week-label').textContent = n? ((tg?tg+' ':'')+'미니모의고사 '+n+'주차') : '—';
-}
-
-// 테스트명 변경 시 메타 칸 전환 + 학생 점수 입력 방식 갱신
-function onGroupTestNameChange(){
-  var name=document.getElementById('gt-name').value;
-  var unitRow=document.getElementById('gt-unit-row');
-  var weekRow=document.getElementById('gt-week-row');
-  var giculRows=document.getElementById('gt-gicul-rows');
-  var mockRow=document.getElementById('gt-mock-row');
-  var bookCell=document.getElementById('gt-book-cell');
-  unitRow.style.display='none'; weekRow.style.display='none'; giculRows.style.display='none'; mockRow.style.display='none';
-  document.getElementById('gt-week-label').style.display='none';
-  if(bookCell) bookCell.style.display='none';
-  if(name){
-    if(name==='미니모의고사'){
-      weekRow.style.display='flex'; fillGtMiniTargets();
-      document.getElementById('gt-week-label').style.display='block'; syncGtWeekLabel();
-    } else if(name==='기출 Test'){
-      giculRows.style.display='block'; fillGtExamYears(); fillGtExamLevels(); fillGtExamSubjects(); fillGtExamTermsList(); fillGtExamSchools();
-    } else if(name==='모의고사 기출'){
-      mockRow.style.display='flex'; fillGtMockYears();
-    } else {
-      if(bookCell) bookCell.style.display='';
-      unitRow.style.display='flex';
-    }
-  }
-  updateGroupTestList();
-}
-
 function openGroupTestModal() {
   var groups = DB.get('groups');
   var sel = document.getElementById('gt-group');
   sel.innerHTML = groups.length
     ? groups.map(function(g){ return '<option value="'+g.id+'">'+g.name+'</option>'; }).join('')
     : '<option value="">반 없음 (반 관리에서 먼저 생성)</option>';
-  // 테스트명 드롭다운 (개별과 동일한 TESTLIST)
-  var nameSel = document.getElementById('gt-name');
-  nameSel.innerHTML = '<option value="">-- 테스트명 선택 --</option>' + TESTLIST.map(function(n){ return '<option value="'+n+'">'+n+'</option>'; }).join('');
-  nameSel.value='';
-  fillSubjectBookSelects('gt');
+  document.getElementById('gt-name').value = '';
   document.getElementById('gt-date').value = new Date().toISOString().slice(0,10);
-  onGroupTestNameChange(); // 메타 칸 숨김 + 목록 렌더
+  updateGroupTestList();
   openModal('modal-group-test');
 }
 
 function updateGroupTestList() {
   var gid = document.getElementById('gt-group').value;
-  var name = document.getElementById('gt-name').value;
-  var pts = isPointsMode(name);
   var groups = DB.get('groups');
   var students = DB.get('students');
   var g = groups.find(function(x){ return x.id===gid; });
   var el = document.getElementById('gt-student-scores');
-  var hint = document.getElementById('gt-mode-hint');
   el.innerHTML = '';
-  if(hint){
-    hint.style.display = name?'block':'none';
-    hint.textContent = pts ? '기출/모의고사 기출은 받은 점수 / 총점으로 입력합니다 (100점 환산 저장).'
-                            : '맞힌 개수 / 전체 문항으로 입력합니다.';
-  }
   if(!g || !g.students || !g.students.length) {
     el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:16px;font-size:12px;">반에 학생이 없습니다</div>';
     return;
@@ -4663,25 +4268,22 @@ function updateGroupTestList() {
     nameEl.textContent = s.name;
     row.appendChild(nameEl);
 
-    var aEl = document.createElement('input');  // 점수입력: 받은점수 / 맞힌 수
-    aEl.type='number'; aEl.min='0';
-    aEl.placeholder = pts ? '받은 점수' : '맞힌 수';
-    if(pts) aEl.step='0.5';
-    aEl.id = 'gt-a-' + sid;
-    aEl.style.cssText = 'width:84px;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:13px;font-family:var(--sans);background:var(--white);';
-    row.appendChild(aEl);
+    var correctEl = document.createElement('input');
+    correctEl.type = 'number'; correctEl.min = '0'; correctEl.placeholder = '맞힌 수';
+    correctEl.id = 'gt-correct-' + sid;
+    correctEl.style.cssText = 'width:80px;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:13px;font-family:var(--sans);background:var(--white);';
+    row.appendChild(correctEl);
 
     var slash = document.createElement('span');
-    slash.style.cssText = 'color:var(--muted);font-size:13px;'; slash.textContent='/';
+    slash.style.cssText = 'color:var(--muted);font-size:13px;';
+    slash.textContent = '/';
     row.appendChild(slash);
 
-    var bEl = document.createElement('input');  // 총점입력: 총점 / 전체
-    bEl.type='number'; bEl.min='1';
-    bEl.placeholder = pts ? '총점' : '전체';
-    if(pts){ bEl.step='0.5'; bEl.value='100'; }
-    bEl.id = 'gt-b-' + sid;
-    bEl.style.cssText = 'width:74px;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:13px;font-family:var(--sans);background:var(--white);';
-    row.appendChild(bEl);
+    var totalEl = document.createElement('input');
+    totalEl.type = 'number'; totalEl.min = '1'; totalEl.placeholder = '전체';
+    totalEl.id = 'gt-total-' + sid;
+    totalEl.style.cssText = 'width:70px;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:13px;font-family:var(--sans);background:var(--white);';
+    row.appendChild(totalEl);
 
     var pctEl = document.createElement('span');
     pctEl.id = 'gt-pct-' + sid;
@@ -4689,20 +4291,24 @@ function updateGroupTestList() {
     pctEl.textContent = '—';
     row.appendChild(pctEl);
 
-    (function(pEl){
-      aEl.oninput = bEl.oninput = function() {
-        var a = parseFloat(aEl.value);
-        var b = parseFloat(bEl.value);
-        if(!isNaN(a) && !isNaN(b) && b > 0) {
-          var pct = Math.round(a/b*100);
+    // oninput 이벤트 - 클로저로 sid 고정
+    (function(sidVal, pEl) {
+      correctEl.oninput = totalEl.oninput = function() {
+        var c = parseInt(correctEl.value);
+        var t = parseInt(totalEl.value);
+        if(!isNaN(c) && !isNaN(t) && t > 0) {
+          var pct = Math.round(c/t*100);
           pEl.textContent = pct + '%';
           pEl.style.color = pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
-        } else { pEl.textContent='—'; pEl.style.color='var(--teal)'; }
+        } else {
+          pEl.textContent = '—';
+          pEl.style.color = 'var(--teal)';
+        }
       };
-    })(pctEl);
+    })(sid, pctEl);
 
     var memoEl = document.createElement('input');
-    memoEl.type='text'; memoEl.placeholder='메모';
+    memoEl.type = 'text'; memoEl.placeholder = '메모';
     memoEl.id = 'gt-memo-' + sid;
     memoEl.style.cssText = 'flex:1;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:12px;font-family:var(--sans);background:var(--white);';
     row.appendChild(memoEl);
@@ -4711,68 +4317,26 @@ function updateGroupTestList() {
   });
 }
 
-// 반별 입력의 공통 메타(테스트명·과목/단원·기출정보 등)를 한 학생 레코드에 합쳐 반환
-function gtMetaForRecord(){
-  var name=document.getElementById('gt-name').value;
-  var meta={ name:name, book:'', subject:'', unit:'' };
-  if(name==='미니모의고사'){
-    var wn=document.getElementById('gt-week-num').value;
-    meta.week = wn?(wn+'주차'):''; meta.miniTarget=document.getElementById('gt-mini-target').value;
-  } else if(name==='기출 Test'){
-    var lv=document.getElementById('gt-exam-level').value;
-    meta.examLevel=lv; meta.examYear=document.getElementById('gt-exam-year').value;
-    meta.examSchool=document.getElementById('gt-exam-school').value;
-    meta.examSubject=(lv==='중학교')?'':document.getElementById('gt-exam-subject').value;
-    meta.examTerm2=document.getElementById('gt-exam-term2').value;
-    meta.examTerm=document.getElementById('gt-exam-term').value;
-    meta.subject=meta.examSubject;
-  } else if(name==='모의고사 기출'){
-    meta.examYear=document.getElementById('gt-mock-year').value;
-    meta.mockRound=document.getElementById('gt-mock-round').value;
-  } else {
-    meta.book=getBookValue('gt');
-    meta.subject=document.getElementById('gt-subject').value;
-    meta.unit=getUnitValue('gt');
-  }
-  return meta;
-}
-
 function saveGroupTest() {
   var gid = document.getElementById('gt-group').value;
-  var name = document.getElementById('gt-name').value;
+  var name = document.getElementById('gt-name').value.trim();
   var date = document.getElementById('gt-date').value;
-  if(!gid || !name) { toast('반과 테스트명을 선택해주세요'); return; }
-  if(name==='미니모의고사'){
-    if(!document.getElementById('gt-week-num').value){ toast('주차를 입력해주세요'); return; }
-    if(!document.getElementById('gt-mini-target').value){ toast('대상을 선택해주세요'); return; }
-  }
+  if(!gid || !name) { toast('반과 테스트명을 입력해주세요'); return; }
   var groups = DB.get('groups');
   var g = groups.find(function(x){ return x.id===gid; });
   if(!g || !g.students || !g.students.length) { toast('반에 학생이 없습니다'); return; }
-  var pts = isPointsMode(name);
-  var meta = gtMetaForRecord();
   var recs = DB.get('tests');
   var saved = 0;
   g.students.forEach(function(sid){
-    var aEl=document.getElementById('gt-a-'+sid);
-    var bEl=document.getElementById('gt-b-'+sid);
-    var memoEl=document.getElementById('gt-memo-'+sid);
-    if(!aEl || aEl.value==='') return;
-    var a=parseFloat(aEl.value);
-    var b=parseFloat(bEl ? bEl.value : '0');
-    if(isNaN(a)||isNaN(b)||b<=0) return;
-    if(pts && a>b) return;
-    var pct=Math.round(a/b*100);
-    var rec = Object.assign({}, meta, {
-      id: Date.now().toString()+sid, sid:sid, date:date,
-      memo: memoEl?memoEl.value:'', score:pct
-    });
-    if(pts){
-      rec.scoreMode='points'; rec.got=a; rec.max=b; rec.total=null; rec.wrong=[]; rec.correct=null;
-    } else {
-      rec.scoreMode='count'; rec.total=b; rec.correct=a; rec.wrong=[];
-    }
-    recs.push(rec);
+    var correctEl = document.getElementById('gt-correct-'+sid);
+    var totalEl   = document.getElementById('gt-total-'+sid);
+    var memoEl    = document.getElementById('gt-memo-'+sid);
+    if(!correctEl || correctEl.value==='') return;
+    var correct = parseInt(correctEl.value);
+    var total   = parseInt(totalEl ? totalEl.value : '0');
+    if(isNaN(correct)||isNaN(total)||total<=0) return;
+    var pct = Math.round(correct/total*100);
+    recs.push({id:Date.now().toString()+sid, sid:sid, name:name, score:pct, correct:correct, total:total, date:date, memo:memoEl?memoEl.value:''});
     saved++;
   });
   DB.set('tests', recs);
@@ -4788,6 +4352,181 @@ var detailChartInstance = null;
 // (학부모 리포트 복사/저장 기능 제거됨)
 
 var currentDetailSid = null;
+// ===== 클래스룸 연동 =====
+// 클래스룸 가입자 캐시 (class_users)
+var CLASS_USERS = {};
+var classUsersLoaded = false;
+var HW_DONE = {};        // 학생 숙제 완료 (class_hw_done) {hwId:{classKey:{done,at}}}
+var CLASS_PLANNERS = {}; // 학생 플래너 (class_planner) {classKey:{date:planner}}
+
+function loadClassHwDone(cb){
+  try{
+    if(typeof firebase==='undefined' || !firebase.apps || !firebase.apps.length){ if(cb) cb(); return; }
+    firebase.database().ref('class_hw_done').once('value').then(function(snap){
+      HW_DONE = snap.val() || {};
+      if(cb) cb();
+    }).catch(function(){ if(cb) cb(); });
+  }catch(e){ if(cb) cb(); }
+}
+
+function loadClassPlanners(cb){
+  try{
+    if(typeof firebase==='undefined' || !firebase.apps || !firebase.apps.length){ if(cb) cb(); return; }
+    firebase.database().ref('class_planner').once('value').then(function(snap){
+      CLASS_PLANNERS = snap.val() || {};
+      if(cb) cb();
+    }).catch(function(){ if(cb) cb(); });
+  }catch(e){ if(cb) cb(); }
+}
+
+// 특정 학생(sid)의 숙제 완료 여부 — classKey로 조회
+function hwDoneBySid(hwId, sid){
+  var s = DB.get('students').find(function(x){ return x.id===sid; });
+  if(!s || !s.classKey) return null;
+  var rec = HW_DONE[hwId] && HW_DONE[hwId][s.classKey];
+  return rec || null;
+}
+
+// 학생 학습기록 (클래스룸 플래너) 렌더
+function _slEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function renderStudyLog(){
+  var box = document.getElementById('studylog-list');
+  if(!box) return;
+  var date = document.getElementById('studylog-date').value || new Date().toISOString().slice(0,10);
+  var students = DB.get('students').filter(function(s){ return s.status!=='withdrawn'; });
+  // 클래스룸 연결된 학생만 대상
+  var linked = students.filter(function(s){ return s.classKey; });
+
+  if(!linked.length){
+    box.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px;">클래스룸에 연결된 학생이 없어요.<br>학생 관리에서 클래스룸 계정을 연결하면 여기에 학습기록이 표시됩니다.</div>';
+    return;
+  }
+
+  var submitted=[], notYet=[];
+  linked.forEach(function(s){
+    var p = CLASS_PLANNERS[s.classKey] && CLASS_PLANNERS[s.classKey][date];
+    if(p) submitted.push({s:s, p:p}); else notYet.push(s);
+  });
+
+  var html = '<div style="font-size:12px;color:var(--muted);margin-bottom:14px;">'+date+' · 제출 '+submitted.length+'명 / 미제출 '+notYet.length+'명</div>';
+  html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">';
+
+  submitted.forEach(function(o){
+    var s=o.s, p=o.p;
+    var at=(p.at||'').replace('T',' ').slice(11,16);
+    html += '<div style="background:var(--white);border:1px solid var(--line);border-radius:8px;padding:14px 16px;">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">'
+      +'<div style="width:28px;height:28px;border-radius:50%;background:var(--teal-bg);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">'+_slEsc(s.name.slice(0,1))+'</div>'
+      +'<div style="font-size:13px;font-weight:700;">'+_slEsc(s.name)+' <span style="font-size:11px;color:var(--muted);font-weight:400;">'+(s.grade||'')+'</span></div>'
+      +(at?'<span style="margin-left:auto;font-size:11px;color:var(--muted);">'+at+' 제출</span>':'')
+      +'</div>';
+    // 학습 항목
+    if(p.items && p.items.length){
+      p.items.forEach(function(it){
+        var col = it.place==='학원' ? 'var(--teal)' : 'var(--gold)';
+        html += '<div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;font-size:12.5px;">'
+          +'<span style="flex-shrink:0;font-size:10px;font-weight:700;color:#fff;background:'+col+';padding:1px 7px;border-radius:20px;">'+_slEsc(it.place||'')+'</span>'
+          +'<span>'+(it.subject?'<b>'+_slEsc(it.subject)+'</b> ':'')+_slEsc(it.amount||'')+'</span></div>';
+      });
+    } else if(p.subject || p.amount){
+      html += '<div style="font-size:12.5px;"><b>'+_slEsc(p.subject||'')+'</b> '+_slEsc(p.amount||'')+'</div>';
+    }
+    if(p.achieve) html += '<div style="font-size:12px;color:var(--muted);margin-top:4px;">달성도 · '+_slEsc(p.achieve)+'</div>';
+    if(p.note) html += '<div style="font-size:12px;color:var(--ink);margin-top:4px;white-space:pre-wrap;">"'+_slEsc(p.note)+'"</div>';
+    if(p.imgs && p.imgs.length){
+      html += '<div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;">';
+      p.imgs.forEach(function(src){ html += '<img src="'+src+'" style="width:46px;height:46px;object-fit:cover;border-radius:6px;cursor:pointer;" onclick="window.open(this.src)">'; });
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+
+  notYet.forEach(function(s){
+    html += '<div style="background:var(--bg2);border:1px dashed var(--line);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:80px;">'
+      +'<div style="font-size:13px;font-weight:700;color:var(--muted);">'+_slEsc(s.name)+' <span style="font-size:11px;font-weight:400;">'+(s.grade||'')+'</span></div>'
+      +'<div style="font-size:12px;color:var(--muted);margin-top:4px;">아직 미제출</div>'
+      +'</div>';
+  });
+  html += '</div>';
+  box.innerHTML = html;
+}
+
+function loadClassUsers(cb){
+  try{
+    if(typeof firebase==='undefined' || !firebase.apps || !firebase.apps.length){ if(cb) cb(); return; }
+    firebase.database().ref('class_users').once('value').then(function(snap){
+      CLASS_USERS = snap.val() || {};
+      classUsersLoaded = true;
+      if(cb) cb();
+    }).catch(function(){ if(cb) cb(); });
+  }catch(e){ if(cb) cb(); }
+}
+
+// 학생 상세에 클래스룸 연결 상태 렌더
+function renderClassLink(sid){
+  var box = document.getElementById('detail-class-link');
+  if(!box) return;
+  var s = DB.get('students').find(function(x){ return x.id===sid; });
+  if(!s){ box.style.display='none'; return; }
+  box.style.display='flex';
+
+  if(s.classKey && CLASS_USERS[s.classKey]){
+    var u = CLASS_USERS[s.classKey];
+    box.innerHTML = '<div style="font-size:12px;"><span style="color:var(--teal);font-weight:700;">🔗 클래스룸 연결됨</span> · '
+      +'<b>'+(u.name||s.classKey)+'</b> <span style="color:var(--muted);">('+ (u.createdAt||'') +' 가입)</span></div>'
+      +'<button class="btn-sm sec" onclick="unlinkClass(\''+sid+'\')">연결 해제</button>';
+  } else if(s.classKey && !CLASS_USERS[s.classKey]){
+    box.innerHTML = '<div style="font-size:12px;color:var(--gold);">🔗 연결된 클래스룸 계정("'+s.classKey+'")을 찾을 수 없어요</div>'
+      +'<button class="btn-sm" onclick="openClassLinkPicker(\''+sid+'\')">다시 연결</button>';
+  } else {
+    box.innerHTML = '<div style="font-size:12px;color:var(--muted);">클래스룸 계정이 아직 연결되지 않았어요. 숙제 체크·학습기록 연동을 쓰려면 연결하세요.</div>'
+      +'<button class="btn-sm" onclick="openClassLinkPicker(\''+sid+'\')">+ 클래스룸 연결</button>';
+  }
+}
+
+// 연결할 클래스룸 계정 선택 (간단 prompt 방식 대신 목록 모달)
+function openClassLinkPicker(sid){
+  loadClassUsers(function(){
+    var keys = Object.keys(CLASS_USERS).filter(function(k){ return (CLASS_USERS[k].role||'student')==='student'; });
+    if(!keys.length){ toast('클래스룸에 가입한 학생이 아직 없어요'); return; }
+    // 이미 다른 학생에 연결된 classKey는 표시(중복 방지 안내용)
+    var usedMap={};
+    DB.get('students').forEach(function(st){ if(st.classKey && st.id!==sid) usedMap[st.classKey]=st.name; });
+
+    var html = keys.sort(function(a,b){ return (CLASS_USERS[a].name||a).localeCompare(CLASS_USERS[b].name||b); }).map(function(k){
+      var u=CLASS_USERS[k];
+      var used=usedMap[k];
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--line);border-radius:6px;margin-bottom:6px;'+(used?'opacity:.5;':'')+'">'
+        +'<div><b>'+(u.name||k)+'</b> <span style="font-size:11px;color:var(--muted);">'+(u.createdAt||'')+' 가입'+(used?' · 이미 '+used+'에 연결됨':'')+'</span></div>'
+        +(used?'<span style="font-size:11px;color:var(--muted);">사용중</span>':'<button class="btn-sm" onclick="linkClass(\''+sid+'\',\''+k.replace(/'/g,"\\'")+'\')">선택</button>')
+        +'</div>';
+    }).join('');
+    document.getElementById('class-link-list').innerHTML = html;
+    openModal('modal-class-link');
+  });
+}
+
+function linkClass(sid, classKey){
+  var students = DB.get('students');
+  var idx = students.findIndex(function(x){ return x.id===sid; });
+  if(idx<0) return;
+  students[idx].classKey = classKey;
+  DB.set('students', students);
+  closeModal('modal-class-link');
+  renderClassLink(sid);
+  toast('클래스룸 계정을 연결했어요');
+}
+
+function unlinkClass(sid){
+  var students = DB.get('students');
+  var idx = students.findIndex(function(x){ return x.id===sid; });
+  if(idx<0) return;
+  delete students[idx].classKey;
+  DB.set('students', students);
+  renderClassLink(sid);
+  toast('연결을 해제했어요');
+}
+
 function openStudentDetail(sid) {
   currentDetailSid = sid;
   var students = DB.get('students');
@@ -4806,6 +4545,10 @@ function openStudentDetail(sid) {
 
   document.getElementById('detail-name').textContent = s.name;
   document.getElementById('detail-info').textContent = s.grade + ' · ' + (s.school||'') + (myGroups.length ? ' · '+myGroups.map(function(g){return g.name;}).join(', ') : '');
+
+  // 클래스룸 연결 영역 (캐시 있으면 즉시, 없으면 로드 후)
+  if(classUsersLoaded){ renderClassLink(sid); }
+  else { document.getElementById('detail-class-link').innerHTML='<div style="font-size:12px;color:var(--muted);">클래스룸 정보 불러오는 중…</div>'; loadClassUsers(function(){ renderClassLink(sid); }); }
 
   // 요약 카드
   var total   = att.length;
