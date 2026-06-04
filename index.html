@@ -695,7 +695,7 @@ body.role-assistant .teacher-only{ display:none !important; }
       <input type="hidden" id="test-correct">
       <div class="form-group full" id="test-memo-cell" style="display:none;"><label>메모</label><textarea id="test-memo" placeholder="틀린 유형, 피드백 등"></textarea></div>
     </div>
-    <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-test')">취소</button><button class="btn-save" onclick="saveTest()">저장</button></div>
+    <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-test')">취소</button><button class="btn-sm sec" onclick="saveTestPending()" style="margin-right:auto;">점수 나중에 (미채점 저장)</button><button class="btn-save" onclick="saveTest()">저장</button></div>
   </div>
 </div>
 
@@ -1990,9 +1990,35 @@ function collectTestData(){
   }
   var wrong = getWrongList().filter(function(n){ return n<=total; });
   data.wrong = wrong;
-  data.correct = total - wrong.length;
-  data.score = Math.round(data.correct/total*100);
+  if(isNaN(total) || total<=0){
+    // 미채점(준비) 상태 — 점수 비움
+    data.total = (isNaN(total)?null:total);
+    data.correct = null;
+    data.score = null;
+    data.pending = true;
+  } else {
+    data.correct = total - wrong.length;
+    data.score = Math.round(data.correct/total*100);
+    data.pending = false;
+  }
   return data;
+}
+
+// 점수 없이 미리 저장 (수업 전 준비용) — 학생/테스트명만 있으면 OK
+function saveTestPending(){
+  var d = collectTestData();
+  if(!d.sid || !d.name){ toast('학생과 테스트명은 입력해주세요'); return; }
+  if(d.name==='미니모의고사' && !d.miniTarget){ toast('대상을 선택해주세요'); return; }
+  d.pending = true;
+  d.score = null; d.correct = null;
+  d.id = Date.now().toString();
+  var recs = DB.get('tests');
+  recs.push(d);
+  DB.set('tests', recs);
+  updateTestFilter();
+  closeModal('modal-test');
+  renderTests(); renderTestCalendar(); if(testSelectedDate) selectTestDay(testSelectedDate);
+  toast('미채점으로 저장했어요. 수업 중 점수만 입력하세요');
 }
 function validateTestData(d){
   if(!d.sid||!d.name){ toast('학생과 테스트명을 입력해주세요'); return false; }
@@ -2000,6 +2026,26 @@ function validateTestData(d){
   if(d.name==='미니모의고사' && !d.week){ toast('주차를 입력해주세요'); return false; }
   if(d.name==='미니모의고사' && !d.miniTarget){ toast('대상을 선택해주세요'); return false; }
   return true;
+}
+
+// 목록에서 점수만 바로 입력 (미채점 → 채점완료)
+function quickScore(id, val){
+  var sc = parseInt(val);
+  if(isNaN(sc)){ return; }
+  if(sc<0) sc=0; if(sc>100) sc=100;
+  var recs = DB.get('tests');
+  var idx = recs.findIndex(function(t){ return t.id===id; });
+  if(idx<0) return;
+  recs[idx].score = sc;
+  recs[idx].pending = false;
+  // 점수 직접 입력이면 틀린 번호 정보는 없음 (correct는 점수 기반 추정 안 함)
+  if(recs[idx].correct==null && typeof recs[idx].total==='number' && recs[idx].total>0){
+    // 총문항이 있으면 점수로 맞은 개수 환산(참고용)
+    recs[idx].correct = Math.round(recs[idx].total * sc/100);
+  }
+  DB.set('tests', recs);
+  renderTests(); renderTestCalendar(); if(testSelectedDate) selectTestDay(testSelectedDate);
+  toast('점수를 입력했어요');
 }
 
 function saveTest() {
@@ -2087,10 +2133,25 @@ function renderTests() {
   if(!filtered.length) { tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">테스트 결과를 입력해보세요</td></tr>'; return; }
   tbody.innerHTML = filtered.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); }).map(function(t){
     var student = students.find(function(s){ return s.id===t.sid; });
-    var cls = t.score>=90?'high':t.score>=70?'mid':'low';
-    var fillColor = t.score>=90?'var(--green)':t.score>=70?'var(--gold)':'var(--red)';
     var unitStr = (t.unit||'') + (t.book? (t.unit?' · ':'')+t.book : '');
-    return '<tr><td class="student-name">'+(student?student.name:'—')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+t.name+'</td><td style="font-size:12px;color:var(--muted);">'+(unitStr||'—')+'</td><td style="font-size:12px;color:var(--muted);">'+t.date+'</td><td><span class="score '+cls+'">'+t.score+'점</span><div class="score-bar"><div class="score-fill" style="width:'+t.score+'%;background:'+fillColor+'"></div></div></td><td style="font-size:12px;color:var(--muted);">'+(t.memo||'—')+'</td><td><div class="row-action"><button class="icon-btn" onclick="editTest(\''+t.id+'\')">✏️</button><button class="icon-btn" onclick="deleteTest(\''+t.id+'\')">🗑️</button></div></td></tr>';
+    var scoreCell;
+    if(t.pending || t.score==null){
+      // 미채점 — 점수/번호 바로 입력
+      var hasTotal = (typeof t.total==='number' && t.total>0);
+      if(hasTotal){
+        scoreCell = '<div style="display:flex;align-items:center;gap:4px;"><span style="font-size:11px;color:var(--gold);font-weight:700;">미채점</span>'
+          +'<button class="btn-sm" style="padding:3px 8px;font-size:11px;" onclick="editTest(\''+t.id+'\')">번호 입력</button>'
+          +'<input type="number" min="0" max="100" placeholder="점수" onkeydown="if(event.key===\'Enter\')quickScore(\''+t.id+'\',this.value)" onblur="if(this.value!==\'\')quickScore(\''+t.id+'\',this.value)" style="width:56px;font-size:12px;padding:3px 6px;border:1px solid var(--gold);border-radius:4px;"></div>';
+      } else {
+        scoreCell = '<div style="display:flex;align-items:center;gap:4px;"><span style="font-size:11px;color:var(--gold);font-weight:700;">미채점</span>'
+          +'<input type="number" min="0" max="100" placeholder="점수" onkeydown="if(event.key===\'Enter\')quickScore(\''+t.id+'\',this.value)" onblur="if(this.value!==\'\')quickScore(\''+t.id+'\',this.value)" style="width:56px;font-size:12px;padding:3px 6px;border:1px solid var(--gold);border-radius:4px;"></div>';
+      }
+    } else {
+      var cls = t.score>=90?'high':t.score>=70?'mid':'low';
+      var fillColor = t.score>=90?'var(--green)':t.score>=70?'var(--gold)':'var(--red)';
+      scoreCell = '<span class="score '+cls+'">'+t.score+'점</span><div class="score-bar"><div class="score-fill" style="width:'+t.score+'%;background:'+fillColor+'"></div></div>';
+    }
+    return '<tr'+((t.pending||t.score==null)?' style="background:#fffdf5;"':'')+'><td class="student-name">'+(student?student.name:'—')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+t.name+'</td><td style="font-size:12px;color:var(--muted);">'+(unitStr||'—')+'</td><td style="font-size:12px;color:var(--muted);">'+t.date+'</td><td>'+scoreCell+'</td><td style="font-size:12px;color:var(--muted);">'+(t.memo||'—')+'</td><td><div class="row-action"><button class="icon-btn" onclick="editTest(\''+t.id+'\')">✏️</button><button class="icon-btn" onclick="deleteTest(\''+t.id+'\')">🗑️</button></div></td></tr>';
   }).join('');
 }
 
