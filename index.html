@@ -1818,10 +1818,10 @@ var showWithdrawn = document.getElementById('show-withdrawn') && document.getEle
     var tbl = document.createElement('div');
     tbl.style.cssText = 'background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:8px;';
     var table = document.createElement('table');
-    table.style.width = '100%';
+    table.style.cssText = 'width:100%;table-layout:fixed;';
     table.innerHTML = '<thead><tr>'
-      +'<th>이름</th><th>학교</th><th>소속 반</th>'
-      +'<th>연락처</th><th>학부모</th><th>등록일</th><th></th>'
+      +'<th style="width:11%;">이름</th><th style="width:15%;">학교</th><th style="width:26%;">소속 반</th>'
+      +'<th style="width:13%;">연락처</th><th style="width:13%;">학부모</th><th style="width:13%;">등록일</th><th style="width:9%;"></th>'
       +'</tr></thead>';
 
     var tbody = document.createElement('tbody');
@@ -1847,21 +1847,25 @@ var showWithdrawn = document.getElementById('show-withdrawn') && document.getEle
 
       // 학교
       var schoolTd = document.createElement('td');
+      schoolTd.style.cssText = 'white-space:normal;';
       schoolTd.textContent = s.school||'—';
       tr.appendChild(schoolTd);
 
       // 반
       var classTd = document.createElement('td');
+      classTd.style.cssText = 'white-space:normal;';
       classTd.innerHTML = groupTags;
       tr.appendChild(classTd);
 
       // 연락처
       var phoneTd = document.createElement('td');
+      phoneTd.style.cssText = 'overflow:hidden;text-overflow:ellipsis;';
       phoneTd.textContent = s.phone||'—';
       tr.appendChild(phoneTd);
 
       // 학부모
       var parentTd = document.createElement('td');
+      parentTd.style.cssText = 'overflow:hidden;text-overflow:ellipsis;';
       parentTd.textContent = s.parent||'—';
       tr.appendChild(parentTd);
 
