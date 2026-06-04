@@ -1693,6 +1693,13 @@ function deleteStudent(id) {
   if(isAssistant()){ toast('학생 삭제는 선생님만 할 수 있어요'); return; }
   if(!confirm('학생 정보를 삭제할까요?')) return;
   DB.set('students', DB.get('students').filter(function(s){ return s.id!==id; }));
+  // 반(group) 멤버에서도 제거 — 삭제된 학생이 반별 입력에 다시 뜨지 않게
+  var groups = DB.get('groups');
+  var changed = false;
+  groups.forEach(function(g){
+    if(g.students && g.students.indexOf(id)>-1){ g.students = g.students.filter(function(x){ return x!==id; }); changed = true; }
+  });
+  if(changed) DB.set('groups', groups);
   renderStudents(); renderDashboard(); toast('삭제되었습니다');
 }
 
@@ -4555,8 +4562,11 @@ function saveGroupTest() {
   var total = parseInt(document.getElementById('gt-total').value);
   if(!isPoints && (isNaN(total)||total<=0)){ toast('전체 문항을 입력해주세요'); return; }
   var recs = DB.get('tests');
+  var allStudents = DB.get('students');
   var saved = 0;
   g.students.forEach(function(sid){
+    // 삭제된(퇴원) 학생 id는 건너뜀
+    if(!allStudents.find(function(s){ return s.id===sid; })) return;
     var memoEl = document.getElementById('gt-memo-'+sid);
     var rec = Object.assign({}, meta, { id:Date.now().toString()+sid, sid:sid, memo:memoEl?memoEl.value:'' });
     if(isPoints){
@@ -4593,15 +4603,20 @@ function saveGroupTestPending(){
   var g = groups.find(function(x){ return x.id===gid; });
   if(!g || !g.students || !g.students.length){ toast('반에 학생이 없습니다'); return; }
   var recs = DB.get('tests');
+  var allStudents = DB.get('students');
+  var saved = 0;
   g.students.forEach(function(sid){
+    if(!allStudents.find(function(s){ return s.id===sid; })) return;  // 퇴원 학생 제외
     var rec = Object.assign({}, meta, { id:Date.now().toString()+sid, sid:sid, score:null, correct:null, pending:true, memo:'' });
     recs.push(rec);
+    saved++;
   });
+  if(!saved){ toast('반에 등록된 학생이 없어요'); return; }
   DB.set('tests', recs);
   updateTestFilter();
   closeModal('modal-group-test');
   renderTests(); renderTestCalendar(); if(testSelectedDate) selectTestDay(testSelectedDate);
-  toast(g.students.length+'명 미채점 저장 완료. 수업 중 점수만 입력하세요');
+  toast(saved+'명 미채점 저장 완료. 수업 중 점수만 입력하세요');
 }
 
 // ══ 학생 상세 (꺾은선 그래프) ════════════════════
