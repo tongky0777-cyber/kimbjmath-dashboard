@@ -1010,6 +1010,8 @@ body.role-assistant .teacher-only{ display:none !important; }
 <script>
 // ===== Firebase Sync (양방향 + 안전장치) =====
 window._FB_PREFIX = "bjm_";
+// 연동할 클래스룸 데이터 접두사 (김병진은 기존 class_ 그대로 → 빈 값)
+window._CLS_PREFIX = "";
 window._fbReady = false;
 (function(){
   try{
@@ -2453,7 +2455,7 @@ function syncHwDoneToClass(hwId, status){
   if(!s || !s.classKey) return; // 연결 안 된 학생이면 동기화 대상 아님
   try{
     if(typeof firebase==='undefined' || !firebase.apps || !firebase.apps.length) return;
-    var ref = firebase.database().ref('class_hw_done/'+hwId+'/'+s.classKey);
+    var ref = firebase.database().ref((window._CLS_PREFIX||'')+'class_hw_done/'+hwId+'/'+s.classKey);
     var done = (status==='done');
     var val = { done:done, at:new Date().toISOString(), by:'teacher' };
     ref.set(val);
@@ -4410,7 +4412,7 @@ var CLASS_PLANNERS = {}; // 학생 플래너 (class_planner) {classKey:{date:pla
 function loadClassHwDone(cb){
   try{
     if(typeof firebase==='undefined' || !firebase.apps || !firebase.apps.length){ if(cb) cb(); return; }
-    firebase.database().ref('class_hw_done').once('value').then(function(snap){
+    firebase.database().ref((window._CLS_PREFIX||'')+'class_hw_done').once('value').then(function(snap){
       HW_DONE = snap.val() || {};
       if(cb) cb();
     }).catch(function(){ if(cb) cb(); });
@@ -4420,7 +4422,7 @@ function loadClassHwDone(cb){
 function loadClassPlanners(cb){
   try{
     if(typeof firebase==='undefined' || !firebase.apps || !firebase.apps.length){ if(cb) cb(); return; }
-    firebase.database().ref('class_planner').once('value').then(function(snap){
+    firebase.database().ref((window._CLS_PREFIX||'')+'class_planner').once('value').then(function(snap){
       CLASS_PLANNERS = snap.val() || {};
       if(cb) cb();
     }).catch(function(){ if(cb) cb(); });
@@ -4502,7 +4504,7 @@ function renderStudyLog(){
 function loadClassUsers(cb){
   try{
     if(typeof firebase==='undefined' || !firebase.apps || !firebase.apps.length){ if(cb) cb(); return; }
-    firebase.database().ref('class_users').once('value').then(function(snap){
+    firebase.database().ref((window._CLS_PREFIX||'')+'class_users').once('value').then(function(snap){
       CLASS_USERS = snap.val() || {};
       classUsersLoaded = true;
       if(cb) cb();
