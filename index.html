@@ -4420,12 +4420,16 @@ function openScheduleModalForDate() {
 
 
 // ══ 반별 테스트 입력 ══════════════════════════════
+// 반별 테스트: 학생별 틀린 번호 모음 {sid:{번호:true}}
+var gtWrongSets = {};
+
 function openGroupTestModal() {
   var groups = DB.get('groups');
   var sel = document.getElementById('gt-group');
   sel.innerHTML = groups.length
     ? groups.map(function(g){ return '<option value="'+g.id+'">'+g.name+'</option>'; }).join('')
     : '<option value="">반 없음 (반 관리에서 먼저 생성)</option>';
+  gtWrongSets = {};
   // 테스트명 목록 (개별과 동일)
   fillGtNameSelect();
   fillSubjectBookSelects('gt');
@@ -4488,33 +4492,53 @@ function updateGroupTestList() {
       scoreEl.style.cssText='width:90px;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:13px;font-family:var(--sans);background:var(--white);';
       row.appendChild(scoreEl);
       var unitTxt=document.createElement('span'); unitTxt.style.cssText='color:var(--muted);font-size:13px;'; unitTxt.textContent='점'; row.appendChild(unitTxt);
+      var memoEl0 = document.createElement('input');
+      memoEl0.type='text'; memoEl0.placeholder='메모'; memoEl0.id='gt-memo-'+sid;
+      memoEl0.style.cssText='flex:1;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:12px;font-family:var(--sans);background:var(--white);';
+      row.appendChild(memoEl0);
+      el.appendChild(row);
     } else {
-      // 틀린 개수 입력 → 점수 자동
-      var wrongEl = document.createElement('input');
-      wrongEl.type='number'; wrongEl.min='0'; wrongEl.placeholder='틀린 수';
-      wrongEl.id='gt-wrong-'+sid;
-      wrongEl.style.cssText='width:80px;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:13px;font-family:var(--sans);background:var(--white);';
-      row.appendChild(wrongEl);
-      var slash=document.createElement('span'); slash.style.cssText='color:var(--muted);font-size:13px;'; slash.textContent='/ '+(!isNaN(total)&&total>0?total:'?'); row.appendChild(slash);
-      var pctEl=document.createElement('span'); pctEl.id='gt-pct-'+sid; pctEl.style.cssText='width:50px;font-size:12px;font-weight:700;color:var(--teal);text-align:center;'; pctEl.textContent='—'; row.appendChild(pctEl);
-      (function(pEl){
-        wrongEl.oninput=function(){
-          var wcnt=parseInt(wrongEl.value);
-          if(!isNaN(wcnt)&&!isNaN(total)&&total>0){
-            var pct=Math.round((total-wcnt)/total*100);
-            pEl.textContent=pct+'%'; pEl.style.color=pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
-          } else { pEl.textContent='—'; pEl.style.color='var(--teal)'; }
-        };
-      })(pctEl);
+      // 번호 채점 — 틀린 번호 버튼 그리드 (방법1)
+      // 행을 세로 구조로: 윗줄(이름+%+메모), 아랫줄(번호 그리드)
+      row.style.cssText = 'display:flex;flex-direction:column;gap:6px;background:var(--bg2);padding:10px 12px;border-radius:4px;';
+      row.innerHTML='';
+      var top=document.createElement('div'); top.style.cssText='display:flex;align-items:center;gap:8px;';
+      var nm=document.createElement('div'); nm.style.cssText='font-size:13px;font-weight:700;min-width:80px;'; nm.textContent=s.name; top.appendChild(nm);
+      var pctEl=document.createElement('span'); pctEl.id='gt-pct-'+sid; pctEl.style.cssText='font-size:12px;font-weight:700;color:var(--teal);min-width:60px;'; pctEl.textContent= (!isNaN(total)&&total>0)?'100%':'—'; top.appendChild(pctEl);
+      var memoEl=document.createElement('input'); memoEl.type='text'; memoEl.placeholder='메모'; memoEl.id='gt-memo-'+sid;
+      memoEl.style.cssText='flex:1;padding:5px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:12px;font-family:var(--sans);background:var(--white);';
+      top.appendChild(memoEl);
+      row.appendChild(top);
+
+      if(!isNaN(total) && total>0){
+        var grid=document.createElement('div'); grid.style.cssText='display:flex;flex-wrap:wrap;gap:4px;';
+        if(!gtWrongSets[sid]) gtWrongSets[sid]={};
+        for(var i=1;i<=total;i++){
+          (function(num){
+            var b=document.createElement('div');
+            var on = !!gtWrongSets[sid][num];
+            b.textContent=num;
+            b.style.cssText='width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:12px;cursor:pointer;border:1.5px solid '+(on?'var(--red)':'var(--line)')+';background:'+(on?'#fdecea':'var(--white)')+';color:'+(on?'var(--red)':'var(--ink)')+';font-weight:'+(on?'700':'400')+';';
+            b.onclick=function(){
+              if(gtWrongSets[sid][num]) delete gtWrongSets[sid][num]; else gtWrongSets[sid][num]=true;
+              var nowOn=!!gtWrongSets[sid][num];
+              b.style.border='1.5px solid '+(nowOn?'var(--red)':'var(--line)');
+              b.style.background=nowOn?'#fdecea':'var(--white)';
+              b.style.color=nowOn?'var(--red)':'var(--ink)';
+              b.style.fontWeight=nowOn?'700':'400';
+              var wc=Object.keys(gtWrongSets[sid]).length;
+              var pct=Math.round((total-wc)/total*100);
+              pctEl.textContent=pct+'%'; pctEl.style.color=pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
+            };
+            grid.appendChild(b);
+          })(i);
+        }
+        row.appendChild(grid);
+      } else {
+        var hintEl=document.createElement('div'); hintEl.style.cssText='font-size:12px;color:var(--muted);'; hintEl.textContent='↑ 전체 문항을 입력하면 번호가 나와요'; row.appendChild(hintEl);
+      }
+      el.appendChild(row);
     }
-
-    var memoEl = document.createElement('input');
-    memoEl.type='text'; memoEl.placeholder='메모';
-    memoEl.id='gt-memo-'+sid;
-    memoEl.style.cssText='flex:1;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:12px;font-family:var(--sans);background:var(--white);';
-    row.appendChild(memoEl);
-
-    el.appendChild(row);
   });
 }
 
@@ -4542,10 +4566,10 @@ function saveGroupTest() {
       if(sc<0)sc=0; if(sc>100)sc=100;
       rec.score = sc; rec.correct = (typeof total==='number'&&total>0)?Math.round(total*sc/100):null; rec.pending=false;
     } else {
-      var wrongEl = document.getElementById('gt-wrong-'+sid);
-      if(!wrongEl || wrongEl.value==='') return;
-      var wcnt = parseInt(wrongEl.value); if(isNaN(wcnt)) return;
-      rec.total = total; rec.correct = total - wcnt; rec.score = Math.round((total-wcnt)/total*100); rec.pending=false;
+      var wset = gtWrongSets[sid] || {};
+      var wrongArr = Object.keys(wset).map(Number).filter(function(n){ return n<=total; }).sort(function(a,b){return a-b;});
+      rec.total = total; rec.wrong = wrongArr; rec.correct = total - wrongArr.length;
+      rec.score = Math.round((total-wrongArr.length)/total*100); rec.pending=false;
     }
     recs.push(rec);
     saved++;
