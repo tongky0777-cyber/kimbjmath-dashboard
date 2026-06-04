@@ -182,6 +182,7 @@ textarea{resize:vertical;min-height:80px;}
 /* 반응형 */
 @media(max-width:900px){.shell{height:auto;overflow:visible;grid-template-columns:1fr;}.sidebar{display:none;}.stat-row{grid-template-columns:1fr 1fr;}.schedule-grid{grid-template-columns:1fr;}}
 @media(max-width:600px){.content{padding:16px;}.stat-row{grid-template-columns:1fr 1fr;}.form-row{grid-template-columns:1fr;}}
+body.role-assistant .teacher-only{ display:none !important; }
 </style>
 </head>
 <body>
@@ -226,9 +227,9 @@ textarea{resize:vertical;min-height:80px;}
     <div class="sb-item" onclick="showView('prep',this)"><span class="sb-icon">🎯</span> 다음 수업 준비</div>
     <div class="sb-item" onclick="showView('progress',this)"><span class="sb-icon">📖</span> 진도 관리</div>
     <div class="sb-item" onclick="showView('tests',this)"><span class="sb-icon">📝</span> 테스트 결과</div>
-    <div class="sb-item" onclick="showView('papers',this)"><span class="sb-icon">📊</span> 시험지 분석</div>
+    <div class="sb-item teacher-only" onclick="showView('papers',this)"><span class="sb-icon">📊</span> 시험지 분석</div>
     <div class="sb-item" onclick="showView('studylog',this)"><span class="sb-icon">📒</span> 학생 학습기록</div>
-    <div class="sb-item" onclick="showView('groups',this)"><span class="sb-icon">🏫</span> 반 관리</div>
+    <div class="sb-item teacher-only" onclick="showView('groups',this)"><span class="sb-icon">🏫</span> 반 관리</div>
     <div class="sb-section">일정</div>
     <div class="sb-item" onclick="showView('schedule',this)"><span class="sb-icon">📅</span> 보강 · 일정</div>
     <div class="sb-item" onclick="showView('memo',this)"><span class="sb-icon">🗒️</span> 메모</div>
@@ -1060,20 +1061,40 @@ window._fbReady = false;
 // ===== Firebase Sync End =====
 
 // 로그인
-var LOGIN_PW = 'tongky07';
+var LOGIN_PW = 'tongky07';      // 선생님(전체 권한)
+var ASSIST_PW = 'help1234';     // 조교(제한 권한)
 
 function doLogin() {
   var pw = document.getElementById('login-pw').value;
   var err = document.getElementById('login-err');
   if(pw === LOGIN_PW) {
     localStorage.setItem('bjm_auth', 'true');
+    localStorage.setItem('bjm_role', 'teacher');
     var sc = document.getElementById('login-screen');
     if(sc) sc.remove();
+    applyRolePermissions();
+  } else if(pw === ASSIST_PW) {
+    localStorage.setItem('bjm_auth', 'true');
+    localStorage.setItem('bjm_role', 'assistant');
+    var sc2 = document.getElementById('login-screen');
+    if(sc2) sc2.remove();
+    applyRolePermissions();
   } else {
     err.style.display = 'block';
     document.getElementById('login-pw').value = '';
     document.getElementById('login-pw').focus();
   }
+}
+
+// 현재 로그인한 사람이 조교인지
+function isAssistant(){ return localStorage.getItem('bjm_role')==='assistant'; }
+
+// 역할에 따라 금지 기능을 화면에서 숨김/차단
+function applyRolePermissions(){
+  var assist = isAssistant();
+  // body에 클래스 부여 → CSS로 조교 금지 요소 숨김
+  if(assist) document.body.classList.add('role-assistant');
+  else document.body.classList.remove('role-assistant');
 }
 
 (function() {
@@ -1089,6 +1110,8 @@ function doLogin() {
         setTimeout(function(){ if(pw) pw.focus(); }, 100);
       }
     });
+  } else {
+    document.addEventListener('DOMContentLoaded', function(){ applyRolePermissions(); });
   }
 })();
 
@@ -1280,6 +1303,7 @@ function renderExam() {
 }
 // ===== 시험 일정 끝 =====
 function showView(id, el) {
+  if(isAssistant() && (id==='papers' || id==='groups')){ toast('이 메뉴는 선생님만 볼 수 있어요'); return; }
   document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('on'); });
   document.querySelectorAll('.sb-item').forEach(function(i){ i.classList.remove('on'); });
   var target = document.getElementById('view-'+id);
@@ -1331,6 +1355,7 @@ function populateStudentGroupList(sid) {
   }).join('');
 }
 function openStudentModal() {
+  if(isAssistant()){ toast('학생 등록·수정은 선생님만 할 수 있어요'); return; }
   populateSel();
   document.getElementById('s-id').value='';
   document.getElementById('s-class').value='';
@@ -1624,6 +1649,7 @@ function saveStudent() {
 }
 
 function deleteStudent(id) {
+  if(isAssistant()){ toast('학생 삭제는 선생님만 할 수 있어요'); return; }
   if(!confirm('학생 정보를 삭제할까요?')) return;
   DB.set('students', DB.get('students').filter(function(s){ return s.id!==id; }));
   renderStudents(); renderDashboard(); toast('삭제되었습니다');
@@ -1655,6 +1681,7 @@ function withdrawStudent(id) {
 }
 
 function editStudent(id) {
+  if(isAssistant()){ toast('학생 정보 수정은 선생님만 할 수 있어요'); return; }
   var s = DB.get('students').find(function(x){ return x.id===id; });
   if(!s) return;
   populateSel();
@@ -2743,6 +2770,7 @@ function renderDashboard() {
 
 // ══ 반 관리 ══════════════════════════════════════
 function openGroupModal(id) {
+  if(isAssistant()){ toast('반 관리는 선생님만 할 수 있어요'); return; }
   var students = DB.get('students');
   var groups = DB.get('groups');
   document.getElementById('g-id').value = id || '';
@@ -2797,6 +2825,7 @@ function saveGroup() {
 }
 
 function deleteGroup(id) {
+  if(isAssistant()){ toast('반 삭제는 선생님만 할 수 있어요'); return; }
   if(!confirm('반을 삭제할까요?')) return;
   DB.set('groups', DB.get('groups').filter(function(g){ return g.id!==id; }));
   renderGroups(); toast('삭제되었습니다');
@@ -4505,6 +4534,7 @@ function renderClassLink(sid){
 
 // 연결할 클래스룸 계정 선택 (간단 prompt 방식 대신 목록 모달)
 function openClassLinkPicker(sid){
+  if(isAssistant()){ toast('클래스룸 계정 연결은 선생님만 할 수 있어요'); return; }
   loadClassUsers(function(){
     var keys = Object.keys(CLASS_USERS).filter(function(k){ return (CLASS_USERS[k].role||'student')==='student'; });
     if(!keys.length){ toast('클래스룸에 가입한 학생이 아직 없어요'); return; }
@@ -4538,6 +4568,7 @@ function linkClass(sid, classKey){
 }
 
 function unlinkClass(sid){
+  if(isAssistant()){ toast('클래스룸 연결 해제는 선생님만 할 수 있어요'); return; }
   var students = DB.get('students');
   var idx = students.findIndex(function(x){ return x.id===sid; });
   if(idx<0) return;
