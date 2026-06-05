@@ -1129,6 +1129,22 @@ window._fbReady = false;
         });
       }catch(e){}
     };
+
+    // 자유 메모(memo) 실시간 동기화 — 단, 내가 그 칸을 타이핑 중이면 덮어쓰지 않고 미룸
+    window._fbWatchMemo=function(){
+      try{
+        db.ref(PREFIX+'memo').on('value', function(snap){
+          var v=snap.val();
+          var text=(v==null?'':v);
+          _orig(PREFIX+'memo', JSON.stringify(text));
+          var el=document.getElementById('memo-area');
+          if(!el) return;
+          // 지금 이 칸을 편집 중(포커스)이면 갱신 보류 — 내가 적는 게 덮이지 않도록
+          if(document.activeElement===el) return;
+          if(el.value!==text) el.value=text;
+        });
+      }catch(e){}
+    };
   }catch(e){console.error("Firebase init:",e);window._fbReady=true;}
 })();
 // ===== Firebase Sync End =====
@@ -1211,6 +1227,12 @@ window.addEventListener('DOMContentLoaded', function() {
       clearTimeout(memoEl._t);
       memoEl._t = setTimeout(function(){ DB.setOne('memo', memoEl.value); }, 1200);
     });
+    // 편집을 마치고 칸을 벗어나면, 그동안 들어온 최신 공유 메모를 반영
+    memoEl.addEventListener('blur', function(){
+      // 내가 막 적은 값은 저장하고
+      clearTimeout(memoEl._t);
+      DB.setOne('memo', memoEl.value);
+    });
   }
 
   // 화면 그리는 작업 (서버 동기화 후 실행)
@@ -1232,7 +1254,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
   // 서버에서 최신 데이터를 받아온 뒤 화면을 그린다 (기기 간 동일하게 보이도록)
   if(typeof window._fbPull === 'function'){
-    _fbPull(function(){ _renderStart(); if(typeof window._fbWatchMemoTodo==='function') _fbWatchMemoTodo(); });
+    _fbPull(function(){ _renderStart(); if(typeof window._fbWatchMemoTodo==='function') _fbWatchMemoTodo(); if(typeof window._fbWatchMemo==='function') _fbWatchMemo(); });
   } else {
     window._fbReady = true;
     _renderStart();
