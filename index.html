@@ -2246,6 +2246,7 @@ function editTest(id) {
       updateTestFilter();
       closeModal('modal-test');
       renderTests(); renderTestCalendar();
+      if(testSelectedDate) selectTestDay(testSelectedDate);
       toast('테스트가 수정되었습니다');
     };
   }
@@ -3732,6 +3733,7 @@ function selectTestDay(dateStr) {
         +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+r.name+'</div>'
         +'</div>'
         +'<div style="text-align:center;">'+scoreHtml+'</div>'
+        +'<button class="icon-btn" title="수정" onclick="editTest(\''+r.id+'\')" style="flex-shrink:0;">✏️</button>'
         +'<button class="icon-btn" title="삭제" onclick="deleteTest(\''+r.id+'\')" style="flex-shrink:0;">🗑️</button>';
       list.appendChild(card);
     });
