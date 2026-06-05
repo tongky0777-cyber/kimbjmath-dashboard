@@ -1114,6 +1114,21 @@ window._fbReady = false;
       });
       alert("이 기기의 데이터를 서버에 올렸습니다. ("+n+"개 항목)\n다른 기기에서 새로고침하면 동일하게 보입니다.");
     };
+
+    // 공유 할 일(memo_todo) 실시간 동기화 — 조교가 체크하면 선생님 화면도 즉시 갱신
+    window._fbWatchMemoTodo=function(){
+      try{
+        db.ref(PREFIX+'memo_todo').on('value', function(snap){
+          var v=snap.val();
+          _orig(PREFIX+'memo_todo', JSON.stringify(v==null?[]:v));
+          // 메모 화면이 열려 있으면 할 일 목록만 다시 그림
+          var memoView=document.getElementById('view-memo');
+          if(memoView && memoView.classList.contains('on') && typeof renderMemoTodos==='function'){
+            renderMemoTodos();
+          }
+        });
+      }catch(e){}
+    };
   }catch(e){console.error("Firebase init:",e);window._fbReady=true;}
 })();
 // ===== Firebase Sync End =====
@@ -1217,7 +1232,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
   // 서버에서 최신 데이터를 받아온 뒤 화면을 그린다 (기기 간 동일하게 보이도록)
   if(typeof window._fbPull === 'function'){
-    _fbPull(function(){ _renderStart(); });
+    _fbPull(function(){ _renderStart(); if(typeof window._fbWatchMemoTodo==='function') _fbWatchMemoTodo(); });
   } else {
     window._fbReady = true;
     _renderStart();
