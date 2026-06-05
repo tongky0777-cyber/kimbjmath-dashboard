@@ -1145,6 +1145,23 @@ window._fbReady = false;
         });
       }catch(e){}
     };
+
+    // 모든 공유 데이터 실시간 동기화 — 조교가 입력/수정하면 선생님 화면도 자동 갱신
+    // (모달을 열어 입력 중일 때는 화면 다시 그리기를 보류해 방해하지 않음)
+    window._fbWatchAll=function(){
+      var DATA_KEYS=["students","attendance","homework","tests","progress","groups","schedules","exams"];
+      DATA_KEYS.forEach(function(k){
+        try{
+          db.ref(PREFIX+k).on('value', function(snap){
+            var v=snap.val();
+            _orig(PREFIX+k, JSON.stringify(v==null?[]:v));
+            var anyModalOpen=document.querySelector('.modal-bg.on');
+            if(anyModalOpen) return;
+            if(typeof refreshCurrentView==='function') refreshCurrentView();
+          });
+        }catch(e){}
+      });
+    };
   }catch(e){console.error("Firebase init:",e);window._fbReady=true;}
 })();
 // ===== Firebase Sync End =====
@@ -1254,7 +1271,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
   // 서버에서 최신 데이터를 받아온 뒤 화면을 그린다 (기기 간 동일하게 보이도록)
   if(typeof window._fbPull === 'function'){
-    _fbPull(function(){ _renderStart(); if(typeof window._fbWatchMemoTodo==='function') _fbWatchMemoTodo(); if(typeof window._fbWatchMemo==='function') _fbWatchMemo(); });
+    _fbPull(function(){ _renderStart(); if(typeof window._fbWatchMemoTodo==='function') _fbWatchMemoTodo(); if(typeof window._fbWatchMemo==='function') _fbWatchMemo(); if(typeof window._fbWatchAll==='function') _fbWatchAll(); });
   } else {
     window._fbReady = true;
     _renderStart();
@@ -1425,6 +1442,25 @@ function showView(id, el) {
   if(id==='groups')     renderGroups();
   if(id==='exam')       renderExam();
   updateGroupFilter();
+  window._curViewId = id;
+}
+
+// 현재 보고 있는 화면만 다시 그림 (실시간 동기화로 데이터가 바뀌었을 때)
+function refreshCurrentView(){
+  var id = window._curViewId;
+  if(!id) return;
+  try{
+    if(id==='students')   renderStudents();
+    else if(id==='attendance'){ renderAttendance(); renderAttCalendar(); }
+    else if(id==='tests'){ renderTests(); renderTestCalendar(); if(typeof testSelectedDate!=='undefined' && testSelectedDate) selectTestDay(testSelectedDate); }
+    else if(id==='homework'){ renderHw(); renderHwCalendar(); }
+    else if(id==='schedule')  renderSchedule();
+    else if(id==='dashboard') renderDashboard();
+    else if(id==='prep')      renderPrep();
+    else if(id==='progress'){ renderProgress(); renderProgCalendar(); }
+    else if(id==='groups')    renderGroups();
+    else if(id==='exam')      renderExam();
+  }catch(e){}
 }
 
 // 모달
