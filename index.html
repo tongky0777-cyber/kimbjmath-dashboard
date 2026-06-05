@@ -568,9 +568,25 @@ body.role-assistant .teacher-only{ display:none !important; }
 
     <!-- 메모 -->
     <div class="view" id="view-memo">
-      <div class="sec-hd"><h2>🗒️ 메모</h2><button class="btn-sm" onclick="saveMemo()">저장</button></div>
-      <div style="background:var(--white);border-radius:6px;">
-        <textarea id="memo-area" style="width:100%;min-height:500px;border:1.5px solid var(--line);border-radius:4px;padding:12px;font-size:14px;color:var(--ink);font-family:var(--sans);resize:vertical;outline:none;line-height:1.8;background:var(--white);" placeholder="자유롭게 메모를 남겨보세요."></textarea>
+      <div class="sec-hd"><h2>🗒️ 메모 <span style="font-size:12px;font-weight:500;color:var(--muted);">(선생님·조교 공유)</span></h2></div>
+
+      <!-- 할 일 목록 -->
+      <div style="background:var(--white);border:1px solid var(--line);border-radius:6px;padding:16px 18px;margin-bottom:18px;">
+        <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:12px;">✅ 할 일</div>
+        <div id="memo-todo-list"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <input type="text" id="memo-todo-input" placeholder="할 일을 적고 Enter" onkeydown="if(event.key==='Enter')addMemoTodo()" style="flex:1;padding:8px 12px;border:1.5px solid var(--line);border-radius:4px;font-size:13px;font-family:var(--sans);outline:none;">
+          <button class="btn-sm" onclick="addMemoTodo()">+ 추가</button>
+        </div>
+      </div>
+
+      <!-- 자유 메모장 -->
+      <div style="background:var(--white);border:1px solid var(--line);border-radius:6px;padding:16px 18px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:14px;font-weight:700;color:var(--ink);">📝 자유 메모</div>
+          <button class="btn-sm" onclick="saveMemo()">저장</button>
+        </div>
+        <textarea id="memo-area" style="width:100%;min-height:360px;border:1.5px solid var(--line);border-radius:4px;padding:12px;font-size:14px;color:var(--ink);font-family:var(--sans);resize:vertical;outline:none;line-height:1.8;background:var(--white);" placeholder="자유롭게 메모를 남겨보세요. (자동 저장)"></textarea>
       </div>
     </div>
 
@@ -1060,7 +1076,7 @@ window._fbReady = false;
     var db=firebase.database();window._fbDb=db;
     var PREFIX=window._FB_PREFIX;
     // 동기화 대상 키
-    var SYNC_KEYS=["students","attendance","homework","tests","progress","groups","schedules","exams"].map(function(k){return PREFIX+k;});
+    var SYNC_KEYS=["students","attendance","homework","tests","progress","groups","schedules","exams","memo","memo_todo"].map(function(k){return PREFIX+k;});
 
     // 저장 시 서버에도 반영 (단, 동기화 준비 전에는 서버 덮어쓰기 금지)
     var _orig=localStorage.setItem.bind(localStorage);
@@ -1213,10 +1229,10 @@ window.addEventListener('DOMContentLoaded', function() {
 function activateMemo() {
   var el = document.getElementById('memo-area');
   if(el) {
-    el.style.display = 'block';
     var saved = DB.getOne('memo');
-    if(saved && !el.value) el.value = saved;
+    if(saved!=null) el.value = saved;
   }
+  renderMemoTodos();
 }
 
 var viewTitles = {dashboard:'📊 전체 현황',prep:'🎯 다음 수업 준비',progress:'📖 진도 관리',groups:'🏫 반 관리',students:'👥 학생 목록',attendance:'✅ 출결 관리',tests:'📝 테스트 결과',homework:'📚 숙제 관리',schedule:'📅 보강 · 일정',memo:'🗒️ 메모'};
@@ -5186,6 +5202,38 @@ var sIds = g ? g.students || [] : [];
 function saveMemo() {
   DB.setOne('memo', document.getElementById('memo-area').value);
   toast('메모가 저장되었습니다');
+}
+
+// ===== 공유 할 일 목록 =====
+function getMemoTodos(){ return DB.get('memo_todo'); }   // [{text,done}]
+function renderMemoTodos(){
+  var box=document.getElementById('memo-todo-list'); if(!box) return;
+  var todos=getMemoTodos();
+  if(!todos.length){ box.innerHTML='<div style="font-size:12px;color:var(--muted);padding:4px 0;">할 일이 없어요. 아래에 추가해보세요.</div>'; return; }
+  box.innerHTML=todos.map(function(t,i){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);">'
+      +'<button onclick="toggleMemoTodo('+i+')" style="flex-shrink:0;width:22px;height:22px;border-radius:6px;border:1.5px solid '+(t.done?'var(--teal,#2a9d8f)':'var(--line)')+';background:'+(t.done?'var(--teal,#2a9d8f)':'#fff')+';color:#fff;cursor:pointer;font-size:13px;line-height:1;">'+(t.done?'✓':'')+'</button>'
+      +'<span style="flex:1;font-size:13.5px;'+(t.done?'text-decoration:line-through;color:var(--muted);':'color:var(--ink);')+'">'+_slEsc(t.text)+'</span>'
+      +'<button onclick="removeMemoTodo('+i+')" style="flex-shrink:0;background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;">×</button>'
+      +'</div>';
+  }).join('');
+}
+function addMemoTodo(){
+  var inp=document.getElementById('memo-todo-input');
+  var v=(inp.value||'').trim(); if(!v) return;
+  var todos=getMemoTodos();
+  todos.push({text:v,done:false});
+  DB.set('memo_todo', todos);
+  inp.value='';
+  renderMemoTodos();
+}
+function toggleMemoTodo(i){
+  var todos=getMemoTodos();
+  if(todos[i]){ todos[i].done=!todos[i].done; DB.set('memo_todo', todos); renderMemoTodos(); }
+}
+function removeMemoTodo(i){
+  var todos=getMemoTodos();
+  todos.splice(i,1); DB.set('memo_todo', todos); renderMemoTodos();
 }
 </script>
 </body>

@@ -70,6 +70,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .color-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:.15s;}
 .color-dot:hover,.color-dot.selected{border-color:var(--ink);}
 </style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 <div class="sb">
@@ -160,7 +162,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
     <div id="d-book" style="font-size:13px;margin-bottom:12px;"></div>
     <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;border-top:1px solid var(--line);padding-top:12px;">메모/특이사항</div>
     <div id="d-memo" style="font-size:13px;color:var(--ink2);line-height:1.8;white-space:pre-wrap;min-height:60px;"></div>
-    <div class="modal-btns">
+    <div class="modal-btns" id="d-edit-btns">
       <button class="btn-del" onclick="deleteClass()">삭제</button>
       <button class="btn-cancel" onclick="editClass()">수정</button>
       <button class="btn-save" onclick="closeModal()">닫기</button>
@@ -169,6 +171,23 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 </div>
 
 <script>
+// ===== Firebase 동기화 (시간표를 조교와 공유) =====
+var firebaseConfig = {
+  apiKey: "AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",
+  databaseURL: "https://kimbjmath-default-rtdb.firebaseio.com",
+  projectId: "kimbjmath",
+  appId: "1:664889936709:web:2df1494b0cd978c64e4c2c"
+};
+var _ttDb=null, _ttReady=false;
+try{
+  if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  _ttDb=firebase.database();
+}catch(e){ console.error('Firebase init:',e); }
+
+// 권한: 대시보드 로그인 정보 재사용 (bjm_role). teacher만 편집, 그 외(조교)는 보기 전용
+var TT_ROLE = localStorage.getItem('bjm_role') || 'teacher';
+var TT_CAN_EDIT = (TT_ROLE === 'teacher');
+
 var DAYS=['월','화','수','목','금','토','일'];
 var DAY_IDS=['mon','tue','wed','thu','fri','sat','sun'];
 var DAY_MAP={월:'mon',화:'tue',수:'wed',목:'thu',금:'fri',토:'sat',일:'sun'};
@@ -181,7 +200,14 @@ var nextId=parseInt(localStorage.getItem('tt_nextId')||'1');
 var currentDetailId=null;
 var selectedColor=COLORS[0];
 
-function saveTT(){localStorage.setItem('tt_classes',JSON.stringify(classes));localStorage.setItem('tt_nextId',String(nextId));}
+function saveTT(){
+  localStorage.setItem('tt_classes',JSON.stringify(classes));
+  localStorage.setItem('tt_nextId',String(nextId));
+  // Firebase에도 반영 (조교와 공유)
+  if(_ttDb && _ttReady){
+    try{ _ttDb.ref('tt_classes').set(classes); _ttDb.ref('tt_nextId').set(nextId); }catch(e){}
+  }
+}
 
 function renderColorGrid(){
   document.getElementById('color-grid').innerHTML=COLORS.map(function(c){
@@ -242,6 +268,7 @@ function renderMemoList(){
 }
 
 function openAddClass(){
+  if(!TT_CAN_EDIT){ alert('시간표 편집은 선생님만 할 수 있어요'); return; }
   currentDetailId=null;selectedColor=COLORS[0];
   document.getElementById('f-name').value='';
   document.getElementById('f-subject').value='';
@@ -256,6 +283,7 @@ function openAddClass(){
 }
 
 function openAddClassAtDay(day,time){
+  if(!TT_CAN_EDIT) return;
   openAddClass();
   var id='f-'+DAY_MAP[day];
   if(id&&document.getElementById(id))document.getElementById(id).checked=true;
@@ -263,6 +291,7 @@ function openAddClassAtDay(day,time){
 }
 
 function saveClass(){
+  if(!TT_CAN_EDIT){ alert('시간표 편집은 선생님만 할 수 있어요'); return; }
   var name=document.getElementById('f-name').value.trim();
   if(!name){alert('반 이름을 입력해주세요');return;}
   var days=DAYS.filter(function(d,i){return document.getElementById('f-'+DAY_IDS[i]).checked;});
@@ -283,10 +312,16 @@ function showDetail(id,ev){
   document.getElementById('d-meta').innerHTML=(c.days?c.days.join('·'):'')+' &nbsp; '+c.start+' ~ '+c.end+(c.subject?' &nbsp; '+c.subject:'')+(c.type?' &nbsp; '+c.type:'');
   document.getElementById('d-book').textContent=c.book||'교재 정보 없음';
   document.getElementById('d-memo').textContent=c.memo||'메모가 없습니다.';
+  // 조교는 삭제/수정 버튼 숨기고 닫기만
+  var delBtn=document.querySelector('#d-edit-btns .btn-del');
+  var editBtn=document.querySelector('#d-edit-btns .btn-cancel');
+  if(delBtn) delBtn.style.display = TT_CAN_EDIT ? '' : 'none';
+  if(editBtn) editBtn.style.display = TT_CAN_EDIT ? '' : 'none';
   document.getElementById('detail-modal').classList.add('open');
 }
 
 function editClass(){
+  if(!TT_CAN_EDIT){ alert('시간표 편집은 선생님만 할 수 있어요'); return; }
   var c=classes.find(function(x){return x.id===currentDetailId;});
   if(!c)return;
   closeModal();
@@ -304,6 +339,7 @@ function editClass(){
 }
 
 function deleteClass(){
+  if(!TT_CAN_EDIT){ alert('시간표 편집은 선생님만 할 수 있어요'); return; }
   if(!confirm('수업을 삭제할까요?'))return;
   classes=classes.filter(function(c){return c.id!==currentDetailId;});
   saveTT();closeModal();renderTimetable();
@@ -342,7 +378,36 @@ function closeModal(){
   document.getElementById('detail-modal').classList.remove('open');
 }
 
-renderTimetable();
+// 조교(보기 전용)면 편집 버튼/기능 숨김
+function applyTtPermissions(){
+  if(TT_CAN_EDIT) return;
+  document.querySelectorAll('.btn-save, [onclick*="openAddModal"], [onclick*="loadFromGroups"], [onclick*="saveClass"], [onclick*="deleteClass"], [onclick*="openAdd"]').forEach(function(el){
+    el.style.display='none';
+  });
+  document.body.classList.add('tt-readonly');
+}
+
+// Firebase에서 먼저 받아온 뒤 그린다 (조교도 동일하게 보이도록)
+function _ttInit(){
+  if(_ttDb){
+    _ttDb.ref().once('value').then(function(snap){
+      var all=snap.val()||{};
+      if(all.tt_classes!==undefined && all.tt_classes!==null){
+        classes=all.tt_classes; localStorage.setItem('tt_classes',JSON.stringify(classes));
+      }
+      if(all.tt_nextId!==undefined && all.tt_nextId!==null){
+        nextId=all.tt_nextId; localStorage.setItem('tt_nextId',String(nextId));
+      }
+      _ttReady=true;
+      renderTimetable(); applyTtPermissions();
+    }).catch(function(){
+      _ttReady=true; renderTimetable(); applyTtPermissions();
+    });
+  } else {
+    _ttReady=true; renderTimetable(); applyTtPermissions();
+  }
+}
+_ttInit();
 </script>
 </body>
 </html>
