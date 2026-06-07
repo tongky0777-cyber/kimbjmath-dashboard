@@ -5400,9 +5400,10 @@ function renderBackupList(){
       } else {
         when=b.label;
       }
+      var canRestore = !(typeof isAssistant==='function' && isAssistant());
       return '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--bg2);border-radius:6px;">'
         +'<span style="font-size:12.5px;color:var(--ink);">'+when+' <span style="color:var(--muted);font-size:11px;">· 학생 '+b.students+' · 테스트 '+b.tests+'건</span></span>'
-        +'<button class="btn-sm sec" style="font-size:11px;padding:4px 10px;" onclick="doRestore(\''+b.label+'\')">이 시점으로</button>'
+        +(canRestore?'<button class="btn-sm sec" style="font-size:11px;padding:4px 10px;" onclick="doRestore(\''+b.label+'\')">이 시점으로</button>':'<span style="font-size:11px;color:var(--muted);">선생님만 복구</span>')
         +'</div>';
     }).join('');
   });
@@ -5415,6 +5416,7 @@ function doManualBackup(){
   });
 }
 function doRestore(label){
+  if(typeof isAssistant==='function' && isAssistant()){ toast('데이터 복구는 선생님만 할 수 있어요'); return; }
   if(!confirm('이 시점의 데이터로 되돌릴까요?\n현재 데이터는 복구 직전 상태로 따로 백업돼요.')) return;
   if(!confirm('정말 복구할까요? 지금 화면의 데이터가 이 백업 시점으로 바뀝니다.')) return;
   window._fbRestore(label, function(ok){
