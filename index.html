@@ -256,9 +256,11 @@ body.role-assistant .teacher-only{ display:none !important; }
 
   <div class="content">
 
+    <!-- 오늘 확인할 것 (모든 화면 상단 공통) -->
+    <div id="check-banner" style="margin-bottom:16px;"></div>
+
     <!-- 대시보드 -->
     <div class="view on" id="view-dashboard">
-      <div id="check-banner" style="margin-bottom:16px;"></div>
       <div class="stat-row">
         <div class="stat-card"><div class="stat-card-top"><div class="stat-label">전체 학생</div><div class="stat-icon">👥</div></div><div class="stat-num" id="dash-total">0</div><div class="stat-sub">명 등록됨</div></div>
         <div class="stat-card"><div class="stat-card-top"><div class="stat-label">이번 주 출석률</div><div class="stat-icon">✅</div></div><div class="stat-num" id="dash-att">—</div><div class="stat-sub">이번 주 기준</div></div>
@@ -570,6 +572,17 @@ body.role-assistant .teacher-only{ display:none !important; }
     <!-- 메모 -->
     <div class="view" id="view-memo">
       <div class="sec-hd"><h2>🗒️ 메모 <span style="font-size:12px;font-weight:500;color:var(--muted);">(선생님·조교 공유)</span></h2></div>
+
+      <!-- 조교 확인요청 (조교 화면에만 보임) -->
+      <div id="assist-req-box" style="display:none;background:var(--white);border:1px solid var(--line);border-radius:6px;padding:16px 18px;margin-bottom:18px;">
+        <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px;">📨 선생님께 확인 요청</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;">선생님이 봐야 할 내용을 보내면 선생님 '오늘 확인할 것'에 떠요.</div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="assist-req-input" placeholder="예) 이승민 점수 떨어졌어요. 확인 부탁드려요" onkeydown="if(event.key==='Enter')sendAssistRequest()" style="flex:1;padding:8px 12px;border:1.5px solid var(--line);border-radius:4px;font-size:13px;font-family:var(--sans);outline:none;">
+          <button class="btn-sm" onclick="sendAssistRequest()">보내기</button>
+        </div>
+        <div id="assist-req-list" style="margin-top:12px;"></div>
+      </div>
 
       <!-- 할 일 목록 -->
       <div style="background:var(--white);border:1px solid var(--line);border-radius:6px;padding:16px 18px;margin-bottom:18px;">
@@ -1410,6 +1423,12 @@ function activateMemo() {
   }
   renderMemoTodos();
   renderBackupList();
+  // 조교 화면에만 확인요청 보내기 박스 표시
+  var arBox=document.getElementById('assist-req-box');
+  if(arBox){
+    if(isAssistant()){ arBox.style.display='block'; renderAssistReqList(); }
+    else { arBox.style.display='none'; }
+  }
 }
 
 var viewTitles = {dashboard:'📊 전체 현황',prep:'🎯 다음 수업 준비',progress:'📖 진도 관리',groups:'🏫 반 관리',students:'👥 학생 목록',attendance:'✅ 출결 관리',tests:'📝 테스트 결과',homework:'📚 숙제 관리',schedule:'📅 보강 · 일정',memo:'🗒️ 메모'};
@@ -1566,6 +1585,11 @@ function showView(id, el) {
   if(id==='exam')       renderExam();
   updateGroupFilter();
   window._curViewId = id;
+  // 모든 화면 상단 공통 배너 갱신 (전체현황은 펼침, 그 외는 접힘 기본)
+  if(typeof renderCheckBanner==='function'){
+    _checkExpanded = (id==='dashboard');
+    renderCheckBanner();
+  }
 }
 
 // 현재 보고 있는 화면만 다시 그림 (실시간 동기화로 데이터가 바뀌었을 때)
@@ -3133,17 +3157,45 @@ function computeCheckItems(){
       go:'_classroom' });
   }
 
+  // ② 미채점 테스트 (점수 안 넣은 것 전부)
+  var pendingTests=DB.get('tests').filter(function(t){ return t.pending && activeIds[t.sid]; });
+  if(pendingTests.length){
+    items.push({ type:'pending', icon:'⭕', tone:'warn',
+      text:'<b>미채점 테스트</b> '+pendingTests.length+'건 (점수 입력 필요)',
+      go:'tests' });
+  }
+
+  // ③ 성적: 오늘 입력된 것 중 60점 미만 또는 직전 대비 20점+ 하락
+  var allTests=DB.get('tests');
+  var lowOrDrop=[];
+  var todayScored=allTests.filter(function(t){ return !t.pending && typeof t.score==='number' && activeIds[t.sid] && ((t.byAt&&t.byAt.slice(0,10)===today)||(t.date===today)); });
+  todayScored.forEach(function(t){
+    var low = t.score<60;
+    var drop=false;
+    // 같은 학생의 직전 테스트(오늘 것 제외, 날짜 빠른 것 중 최신)
+    var prev=allTests.filter(function(x){ return x.sid===t.sid && !x.pending && typeof x.score==='number' && x.id!==t.id && (x.date||'')<(t.date||''); })
+      .sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); })[0];
+    if(prev && (prev.score - t.score)>=20) drop=true;
+    if(low||drop){ var nm=activeIds[t.sid].name; lowOrDrop.push(nm+'('+t.score+'점'+(drop?'↓':'')+')'); }
+  });
+  if(lowOrDrop.length){
+    items.push({ type:'lowscore', icon:'📉', tone:'red',
+      text:'<b>성적 확인 필요</b> — '+lowOrDrop.slice(0,3).join(', ')+(lowOrDrop.length>3?' 외 '+(lowOrDrop.length-3)+'명':''),
+      go:'tests' });
+  }
+
   // ⑥ 조교 확인 요청 (처리 안 된 것)
-  var reqs=0, reqText='';
+  var reqIds=[];
   Object.keys(ASSIST_REQUESTS_CACHE).forEach(function(rid){
     var r=ASSIST_REQUESTS_CACHE[rid];
-    if(r && !r.done){ reqs++; if(!reqText) reqText=r.text||''; }
+    if(r && !r.done) reqIds.push(rid);
   });
-  if(reqs){
-    items.push({ type:'assistreq', icon:'✅', tone:'green',
-      text:'<b>조교 확인 요청</b> '+reqs+'건'+(reqText?' — '+esc2(reqText).slice(0,20):''),
+  reqIds.forEach(function(rid){
+    var r=ASSIST_REQUESTS_CACHE[rid];
+    items.push({ type:'assistreq', icon:'✅', tone:'green', reqId:rid,
+      text:'<b>조교 확인 요청</b> — '+esc2(r.text||'').slice(0,40),
       go:'memo' });
-  }
+  });
 
   return items;
 }
@@ -3193,24 +3245,57 @@ function _onCheckSourceChange(){
 }
 
 // 배너 + 카드 HTML
+var _checkExpanded = false;  // 배너 펼침 상태
+function toggleCheckBanner(){ _checkExpanded=!_checkExpanded; renderCheckBanner(); }
 function renderCheckBanner(){
   var box=document.getElementById('check-banner');
   if(!box) return;
   var items=computeCheckItems();
   window._lastCheckCount = items.length;
   if(!items.length){
-    box.innerHTML='<div style="background:var(--green-bg);border:1px solid var(--green);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--green);">오늘 확인할 것이 없어요 👍</div>';
+    // 확인할 게 없으면 띠 숨김 (공간 차지 X). 단 전체현황에선 안내 표시
+    var dv=document.getElementById('view-dashboard');
+    if(dv && dv.classList.contains('on')){
+      box.style.display='';
+      box.innerHTML='<div style="background:var(--green-bg);border:1px solid var(--green);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--green);">오늘 확인할 것이 없어요 👍</div>';
+    } else {
+      box.style.display='none'; box.innerHTML='';
+    }
     return;
   }
+  box.style.display='';
   var toneBg={warn:'#FCEFD6',red:'#F7E0E0',blue:'#E5EEF7',green:'#E3F0EA'};
+
+  // 접힌 한 줄 요약 만들기
+  var summaryParts=items.slice(0,3).map(function(it){
+    return it.text.replace(/<[^>]+>/g,'').replace(/^[\s·—-]+/,'').slice(0,18);
+  });
+  var summary=summaryParts.join(' · ')+(items.length>3?' 외':'');
+
+  if(!_checkExpanded){
+    // 접힌 띠
+    box.innerHTML='<div onclick="toggleCheckBanner()" style="background:#FCEFD6;border:1px solid #E8C97A;border-radius:8px;padding:11px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;">'
+      +'<span style="font-size:15px;">🔔</span>'
+      +'<span style="font-size:13px;color:#7A5200;flex:1;"><b>오늘 확인할 것 '+items.length+'건</b> — '+summary+'</span>'
+      +'<span style="font-size:12px;color:#9A6700;white-space:nowrap;">펼치기 ▾</span>'
+      +'</div>';
+    return;
+  }
+  // 펼친 상세
   var h='<div style="background:var(--white);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:8px;padding:14px 16px;">';
-  h+='<div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:10px;">🔔 오늘 확인할 것 '+items.length+'건</div>';
+  h+='<div onclick="toggleCheckBanner()" style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:10px;cursor:pointer;display:flex;align-items:center;">🔔 오늘 확인할 것 '+items.length+'건 <span style="margin-left:auto;font-size:12px;font-weight:500;color:var(--muted);">접기 ▴</span></div>';
   h+='<div style="display:flex;flex-direction:column;gap:7px;">';
   items.forEach(function(it){
+    var actionBtn;
+    if(it.type==='assistreq' && it.reqId){
+      actionBtn='<button class="btn-sm" style="font-size:11px;padding:4px 10px;" onclick="completeAssistRequest(\''+it.reqId+'\')">확인완료</button>';
+    } else {
+      actionBtn='<button class="btn-sm" style="font-size:11px;padding:4px 10px;" onclick="goCheckItem(\''+it.go+'\')">보기</button>';
+    }
     h+='<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:'+(toneBg[it.tone]||'var(--bg2)')+';border-radius:6px;">'
       +'<span style="font-size:16px;">'+it.icon+'</span>'
       +'<span style="font-size:13px;flex:1;color:var(--ink);">'+it.text+'</span>'
-      +'<button class="btn-sm" style="font-size:11px;padding:4px 10px;" onclick="goCheckItem(\''+it.go+'\')">보기</button>'
+      +actionBtn
       +'</div>';
   });
   h+='</div></div>';
@@ -5586,6 +5671,47 @@ var sIds = g ? g.students || [] : [];
 function saveMemo() {
   DB.setOne('memo', document.getElementById('memo-area').value);
   toast('메모가 저장되었습니다');
+}
+
+// ===== 조교 확인요청 =====
+// 데이터: bjm_assist_requests/{id} = {text, by, at, done}
+function _assistReqRef(){ return window._fbDb ? window._fbDb.ref('bjm_assist_requests') : null; }
+function sendAssistRequest(){
+  var inp=document.getElementById('assist-req-input');
+  var v=(inp.value||'').trim(); if(!v){ return; }
+  var ref=_assistReqRef(); if(!ref){ toast('지금은 보낼 수 없어요(연결 대기)'); return; }
+  var id='r'+Date.now();
+  var rec={ text:v, by:(isAssistant()?'조교':'선생님'), at:new Date().toISOString(), done:false };
+  ref.child(id).set(rec).then(function(){
+    if(!window.ASSIST_REQUESTS_CACHE) window.ASSIST_REQUESTS_CACHE={};
+    ASSIST_REQUESTS_CACHE[id]=rec;
+    inp.value='';
+    renderAssistReqList();
+    toast('선생님께 확인 요청을 보냈어요');
+  }).catch(function(){ toast('전송에 실패했어요'); });
+}
+function renderAssistReqList(){
+  var box=document.getElementById('assist-req-list'); if(!box) return;
+  var reqs=window.ASSIST_REQUESTS_CACHE||{};
+  var ids=Object.keys(reqs).sort(function(a,b){ return (reqs[b].at||'').localeCompare(reqs[a].at||''); });
+  if(!ids.length){ box.innerHTML='<div style="font-size:12px;color:var(--muted);">보낸 요청이 없어요.</div>'; return; }
+  box.innerHTML='<div style="font-size:12px;color:var(--muted);margin-bottom:6px;">보낸 요청</div>'+ids.slice(0,8).map(function(id){
+    var r=reqs[id];
+    var t=r.at?new Date(r.at):null;
+    var when=t?((t.getMonth()+1)+'/'+t.getDate()+' '+String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0')):'';
+    return '<div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border-radius:6px;padding:8px 11px;margin-bottom:5px;">'
+      +'<span style="font-size:12.5px;color:var(--ink);">'+_slEsc(r.text)+' <span style="font-size:11px;color:var(--muted);">· '+when+'</span></span>'
+      +'<span style="font-size:11px;color:'+(r.done?'var(--green)':'var(--gold)')+';flex-shrink:0;margin-left:8px;">'+(r.done?'완료됨':'대기중')+'</span>'
+      +'</div>';
+  }).join('');
+}
+// 선생님: 확인요청 완료 처리
+function completeAssistRequest(id){
+  var ref=_assistReqRef(); if(!ref) return;
+  ref.child(id).update({done:true}).catch(function(){});
+  if(window.ASSIST_REQUESTS_CACHE && ASSIST_REQUESTS_CACHE[id]) ASSIST_REQUESTS_CACHE[id].done=true;
+  renderCheckBanner();
+  toast('확인 처리했어요');
 }
 
 // ===== 백업/복구 UI =====
