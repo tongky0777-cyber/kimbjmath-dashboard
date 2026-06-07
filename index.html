@@ -749,18 +749,8 @@ body.role-assistant .teacher-only{ display:none !important; }
         <div class="form-group"><label>학생</label><select id="hw-student"></select></div>
         <div class="form-group"><label>마감일</label><input type="date" id="hw-due"></div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>과목</label><select id="hw-subject" onchange="onSubjectChange('hw')"></select></div>
-        <div class="form-group"><label>단원</label><select id="hw-unit"></select></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>교재</label><select id="hw-book" onchange="refreshUnits('hw')"></select></div>
-        <div class="form-group"><label>페이지/범위</label><input id="hw-range" placeholder="p.45~50"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>제출 여부</label><select id="hw-status"><option value="pending">미제출</option><option value="done">제출 완료</option><option value="half">부분 제출</option></select></div>
-        <div class="form-group"><label>비고 (메모)</label><input id="hw-memo" placeholder="예) 틀린 것만 다시"></div>
-      </div>
+      <div id="hw-blocks"></div>
+      <div id="hw-add-row" style="border:1px dashed var(--accent,#c0392b);border-radius:6px;padding:10px;text-align:center;color:var(--accent,#c0392b);font-size:13px;cursor:pointer;margin-top:6px;" onclick="addHwBlock()">+ 다른 숙제 추가</div>
     </div>
     <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-hw')">취소</button><button class="btn-save" id="hw-save-btn" onclick="saveHw()">저장</button></div>
   </div>
@@ -826,22 +816,11 @@ body.role-assistant .teacher-only{ display:none !important; }
         <div class="form-group"><label>반 선택 *</label><select id="ghw-group" onchange="updateGhwStudents()"></select></div>
         <div class="form-group"><label>마감일</label><input type="date" id="ghw-due"></div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>과목</label><select id="ghw-subject" onchange="onSubjectChange('ghw')"></select></div>
-        <div class="form-group"><label>단원</label><select id="ghw-unit"></select></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>교재</label><select id="ghw-book" onchange="refreshUnits('ghw')"></select></div>
-        <div class="form-group"><label>페이지/범위</label><input id="ghw-range" placeholder="p.45~50"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>제출 여부</label><select id="ghw-status"><option value="pending">미제출</option><option value="done">제출 완료</option></select></div>
-        <div class="form-group"></div>
-      </div>
-      <div class="form-group full"><label>메모</label><input id="ghw-memo" placeholder="특이사항"></div>
+      <div id="ghw-blocks"></div>
+      <div id="ghw-add-row" style="border:1px dashed var(--accent,#c0392b);border-radius:6px;padding:10px;text-align:center;color:var(--accent,#c0392b);font-size:13px;cursor:pointer;margin:6px 0 12px;" onclick="addGhwBlock()">+ 다른 숙제 추가</div>
       <div id="ghw-students" style="background:var(--bg2);border-radius:4px;padding:12px;font-size:12px;color:var(--muted);">반을 선택하면 학생 목록이 표시됩니다.</div>
     </div>
-    <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-group-hw')">취소</button><button class="btn-save" onclick="saveGroupHw()">전체 등록</button></div>
+    <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-group-hw')">취소</button><button class="btn-save" id="ghw-save-btn" onclick="saveGroupHw()">전체 등록</button></div>
   </div>
 </div>
 
@@ -1667,18 +1646,15 @@ function openTestModal() {
 function openHwModal() {
   _editingHwId = null;
   var titleEl=document.getElementById('hw-modal-title'); if(titleEl) titleEl.textContent='숙제 입력';
-  var saveBtn=document.getElementById('hw-save-btn'); if(saveBtn) saveBtn.textContent='저장';
   populateSel();
-  fillSubjectBookSelects('hw');
-  ['hw-range'].forEach(function(i){ var el=document.getElementById(i); if(el) el.value=''; });
-  var memoEl=document.getElementById('hw-memo'); if(memoEl) memoEl.value='';
   var due = document.getElementById('hw-due');
-  if(due && !due.value) due.value = new Date().toISOString().slice(0,10);
-  onSubjectChange('hw');
+  if(due) due.value = new Date().toISOString().slice(0,10);
   document.getElementById('hw-student').selectedIndex=0;
-  document.getElementById('hw-subject').selectedIndex=0;
-  document.getElementById('hw-book').selectedIndex=0;
-  onSubjectChange('hw');
+  // 블록 초기화 + 1개로 시작
+  document.getElementById('hw-blocks').innerHTML='';
+  _hwBlockSeq=0;
+  document.getElementById('hw-add-row').style.display='';
+  addHwBlock();
   openModal('modal-hw');
 }
 function updateSchTarget(){ var sel=document.getElementById('sch-target-sel'); var inp=document.getElementById('sch-target'); var sid=sel.value; if(sid&&sid!=='전체'){ var st=(DB.get('students')||[]).find(function(s){return s.id===sid;}); inp.value=st?st.name:sid; } else { inp.value=''; } } function openScheduleModal() { openModal('modal-schedule'); ['sch-content','sch-target','sch-memo'].forEach(function(id){ document.getElementById(id).value=''; }); var sel=document.getElementById('sch-target-sel'); sel.value=''; var students=(DB.get('students')||[]).filter(function(s){return !s.withdrawn;}); sel.innerHTML='<option value="">-- 학생 선택 --</option><option value="전체">전체</option>'+students.sort(function(a,b){return a.name.localeCompare(b.name);}).map(function(s){return '<option value="'+s.id+'">('+s.grade+') '+s.name+'</option>';}).join(''); }
@@ -2812,24 +2788,24 @@ function updateTestFilter() {
 // 숙제 저장
 function saveHw() {
   var sid = document.getElementById('hw-student').value;
-  var subject = document.getElementById('hw-subject').value;
-  var unit = document.getElementById('hw-unit').value;
-  var book = document.getElementById('hw-book').value;
-  var range = document.getElementById('hw-range').value.trim();
-  if(!sid || !book || !range) { toast('학생·교재·페이지를 입력해주세요'); return; }
-  var name = book + ' ' + (unit?unit+' ':'') + range;
-  var memoEl=document.getElementById('hw-memo');
-  var memo = memoEl?memoEl.value.trim():'';
+  var due = document.getElementById('hw-due').value;
+  if(!sid){ toast('학생을 선택해주세요'); return; }
+  var blocks=_collectHwBlocks();
+  // 페이지 비어있는 블록은 제외, 최소 1개 검사
+  var valid=blocks.filter(function(b){ return b.book && b.range; });
+  if(!valid.length){ toast('교재·페이지를 입력해주세요'); return; }
   var recs = DB.get('homework');
+
   if(_editingHwId){
-    // 수정
+    // 수정: 첫 블록만 반영
+    var b=valid[0];
     var idx=recs.findIndex(function(x){ return x.id===_editingHwId; });
     if(idx>-1){
       var keepBy=recs[idx].by, keepByAt=recs[idx].byAt;
       recs[idx]=Object.assign({}, recs[idx], {
-        sid:sid, name:name, subject:subject, unit:unit, book:book, range:range,
-        status:document.getElementById('hw-status').value, due:document.getElementById('hw-due').value, memo:memo,
-        by:keepBy, byAt:keepByAt
+        sid:sid, name:b.book+' '+(b.unit?b.unit+' ':'')+b.range,
+        subject:b.subject, unit:b.unit, book:b.book, range:b.range,
+        status:b.status, due:due, memo:b.memo, by:keepBy, byAt:keepByAt
       });
     }
     DB.set('homework', recs);
@@ -2839,15 +2815,20 @@ function saveHw() {
     renderDashboard(); toast('숙제가 수정되었습니다');
     return;
   }
-  // 신규
-  recs.push({id:Date.now().toString(), sid:sid, name:name,
-    subject:subject, unit:unit, book:book, range:range,
-    status:document.getElementById('hw-status').value, due:document.getElementById('hw-due').value, memo:memo,
-    by:currentInputter(), byAt:new Date().toISOString()});
+
+  // 신규: 블록마다 한 건씩
+  var now=Date.now();
+  valid.forEach(function(b,i){
+    recs.push({ id:(now+i).toString(), sid:sid,
+      name:b.book+' '+(b.unit?b.unit+' ':'')+b.range,
+      subject:b.subject, unit:b.unit, book:b.book, range:b.range,
+      status:b.status, due:due, memo:b.memo,
+      by:currentInputter(), byAt:new Date().toISOString() });
+  });
   DB.set('homework', recs);
   closeModal('modal-hw');
   renderHw(); renderHwCalendar(); if(hwSelectedDate) selectHwDay(hwSelectedDate);
-  renderDashboard(); toast('숙제가 저장되었습니다');
+  renderDashboard(); toast(valid.length>1 ? valid.length+'개 숙제가 저장되었습니다' : '숙제가 저장되었습니다');
 }
 
 function updateHwStatus(id, status) {
@@ -2877,28 +2858,140 @@ function syncHwDoneToClass(hwId, status){
 }
 
 var _editingHwId = null;  // 숙제 수정 중인 id (null이면 신규)
+var _hwBlockSeq = 0;      // 블록 고유 번호
+
+// 과목 option 목록 (CURRICULUM 키)
+function _hwSubjectOptions(sel){
+  return Object.keys(CURRICULUM).map(function(s){ return '<option value="'+s+'"'+(s===sel?' selected':'')+'>'+s+'</option>'; }).join('');
+}
+function _hwBookOptions(sel){
+  return BOOKLIST.map(function(b){ return '<option value="'+b+'"'+(b===sel?' selected':'')+'>'+b+'</option>'; }).join('');
+}
+function _hwUnitOptions(subject, book, sel){
+  var units=getUnitsFor(subject, book)||[];
+  var opts='<option value="">(단원 선택 안 함)</option>';
+  opts+=units.map(function(u){ return '<option value="'+u+'"'+(u===sel?' selected':'')+'>'+u+'</option>'; }).join('');
+  return opts;
+}
+// 블록 한 개 HTML
+function hwBlockHtml(n, data){
+  data=data||{};
+  var subj=data.subject||Object.keys(CURRICULUM)[0];
+  var book=data.book||BOOKLIST[0];
+  return '<div class="hw-block" data-n="'+n+'" style="border:1px solid var(--line);border-radius:6px;padding:12px;margin-bottom:10px;position:relative;">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
+    +'<span style="font-size:11px;font-weight:700;color:var(--accent,#c0392b);">문제집 <span class="hw-block-num">'+n+'</span></span>'
+    +'<span class="hw-block-del" style="font-size:11px;color:var(--red);cursor:pointer;display:none;" onclick="removeAnyHwBlock(\''+n+'\')">✕ 빼기</span>'
+    +'</div>'
+    +'<div class="form-row">'
+    +'<div class="form-group"><label>과목</label><select class="hw-subject" onchange="onHwBlockSubjectChange(\''+n+'\')">'+_hwSubjectOptions(subj)+'</select></div>'
+    +'<div class="form-group"><label>교재</label><select class="hw-book" onchange="onHwBlockSubjectChange(\''+n+'\')">'+_hwBookOptions(book)+'</select></div>'
+    +'</div>'
+    +'<div class="form-row">'
+    +'<div class="form-group"><label>단원</label><select class="hw-unit">'+_hwUnitOptions(subj, book, data.unit)+'</select></div>'
+    +'<div class="form-group"><label>페이지/범위</label><input class="hw-range" placeholder="p.45~50" value="'+(data.range||'')+'"></div>'
+    +'</div>'
+    +'<div class="form-row">'
+    +'<div class="form-group"><label>제출 여부</label><select class="hw-status"><option value="pending"'+((data.status||'pending')==='pending'?' selected':'')+'>미제출</option><option value="done"'+(data.status==='done'?' selected':'')+'>제출 완료</option><option value="half"'+(data.status==='half'?' selected':'')+'>부분 제출</option></select></div>'
+    +'<div class="form-group"><label>비고 (메모)</label><input class="hw-memo" placeholder="예) 틀린 것만 다시" value="'+(data.memo||'')+'"></div>'
+    +'</div>'
+    +'</div>';
+}
+function onHwBlockSubjectChange(n){
+  var block=document.querySelector('.hw-block[data-n="'+n+'"]'); if(!block) return;
+  var subj=block.querySelector('.hw-subject').value;
+  var book=block.querySelector('.hw-book').value;
+  block.querySelector('.hw-unit').innerHTML=_hwUnitOptions(subj, book, '');
+}
+function onHwBlockBookChange(n){ onHwBlockSubjectChange(n); }
+// n이 'g'로 시작하면 반전체(ghw), 아니면 개별(hw)
+function removeAnyHwBlock(n){
+  if(String(n).charAt(0)==='g'){ removeGhwBlock(n); } else { removeHwBlock(n); }
+}
+function addHwBlock(data){
+  var box=document.getElementById('hw-blocks'); if(!box) return;
+  _hwBlockSeq++;
+  box.insertAdjacentHTML('beforeend', hwBlockHtml(_hwBlockSeq, data));
+  _refreshHwBlockUI();
+}
+function removeHwBlock(n){
+  var block=document.querySelector('.hw-block[data-n="'+n+'"]'); if(block) block.remove();
+  _refreshHwBlockUI();
+}
+// 블록 번호 다시 매기고, 1개면 빼기버튼 숨김
+function _refreshHwBlockUI(){
+  var blocks=document.querySelectorAll('#hw-blocks .hw-block');
+  blocks.forEach(function(b,i){
+    var num=b.querySelector('.hw-block-num'); if(num) num.textContent=(i+1);
+    var del=b.querySelector('.hw-block-del'); if(del) del.style.display=(blocks.length>1?'inline':'none');
+  });
+  // 저장 버튼 라벨
+  var btn=document.getElementById('hw-save-btn');
+  if(btn && !_editingHwId){ btn.textContent='저장'+(blocks.length>1?' ('+blocks.length+'개)':''); }
+}
+function _collectHwBlocks(){
+  var out=[];
+  document.querySelectorAll('#hw-blocks .hw-block').forEach(function(b){
+    out.push({
+      subject:b.querySelector('.hw-subject').value,
+      book:b.querySelector('.hw-book').value,
+      unit:b.querySelector('.hw-unit').value,
+      range:(b.querySelector('.hw-range').value||'').trim(),
+      status:b.querySelector('.hw-status').value,
+      memo:(b.querySelector('.hw-memo').value||'').trim()
+    });
+  });
+  return out;
+}
+
+// ===== 반 전체 숙제 다중 블록 (ghw) =====
+var _ghwBlockSeq = 0;
+function addGhwBlock(data){
+  var box=document.getElementById('ghw-blocks'); if(!box) return;
+  _ghwBlockSeq++;
+  box.insertAdjacentHTML('beforeend', hwBlockHtml('g'+_ghwBlockSeq, data));
+  _refreshGhwBlockUI();
+}
+function removeGhwBlock(n){
+  var block=document.querySelector('#ghw-blocks .hw-block[data-n="'+n+'"]'); if(block) block.remove();
+  _refreshGhwBlockUI();
+}
+function _refreshGhwBlockUI(){
+  var blocks=document.querySelectorAll('#ghw-blocks .hw-block');
+  blocks.forEach(function(b,i){
+    var num=b.querySelector('.hw-block-num'); if(num) num.textContent=(i+1);
+    var del=b.querySelector('.hw-block-del'); if(del) del.style.display=(blocks.length>1?'inline':'none');
+  });
+  var btn=document.getElementById('ghw-save-btn');
+  if(btn) btn.textContent='전체 등록'+(blocks.length>1?' ('+blocks.length+'종)':'');
+}
+function _collectGhwBlocks(){
+  var out=[];
+  document.querySelectorAll('#ghw-blocks .hw-block').forEach(function(b){
+    out.push({
+      subject:b.querySelector('.hw-subject').value,
+      book:b.querySelector('.hw-book').value,
+      unit:b.querySelector('.hw-unit').value,
+      range:(b.querySelector('.hw-range').value||'').trim(),
+      status:b.querySelector('.hw-status').value,
+      memo:(b.querySelector('.hw-memo').value||'').trim()
+    });
+  });
+  return out;
+}
 function editHw(id) {
   var recs = DB.get('homework');
   var r = recs.find(function(x){ return x.id===id; });
   if(!r) return;
   _editingHwId = id;
-  // 처음 낼 때와 같은 모달을 열고, 기존 값으로 채움
   populateSel();
-  fillSubjectBookSelects('hw');
-  // 학생
   var stuSel=document.getElementById('hw-student'); if(stuSel) stuSel.value=r.sid||'';
-  // 과목 → 교재 → 단원 순으로 채움 (의존 select라 순서 중요)
-  var subjSel=document.getElementById('hw-subject'); if(subjSel && r.subject) subjSel.value=r.subject;
-  onSubjectChange('hw');
-  var bookSel=document.getElementById('hw-book'); if(bookSel && r.book) bookSel.value=r.book;
-  if(typeof refreshUnits==='function'){ try{ refreshUnits('hw'); }catch(e){} }
-  var unitSel=document.getElementById('hw-unit'); if(unitSel && r.unit){ unitSel.value=r.unit; }
-  // 페이지/범위, 상태, 마감일, 메모
-  var rangeEl=document.getElementById('hw-range'); if(rangeEl) rangeEl.value=r.range||'';
-  var statusEl=document.getElementById('hw-status'); if(statusEl) statusEl.value=r.status||'pending';
   var dueEl=document.getElementById('hw-due'); if(dueEl) dueEl.value=r.due||'';
-  var memoEl=document.getElementById('hw-memo'); if(memoEl) memoEl.value=r.memo||'';
-  // 제목 표시(있으면) — 수정 모드 안내
+  // 블록 1개에 기존 값 채움, 추가 버튼 숨김(수정은 한 개만)
+  document.getElementById('hw-blocks').innerHTML='';
+  _hwBlockSeq=0;
+  addHwBlock({ subject:r.subject, book:r.book, unit:r.unit, range:r.range, status:r.status, memo:r.memo });
+  document.getElementById('hw-add-row').style.display='none';
   var titleEl=document.getElementById('hw-modal-title'); if(titleEl) titleEl.textContent='숙제 수정';
   var saveBtn=document.getElementById('hw-save-btn'); if(saveBtn) saveBtn.textContent='수정 저장';
   openModal('modal-hw');
@@ -3589,12 +3682,11 @@ function openGroupHwModal() {
   sel.innerHTML = groups.length
     ? groups.map(function(g){ return '<option value="'+g.id+'">'+g.name+'</option>'; }).join('')
     : '<option value="">반 없음 (반 관리에서 먼저 생성)</option>';
-  fillSubjectBookSelects('ghw');
-  ['ghw-range','ghw-memo'].forEach(function(i){ document.getElementById(i).value=''; });
-  var due = document.getElementById('ghw-due'); if(due && !due.value) due.value = new Date().toISOString().slice(0,10);
-  document.getElementById('ghw-subject').selectedIndex=0;
-  document.getElementById('ghw-book').selectedIndex=0;
-  onSubjectChange('ghw');
+  var due = document.getElementById('ghw-due'); if(due) due.value = new Date().toISOString().slice(0,10);
+  // 블록 초기화 + 1개로 시작
+  document.getElementById('ghw-blocks').innerHTML='';
+  _ghwBlockSeq=0;
+  addGhwBlock();
   updateGhwStudents();
   openModal('modal-group-hw');
 }
@@ -3623,26 +3715,31 @@ function updateGhwStudents() {
 
 function saveGroupHw() {
   var gid = document.getElementById('ghw-group').value;
-  var subject = document.getElementById('ghw-subject').value;
-  var unit = document.getElementById('ghw-unit').value;
-  var book = document.getElementById('ghw-book').value;
-  var range = document.getElementById('ghw-range').value.trim();
-  if(!gid||!book||!range) { toast('반·교재·페이지를 입력해주세요'); return; }
+  if(!gid){ toast('반을 선택해주세요'); return; }
   var groups = DB.get('groups');
   var g = groups.find(function(x){ return x.id===gid; });
   if(!g||!g.students||!g.students.length) { toast('반에 학생이 없습니다'); return; }
-  var name = book + ' ' + (unit?unit+' ':'') + range;
-  var recs = DB.get('homework');
+  var blocks=_collectGhwBlocks().filter(function(b){ return b.book && b.range; });
+  if(!blocks.length){ toast('교재·페이지를 입력해주세요'); return; }
   var due = document.getElementById('ghw-due').value;
-  var status = document.getElementById('ghw-status').value;
-  var memo = document.getElementById('ghw-memo').value;
+  var allStudents = DB.get('students');
+  var recs = DB.get('homework');
+  var now=Date.now(), cnt=0;
   g.students.forEach(function(sid){
-    recs.push({id:Date.now().toString()+sid, sid:sid, name:name, subject:subject, unit:unit, book:book, range:range, status:status, due:due, memo:memo, by:currentInputter(), byAt:new Date().toISOString()});
+    if(!allStudents.find(function(s){ return s.id===sid; })) return; // 퇴원 학생 제외
+    blocks.forEach(function(b,bi){
+      recs.push({ id:(now+cnt)+'_'+sid+'_'+bi, sid:sid,
+        name:b.book+' '+(b.unit?b.unit+' ':'')+b.range,
+        subject:b.subject, unit:b.unit, book:b.book, range:b.range,
+        status:b.status, due:due, memo:b.memo,
+        by:currentInputter(), byAt:new Date().toISOString() });
+      cnt++;
+    });
   });
   DB.set('homework', recs);
   closeModal('modal-group-hw');
-  renderHw(); renderDashboard();
-  toast(g.name+' 학생 '+g.students.length+'명에게 숙제가 등록되었습니다!');
+  renderHw(); renderHwCalendar(); if(hwSelectedDate) selectHwDay(hwSelectedDate); renderDashboard();
+  toast(g.name+' 학생에게 숙제 '+blocks.length+'종이 등록되었습니다!');
 }
 
 // ══ 진도 관리 ════════════════════════════════════
