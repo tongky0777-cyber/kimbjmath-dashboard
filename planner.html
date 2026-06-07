@@ -318,11 +318,7 @@ let deleteId = null;
 function save(){
   localStorage.setItem('planner_events', JSON.stringify(events));
   localStorage.setItem('planner_nextId', String(nextId));
-  try{
-    var FBCONFIG={apiKey:"AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",databaseURL:"https://kimbjmath-default-rtdb.firebaseio.com",projectId:"kimbjmath",appId:"1:664889936709:web:2df1494b0cd978c64e4c2c"};
-    if(!firebase.apps.length)firebase.initializeApp(FBCONFIG);
-    firebase.database().ref('planner_events').set(events);
-  }catch(e){console.error('Firebase sync:',e);}
+  // 플래너는 이 기기에만 저장 (다른 선생님·기기와 공유하지 않음)
 }
 function fmt(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function getWeekStart(d){let dt=new Date(d);dt.setDate(dt.getDate()-dt.getDay());return dt;}
