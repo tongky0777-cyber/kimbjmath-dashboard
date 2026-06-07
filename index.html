@@ -588,6 +588,16 @@ body.role-assistant .teacher-only{ display:none !important; }
         </div>
         <textarea id="memo-area" style="width:100%;min-height:360px;border:1.5px solid var(--line);border-radius:4px;padding:12px;font-size:14px;color:var(--ink);font-family:var(--sans);resize:vertical;outline:none;line-height:1.8;background:var(--white);" placeholder="자유롭게 메모를 남겨보세요. (자동 저장)"></textarea>
       </div>
+
+      <!-- 데이터 백업/복구 -->
+      <div style="background:var(--white);border:1px solid var(--line);border-radius:6px;padding:16px 18px;margin-top:18px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <div style="font-size:14px;font-weight:700;color:var(--ink);">🗄️ 데이터 백업 / 복구</div>
+          <button class="btn-sm" onclick="doManualBackup()">지금 백업</button>
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;">매일 처음 열 때 자동 백업돼요. 문제가 생기면 아래 시점으로 되돌릴 수 있어요.</div>
+        <div id="backup-list" style="display:flex;flex-direction:column;gap:6px;"><div style="font-size:12px;color:var(--muted);">불러오는 중…</div></div>
+      </div>
     </div>
 
   </div>
@@ -1080,9 +1090,21 @@ window._fbReady = false;
 
     // 저장 시 서버에도 반영 (단, 동기화 준비 전에는 서버 덮어쓰기 금지)
     var _orig=localStorage.setItem.bind(localStorage);
+    window._restoreInProgress=false;
     localStorage.setItem=function(key,value){
       _orig(key,value);
       if(window._fbReady && key.indexOf(PREFIX)===0){
+        // 위험 경고: 학생 데이터를 0건으로 서버에 덮어쓰려 할 때 (복구 중이 아니면 확인)
+        if(key===PREFIX+'students' && !window._restoreInProgress){
+          try{
+            var arr=JSON.parse(value);
+            if(Array.isArray(arr) && arr.length===0){
+              if(!confirm('⚠️ 잠깐만요!\n\n학생 데이터가 0건인데 저장하려고 해요.\n이대로 저장하면 서버의 기존 학생 데이터가 사라질 수 있어요.\n\n정말 계속할까요? (취소를 권장)')){
+                return; // 서버 반영 취소 (로컬엔 이미 저장됐지만 서버는 보호)
+              }
+            }
+          }catch(e){}
+        }
         try{ db.ref(key).set(JSON.parse(value)); }catch(e){}
       }
     };
@@ -1113,6 +1135,89 @@ window._fbReady = false;
         if(v){try{ db.ref(k).set(JSON.parse(v)); n++; }catch(e){}}
       });
       alert("이 기기의 데이터를 서버에 올렸습니다. ("+n+"개 항목)\n다른 기기에서 새로고침하면 동일하게 보입니다.");
+    };
+
+    // ===== 자동 백업 / 복구 =====
+    function _todayKey(){
+      var d=new Date();
+      return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    }
+    // 현재 전체 데이터를 한 묶음으로 (백업용)
+    function _collectAll(){
+      var snap={ _at:new Date().toISOString() };
+      SYNC_KEYS.forEach(function(k){
+        var v=localStorage.getItem(k);
+        try{ snap[k]= v? JSON.parse(v) : null; }catch(e){ snap[k]=null; }
+      });
+      return snap;
+    }
+    // 백업 1건 저장 (label = 날짜키 또는 manual_시각)
+    window._fbBackup=function(label, cb){
+      var snap=_collectAll();
+      // 학생이 0건이면 백업 의미 없음(빈 백업으로 덮지 않음)
+      var st = snap[PREFIX+'students'];
+      if(!st || (Array.isArray(st)&&st.length===0)){ if(cb) cb(false); return; }
+      db.ref(PREFIX+'backup/'+label).set(snap).then(function(){
+        _trimBackups();
+        if(cb) cb(true);
+      }).catch(function(){ if(cb) cb(false); });
+    };
+    // 오래된 백업 정리 (자동 날짜백업 최근 14일치만, manual은 최근 10개)
+    function _trimBackups(){
+      db.ref(PREFIX+'backup').once('value').then(function(s){
+        var all=s.val()||{};
+        var keys=Object.keys(all);
+        var dateKeys=keys.filter(function(k){return /^\d{4}-\d{2}-\d{2}$/.test(k);}).sort();
+        while(dateKeys.length>14){ var rm=dateKeys.shift(); db.ref(PREFIX+'backup/'+rm).remove(); }
+        var manKeys=keys.filter(function(k){return k.indexOf('manual_')===0;}).sort();
+        while(manKeys.length>10){ var rm2=manKeys.shift(); db.ref(PREFIX+'backup/'+rm2).remove(); }
+      }).catch(function(){});
+    }
+    // 하루 1회 자동 백업 (그날 첫 접속 시)
+    window._fbAutoBackup=function(){
+      var today=_todayKey();
+      var last=localStorage.getItem(PREFIX+'lastBackupDate');
+      if(last===today) return;           // 오늘 이미 백업함
+      _fbBackup(today, function(ok){
+        if(ok){ _orig(PREFIX+'lastBackupDate', today); }
+      });
+    };
+    // 수동 백업
+    window._fbManualBackup=function(cb){
+      var label='manual_'+Date.now();
+      _fbBackup(label, cb);
+    };
+    // 백업 목록 가져오기
+    window._fbListBackups=function(cb){
+      db.ref(PREFIX+'backup').once('value').then(function(s){
+        var all=s.val()||{};
+        var list=Object.keys(all).map(function(k){
+          var b=all[k];
+          var sc=(b && b[PREFIX+'students']) ? (Array.isArray(b[PREFIX+'students'])?b[PREFIX+'students'].length:0) : 0;
+          var tc=(b && b[PREFIX+'tests']) ? (Array.isArray(b[PREFIX+'tests'])?b[PREFIX+'tests'].length:0) : 0;
+          return { label:k, at:(b&&b._at)||'', students:sc, tests:tc };
+        }).sort(function(a,b){ return (b.at||'').localeCompare(a.at||''); });
+        if(cb) cb(list);
+      }).catch(function(){ if(cb) cb([]); });
+    };
+    // 특정 백업으로 복구
+    window._fbRestore=function(label, cb){
+      db.ref(PREFIX+'backup/'+label).once('value').then(function(s){
+        var snap=s.val();
+        if(!snap){ if(cb) cb(false); return; }
+        // 복구 전 현재 상태를 안전 백업 (복구가 잘못돼도 되돌리게)
+        _fbBackup('manual_before_restore_'+Date.now(), function(){
+          window._restoreInProgress=true;
+          SYNC_KEYS.forEach(function(k){
+            if(snap[k]!==undefined && snap[k]!==null){
+              _orig(k, JSON.stringify(snap[k]));
+              if(window._fbReady){ try{ db.ref(k).set(snap[k]); }catch(e){} }
+            }
+          });
+          window._restoreInProgress=false;
+          if(cb) cb(true);
+        });
+      }).catch(function(){ if(cb) cb(false); });
     };
 
     // 공유 할 일(memo_todo) 실시간 동기화 — 조교가 체크하면 선생님 화면도 즉시 갱신
@@ -1271,7 +1376,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
   // 서버에서 최신 데이터를 받아온 뒤 화면을 그린다 (기기 간 동일하게 보이도록)
   if(typeof window._fbPull === 'function'){
-    _fbPull(function(){ _renderStart(); if(typeof window._fbWatchMemoTodo==='function') _fbWatchMemoTodo(); if(typeof window._fbWatchMemo==='function') _fbWatchMemo(); if(typeof window._fbWatchAll==='function') _fbWatchAll(); });
+    _fbPull(function(){ _renderStart(); if(typeof window._fbWatchMemoTodo==='function') _fbWatchMemoTodo(); if(typeof window._fbWatchMemo==='function') _fbWatchMemo(); if(typeof window._fbWatchAll==='function') _fbWatchAll(); if(typeof window._fbAutoBackup==='function') setTimeout(window._fbAutoBackup, 2000); });
   } else {
     window._fbReady = true;
     _renderStart();
@@ -1287,6 +1392,7 @@ function activateMemo() {
     if(saved!=null) el.value = saved;
   }
   renderMemoTodos();
+  renderBackupList();
 }
 
 var viewTitles = {dashboard:'📊 전체 현황',prep:'🎯 다음 수업 준비',progress:'📖 진도 관리',groups:'🏫 반 관리',students:'👥 학생 목록',attendance:'✅ 출결 관리',tests:'📝 테스트 결과',homework:'📚 숙제 관리',schedule:'📅 보강 · 일정',memo:'🗒️ 메모'};
@@ -5277,6 +5383,44 @@ var sIds = g ? g.students || [] : [];
 function saveMemo() {
   DB.setOne('memo', document.getElementById('memo-area').value);
   toast('메모가 저장되었습니다');
+}
+
+// ===== 백업/복구 UI =====
+function renderBackupList(){
+  var box=document.getElementById('backup-list'); if(!box) return;
+  if(typeof window._fbListBackups!=='function'){ box.innerHTML='<div style="font-size:12px;color:var(--muted);">백업 기능을 사용할 수 없어요.</div>'; return; }
+  window._fbListBackups(function(list){
+    if(!list.length){ box.innerHTML='<div style="font-size:12px;color:var(--muted);">아직 백업이 없어요. 곧 자동으로 만들어져요.</div>'; return; }
+    box.innerHTML=list.map(function(b){
+      var when, isManual=b.label.indexOf('manual')===0;
+      if(isManual){
+        var t=parseInt((b.label.match(/manual_(?:before_restore_)?(\d+)/)||[])[1]);
+        var d=t?new Date(t):null;
+        when=(b.label.indexOf('before_restore')>-1?'복구 전 자동 ':'수동 ')+(d?(d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'):'');
+      } else {
+        when=b.label;
+      }
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--bg2);border-radius:6px;">'
+        +'<span style="font-size:12.5px;color:var(--ink);">'+when+' <span style="color:var(--muted);font-size:11px;">· 학생 '+b.students+' · 테스트 '+b.tests+'건</span></span>'
+        +'<button class="btn-sm sec" style="font-size:11px;padding:4px 10px;" onclick="doRestore(\''+b.label+'\')">이 시점으로</button>'
+        +'</div>';
+    }).join('');
+  });
+}
+function doManualBackup(){
+  if(typeof window._fbManualBackup!=='function'){ toast('백업 기능을 사용할 수 없어요'); return; }
+  window._fbManualBackup(function(ok){
+    if(ok){ toast('백업했어요'); renderBackupList(); }
+    else { toast('백업할 데이터가 없어요'); }
+  });
+}
+function doRestore(label){
+  if(!confirm('이 시점의 데이터로 되돌릴까요?\n현재 데이터는 복구 직전 상태로 따로 백업돼요.')) return;
+  if(!confirm('정말 복구할까요? 지금 화면의 데이터가 이 백업 시점으로 바뀝니다.')) return;
+  window._fbRestore(label, function(ok){
+    if(ok){ toast('복구했어요. 화면을 새로고침합니다.'); setTimeout(function(){ location.reload(); }, 800); }
+    else { toast('복구에 실패했어요'); }
+  });
 }
 
 // ===== 공유 할 일 목록 =====
