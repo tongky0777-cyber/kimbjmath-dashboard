@@ -2879,7 +2879,7 @@ function renderHw() {
   if(!tbody) return;
   if(!recs.length) { tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">숙제를 추가해보세요</td></tr>'; return; }
   var today = new Date().toISOString().slice(0,10);
-  tbody.innerHTML = recs.sort(function(a,b){ return (a.due||'').localeCompare(b.due||''); }).map(function(r){
+  tbody.innerHTML = recs.sort(function(a,b){ return (b.due||'').localeCompare(a.due||''); }).map(function(r){
     var student = students.find(function(s){ return s.id===r.sid; });
     var overdue = r.status!=='done' && r.due<today;
     // 학생이 클래스룸에서 체크했는지
