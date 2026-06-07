@@ -743,7 +743,7 @@ body.role-assistant .teacher-only{ display:none !important; }
 <!-- 모달: 숙제 입력 -->
 <div class="modal-bg" id="modal-hw">
   <div class="modal">
-    <div class="modal-hd"><h3>숙제 입력</h3><button class="modal-close" onclick="closeModal('modal-hw')">×</button></div>
+    <div class="modal-hd"><h3 id="hw-modal-title">숙제 입력</h3><button class="modal-close" onclick="closeModal('modal-hw')">×</button></div>
     <div class="modal-body">
       <div class="form-row">
         <div class="form-group"><label>학생</label><select id="hw-student"></select></div>
@@ -759,10 +759,10 @@ body.role-assistant .teacher-only{ display:none !important; }
       </div>
       <div class="form-row">
         <div class="form-group"><label>제출 여부</label><select id="hw-status"><option value="pending">미제출</option><option value="done">제출 완료</option><option value="half">부분 제출</option></select></div>
-        <div class="form-group"></div>
+        <div class="form-group"><label>비고 (메모)</label><input id="hw-memo" placeholder="예) 틀린 것만 다시"></div>
       </div>
     </div>
-    <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-hw')">취소</button><button class="btn-save" onclick="saveHw()">저장</button></div>
+    <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-hw')">취소</button><button class="btn-save" id="hw-save-btn" onclick="saveHw()">저장</button></div>
   </div>
 </div>
 
@@ -1665,9 +1665,13 @@ function openTestModal() {
   openModal('modal-test');
 }
 function openHwModal() {
+  _editingHwId = null;
+  var titleEl=document.getElementById('hw-modal-title'); if(titleEl) titleEl.textContent='숙제 입력';
+  var saveBtn=document.getElementById('hw-save-btn'); if(saveBtn) saveBtn.textContent='저장';
   populateSel();
   fillSubjectBookSelects('hw');
   ['hw-range'].forEach(function(i){ var el=document.getElementById(i); if(el) el.value=''; });
+  var memoEl=document.getElementById('hw-memo'); if(memoEl) memoEl.value='';
   var due = document.getElementById('hw-due');
   if(due && !due.value) due.value = new Date().toISOString().slice(0,10);
   onSubjectChange('hw');
@@ -2813,12 +2817,32 @@ function saveHw() {
   var book = document.getElementById('hw-book').value;
   var range = document.getElementById('hw-range').value.trim();
   if(!sid || !book || !range) { toast('학생·교재·페이지를 입력해주세요'); return; }
-  // 과제명 = "교재 단원 페이지" 조합 (기존 목록/달력이 name을 표시하므로 호환 유지)
   var name = book + ' ' + (unit?unit+' ':'') + range;
+  var memoEl=document.getElementById('hw-memo');
+  var memo = memoEl?memoEl.value.trim():'';
   var recs = DB.get('homework');
+  if(_editingHwId){
+    // 수정
+    var idx=recs.findIndex(function(x){ return x.id===_editingHwId; });
+    if(idx>-1){
+      var keepBy=recs[idx].by, keepByAt=recs[idx].byAt;
+      recs[idx]=Object.assign({}, recs[idx], {
+        sid:sid, name:name, subject:subject, unit:unit, book:book, range:range,
+        status:document.getElementById('hw-status').value, due:document.getElementById('hw-due').value, memo:memo,
+        by:keepBy, byAt:keepByAt
+      });
+    }
+    DB.set('homework', recs);
+    _editingHwId=null;
+    closeModal('modal-hw');
+    renderHw(); renderHwCalendar(); if(hwSelectedDate) selectHwDay(hwSelectedDate);
+    renderDashboard(); toast('숙제가 수정되었습니다');
+    return;
+  }
+  // 신규
   recs.push({id:Date.now().toString(), sid:sid, name:name,
     subject:subject, unit:unit, book:book, range:range,
-    status:document.getElementById('hw-status').value, due:document.getElementById('hw-due').value, memo:'',
+    status:document.getElementById('hw-status').value, due:document.getElementById('hw-due').value, memo:memo,
     by:currentInputter(), byAt:new Date().toISOString()});
   DB.set('homework', recs);
   closeModal('modal-hw');
@@ -2852,20 +2876,32 @@ function syncHwDoneToClass(hwId, status){
   }catch(e){}
 }
 
+var _editingHwId = null;  // 숙제 수정 중인 id (null이면 신규)
 function editHw(id) {
   var recs = DB.get('homework');
   var r = recs.find(function(x){ return x.id===id; });
   if(!r) return;
-  var newName = prompt('과제명 수정:', r.name);
-  if(newName===null) return;
-  var newDue = prompt('마감일 수정 (YYYY-MM-DD):', r.due);
-  if(newDue===null) return;
-  r.name = newName.trim()||r.name;
-  r.due = newDue.trim()||r.due;
-  DB.set('homework', recs);
-  renderHw(); renderDashboard();
-  if(hwSelectedDate) selectHwDay(hwSelectedDate);
-  toast('수정되었습니다');
+  _editingHwId = id;
+  // 처음 낼 때와 같은 모달을 열고, 기존 값으로 채움
+  populateSel();
+  fillSubjectBookSelects('hw');
+  // 학생
+  var stuSel=document.getElementById('hw-student'); if(stuSel) stuSel.value=r.sid||'';
+  // 과목 → 교재 → 단원 순으로 채움 (의존 select라 순서 중요)
+  var subjSel=document.getElementById('hw-subject'); if(subjSel && r.subject) subjSel.value=r.subject;
+  onSubjectChange('hw');
+  var bookSel=document.getElementById('hw-book'); if(bookSel && r.book) bookSel.value=r.book;
+  if(typeof refreshUnits==='function'){ try{ refreshUnits('hw'); }catch(e){} }
+  var unitSel=document.getElementById('hw-unit'); if(unitSel && r.unit){ unitSel.value=r.unit; }
+  // 페이지/범위, 상태, 마감일, 메모
+  var rangeEl=document.getElementById('hw-range'); if(rangeEl) rangeEl.value=r.range||'';
+  var statusEl=document.getElementById('hw-status'); if(statusEl) statusEl.value=r.status||'pending';
+  var dueEl=document.getElementById('hw-due'); if(dueEl) dueEl.value=r.due||'';
+  var memoEl=document.getElementById('hw-memo'); if(memoEl) memoEl.value=r.memo||'';
+  // 제목 표시(있으면) — 수정 모드 안내
+  var titleEl=document.getElementById('hw-modal-title'); if(titleEl) titleEl.textContent='숙제 수정';
+  var saveBtn=document.getElementById('hw-save-btn'); if(saveBtn) saveBtn.textContent='수정 저장';
+  openModal('modal-hw');
 }
 function deleteHw(id) {
   DB.set('homework', DB.get('homework').filter(function(h){ return h.id!==id; }));
