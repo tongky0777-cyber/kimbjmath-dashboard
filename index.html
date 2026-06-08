@@ -1409,25 +1409,29 @@ function examScoreKeyOfRecord(t){
 // 미리 등록된 배점표 (사용자가 올려준 시험지 기준)
 (function seedExamScores(){
   var tables=getExamScoreTables();
-  // 2025 경북고 공통수학1 1학기 중간고사 (학교급=고등 → examSchool="경북고")
-  // 학기 라벨은 EXAM_SUBJECTS/SCHOOLS 설정에 맞춰야 함. 키 일부가 달라도 buildExamKey로 보정됨.
+  var changed=false;
+  // 2025 경북고 공통수학1 1학기 중간고사
   var KEY='gicul||2025||경북고||공통수학1||1학기||중간';
   if(!tables[KEY]){
     tables[KEY]={ points:{
       1:3.3, 2:3.5, 3:3.5, 4:3.5, 5:3.5, 6:3.6, 7:4.0, 8:4.0, 9:4.2, 10:4.2,
       11:4.2, 12:4.5, 13:4.5, 14:4.7, 15:4.8, 16:5.0, 17:5.0, 18:5.0, 19:7.0, 20:9.0, 21:9.0
     }, total:21, full:100.3 };
-    setExamScoreTables(tables);
+    changed=true;
   }
-  // 2025 경북여고 대수 1학기 기말고사 (20문항, 만점 100점)
-  var KEY2='gicul||2025||경북여고||대수||1학기||기말';
+  // 경북여고 대수 1학기 기말 — 잘못 등록했던 것 제거(균등 배점으로 복귀)
+  var OLD='gicul||2025||경북여고||대수||1학기||기말';
+  if(tables[OLD]){ delete tables[OLD]; changed=true; }
+  // 2025 경북고 대수(수학Ⅰ) 1학기 기말고사 (20문항, 만점 100점)
+  var KEY2='gicul||2025||경북고||대수||1학기||기말';
   if(!tables[KEY2]){
     tables[KEY2]={ points:{
-      1:4.0, 2:4.2, 3:4.3, 4:4.4, 5:4.5, 6:4.6, 7:4.6, 8:4.7, 9:4.7, 10:4.8,
-      11:4.9, 12:5.0, 13:5.1, 14:5.2, 15:5.0, 16:6.0, 17:6.0, 18:6.0, 19:6.0, 20:6.0
+      1:3.9, 2:4.0, 3:4.0, 4:4.1, 5:4.2, 6:4.6, 7:4.6, 8:4.7, 9:4.8, 10:4.9,
+      11:5.2, 12:5.3, 13:5.3, 14:5.4, 15:6.0, 16:6.0, 17:6.0, 18:5.0, 19:6.0, 20:6.0
     }, total:20, full:100.0 };
-    setExamScoreTables(tables);
+    changed=true;
   }
+  if(changed) setExamScoreTables(tables);
 })();
 
 // 초기화
