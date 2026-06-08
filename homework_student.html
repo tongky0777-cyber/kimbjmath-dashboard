@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>숙제 풀기 · 김병진 수학연구소</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --ink:#0f0f0f;--ink2:#2a2a2a;--muted:#777;--line:#e4e1d8;
+  --bg:#f5f4f0;--bg2:#eceae3;--white:#fff;
+  --red:#b4281e;--red2:#8f1e16;--red-bg:#fdf1f0;
+  --teal:#0f5f5a;--teal-bg:#e8f5f4;
+  --green:#1a6b3a;--green-bg:#edf7f1;
+  --gold:#8a6820;--gold-bg:#fdf8ee;
+  --sans:'Pretendard','Apple SD Gothic Neo',sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5;-webkit-tap-highlight-color:transparent;}
+.wrap{max-width:600px;margin:0 auto;padding:20px 16px 130px;}
+.head{background:var(--white);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:14px;}
+.head-book{font-size:12px;font-weight:700;color:var(--teal);}
+.head-unit{font-size:18px;font-weight:800;margin-top:4px;}
+.head-range{font-size:13px;color:var(--muted);margin-top:6px;}
+.head-lab{font-size:11px;color:var(--muted);margin-top:10px;border-top:1px solid var(--line);padding-top:10px;}
+.guide{background:var(--gold-bg);border:1px solid var(--gold);border-radius:10px;padding:11px 14px;font-size:12.5px;color:var(--gold);margin-bottom:14px;font-weight:600;line-height:1.6;}
+.q{background:var(--white);border:1px solid var(--line);border-radius:10px;padding:13px 14px;margin-bottom:10px;}
+.q-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.q-no{font-size:15px;font-weight:800;color:var(--ink);min-width:38px;}
+.q-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;background:var(--bg2);color:var(--muted);}
+.mc-row{display:flex;gap:8px;}
+.mc-btn{flex:1;height:46px;border-radius:8px;border:1.5px solid var(--line);background:var(--white);font-size:17px;font-weight:700;cursor:pointer;font-family:var(--sans);color:var(--ink);transition:.1s;}
+.mc-btn:active{transform:scale(.94);}
+.mc-btn.on{background:var(--teal);border-color:var(--teal);color:#fff;}
+.int-row{display:flex;gap:8px;align-items:center;}
+.sign-btn{width:48px;height:46px;border-radius:8px;border:1.5px solid var(--line);background:var(--white);font-size:20px;font-weight:700;cursor:pointer;color:var(--ink);}
+.sign-btn.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+.num-input{flex:1;height:46px;border-radius:8px;border:1.5px solid var(--line);padding:0 14px;font-size:16px;font-family:var(--sans);}
+.num-input:focus{outline:none;border-color:var(--teal);}
+.frac-row{display:flex;gap:12px;align-items:center;}
+.frac-col{display:flex;flex-direction:column;width:96px;}
+.frac-in{height:40px;border-radius:8px;border:1.5px solid var(--line);text-align:center;font-size:16px;font-family:var(--sans);width:96px;}
+.frac-in:focus{outline:none;border-color:var(--teal);}
+.frac-bar{height:2px;background:var(--ink);margin:5px 0;}
+.frac-hint{font-size:12px;color:var(--muted);flex:1;}
+.self-ans{background:var(--bg2);border-radius:8px;padding:10px 12px;font-size:14px;margin-bottom:8px;}
+.self-ans b{color:var(--teal);}
+.self-note{font-size:12px;color:var(--gold);background:var(--gold-bg);border-radius:8px;padding:8px 12px;font-weight:600;}
+.submit-bar{position:fixed;left:0;right:0;bottom:0;background:var(--white);border-top:1px solid var(--line);padding:12px 16px;box-shadow:0 -4px 16px rgba(0,0,0,.06);}
+.submit-inner{max-width:600px;margin:0 auto;display:flex;gap:10px;align-items:center;}
+.submit-summary{flex:1;font-size:13px;color:var(--muted);line-height:1.4;}
+.submit-summary b{color:var(--ink);font-weight:700;}
+.btn-submit{background:var(--ink);color:#fff;border:none;border-radius:10px;padding:13px 22px;font-size:15px;font-weight:800;cursor:pointer;font-family:var(--sans);}
+.btn-submit:active{transform:scale(.97);}
+.btn-submit:disabled{background:var(--muted);}
+.state{text-align:center;padding:60px 20px;color:var(--muted);}
+.state-emoji{font-size:42px;margin-bottom:12px;}
+.state-title{font-size:18px;font-weight:800;color:var(--ink);margin-bottom:6px;}
+.spinner{width:32px;height:32px;border:3px solid var(--line);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.result-box{background:var(--white);border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:16px;text-align:left;}
+.result-line{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px;}
+.result-line:last-child{border-bottom:none;}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <div class="state"><div class="spinner"></div><div>숙제를 불러오는 중…</div></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="./grader.js"></script>
+<script>
+var FBCONFIG={apiKey:"AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",databaseURL:"https://kimbjmath-default-rtdb.firebaseio.com",projectId:"kimbjmath",appId:"1:664889936709:web:2df1494b0cd978c64e4c2c"};
+var FB_PREFIX="bjm_";
+var AIO_UNIT_NAMES={ unit1:'1단원 다항식', unit2:'2단원 나머지정리·인수분해', unit3:'3단원 방정식' };
+var TAG={ mc:'객관식', int:'단답(정수)', frac:'분수', self:'직접 채점' };
+
+var params=new URLSearchParams(location.search);
+var hwId=params.get('hw'), studentId=params.get('student');
+var hwRec=null, ak=null, inputs={};
+
+if(!firebase.apps.length) firebase.initializeApp(FBCONFIG);
+var db=firebase.database();
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function showState(e,t,d){document.getElementById('wrap').innerHTML='<div class="state"><div class="state-emoji">'+e+'</div><div class="state-title">'+esc(t)+'</div><div>'+esc(d)+'</div></div>';}
+
+function start(){
+  if(!hwId||!studentId){ showState('⚠️','링크가 올바르지 않습니다','선생님께 링크를 다시 받아주세요.'); return; }
+  Promise.all([
+    db.ref(FB_PREFIX+'homework').once('value'),
+    Grader.loadAnswerKey('올인원')
+  ]).then(function(arr){
+    var list=arr[0].val();
+    if(!Array.isArray(list)) list=list?Object.keys(list).map(function(k){return list[k];}):[];
+    hwRec=list.filter(function(h){return h&&String(h.id)===String(hwId);})[0];
+    ak=arr[1];
+    if(!hwRec){ showState('🔍','숙제를 찾을 수 없습니다','선생님께 문의해주세요.'); return; }
+    if(!hwRec.unitKey||hwRec.qStart==null||hwRec.qEnd==null){ showState('ℹ️','채점 대상 숙제가 아닙니다',''); return; }
+    return db.ref('wronganswers/'+hwId+'/'+studentId).once('value').then(function(snap){
+      var prev=snap.val();
+      if(prev && prev.submittedFull){
+        // 이미 제출함 → 학생은 수정 불가, 결과 요약만 보여줌
+        showSubmitted(prev);
+        return;
+      }
+      if(prev && prev.inputs) inputs=prev.inputs;
+      render();
+    });
+  }).catch(function(e){ showState('⚠️','불러오기 실패','잠시 후 다시 시도해주세요.'); });
+}
+
+function render(){
+  var uname=AIO_UNIT_NAMES[hwRec.unitKey]||hwRec.unitKey;
+  var s=hwRec.qStart, e=hwRec.qEnd;
+  var html='<div class="head"><div class="head-book">📚 '+esc(hwRec.book||'All in one')+'</div>'
+    +'<div class="head-unit">'+esc(uname)+'</div>'
+    +'<div class="head-range">'+s+'번 ~ '+e+'번 (총 '+(e-s+1)+'문제)</div>'
+    +'<div class="head-lab">김병진 수학연구소</div></div>'
+    +'<div class="guide">각 문제의 답을 입력하면 자동으로 채점돼요.<br>'
+    +'• <b>객관식</b>은 번호를 누르고, <b>단답·분수</b>는 답을 적어주세요.<br>'
+    +'• <b>직접 채점</b> 문제는 정답을 보고 맞았는지 O/X로 표시해주세요.</div>'
+    +'<div id="qlist"></div>';
+  document.getElementById('wrap').innerHTML=html;
+  var qlist=document.getElementById('qlist');
+  for(var n=s;n<=e;n++){ qlist.appendChild(buildQ(n)); }
+  var bar=document.createElement('div'); bar.className='submit-bar';
+  bar.innerHTML='<div class="submit-inner"><div class="submit-summary" id="summary"></div>'
+    +'<button class="btn-submit" id="submitBtn" onclick="submit()">제출하기</button></div>';
+  document.body.appendChild(bar);
+  updateSummary();
+}
+
+function buildQ(n){
+  var meta=Grader.getAnswer(ak,hwRec.unitKey,n);
+  var saved=inputs[n]||{};
+  var div=document.createElement('div'); div.className='q'; div.dataset.n=n;
+  var k=meta?meta.k:'self';
+  var head='<div class="q-head"><span class="q-no">'+n+'번</span>'
+    +'<span class="q-tag">'+(TAG[k]||'')+'</span></div>';
+  var body='';
+  if(k==='mc'){
+    body='<div class="mc-row">';
+    var sym=['','①','②','③','④','⑤'];
+    for(var i=1;i<=5;i++){
+      var on=(String(saved.raw)===String(i))?' on':'';
+      body+='<button class="mc-btn'+on+'" onclick="pickMc('+n+','+i+')">'+sym[i]+'</button>';
+    }
+    body+='</div>';
+  } else if(k==='int'){
+    var neg=(saved.raw&&String(saved.raw).charAt(0)==='-');
+    var absv=saved.raw?String(saved.raw).replace('-',''):'';
+    body='<div class="int-row">'
+      +'<button class="sign-btn'+(neg?' on':'')+'" id="sign-'+n+'" onclick="toggleSign('+n+')">±</button>'
+      +'<input class="num-input" id="in-'+n+'" inputmode="numeric" placeholder="정답 입력" value="'+esc(absv)+'" oninput="onInt('+n+')"></div>';
+  } else if(k==='frac'){
+    var sv=saved.raw||'', num='', den='';
+    if(sv.indexOf('/')>-1){ var p=sv.split('/'); num=p[0]; den=p[1]; } else { num=sv; }
+    body='<div class="frac-row"><div class="frac-col">'
+      +'<input class="frac-in" id="fn-'+n+'" inputmode="numeric" placeholder="분자" value="'+esc(num)+'" oninput="onFrac('+n+')">'
+      +'<div class="frac-bar"></div>'
+      +'<input class="frac-in" id="fd-'+n+'" inputmode="numeric" placeholder="분모" value="'+esc(den)+'" oninput="onFrac('+n+')">'
+      +'</div><div class="frac-hint">정수면 분자만,<br>분수면 분자·분모 모두 입력</div></div>';
+  } else {
+    body='<div class="self-note">△ 이 문제는 자동 채점이 안 돼요. 답을 적지 않아도 되고, 수업시간에 선생님과 함께 확인합니다.</div>';
+  }
+  div.innerHTML=head+body;
+  return div;
+}
+
+function pickMc(n,i){
+  inputs[n]=Object.assign({},inputs[n],{raw:String(i)});
+  var btns=document.querySelectorAll('.q[data-n="'+n+'"] .mc-btn');
+  btns.forEach(function(b,idx){ b.classList.toggle('on', idx+1===i); });
+  updateSummary();
+}
+function toggleSign(n){ document.getElementById('sign-'+n).classList.toggle('on'); onInt(n); }
+function onInt(n){
+  var neg=document.getElementById('sign-'+n).classList.contains('on');
+  var v=(document.getElementById('in-'+n).value||'').replace(/[^0-9]/g,'');
+  inputs[n]=Object.assign({},inputs[n],{raw:(v===''?'':(neg?'-':'')+v)});
+  updateSummary();
+}
+function onFrac(n){
+  var num=(document.getElementById('fn-'+n).value||'').trim();
+  var den=(document.getElementById('fd-'+n).value||'').trim();
+  var raw = den==='' ? num : (num+'/'+den);
+  inputs[n]=Object.assign({},inputs[n],{raw:raw});
+  updateSummary();
+}
+
+function gradeAll(){ return Grader.gradeHomework(ak, hwRec.unitKey, hwRec.qStart, hwRec.qEnd, inputs); }
+
+// 이미 제출한 학생에게 보여줄 읽기전용 화면
+function showSubmitted(prev){
+  var uname=AIO_UNIT_NAMES[hwRec.unitKey]||hwRec.unitKey;
+  var c=prev.counts||{};
+  document.getElementById('wrap').innerHTML=
+    '<div class="head"><div class="head-book">📚 '+esc(hwRec.book||'All in one')+'</div>'
+    +'<div class="head-unit">'+esc(uname)+'</div>'
+    +'<div class="head-range">'+hwRec.qStart+'번 ~ '+hwRec.qEnd+'번</div>'
+    +'<div class="head-lab">김병진 수학연구소</div></div>'
+    +'<div class="state"><div class="state-emoji">✅</div>'
+    +'<div class="state-title">이미 제출했어요</div>'
+    +'<div style="font-size:13px;margin-bottom:4px;">'+esc(prev.submittedAt||'')+' 제출</div>'
+    +'<div class="result-box">'
+    +'<div class="result-line"><span>전체 문제</span><b>'+(c.total!=null?c.total:'-')+'개</b></div>'
+    +'<div class="result-line"><span>맞은 문제</span><b style="color:var(--green)">'+(c.correct!=null?c.correct:'-')+'개</b></div>'
+    +'<div class="result-line"><span>틀린 문제</span><b style="color:var(--red)">'+(c.wrong!=null?c.wrong:'-')+'개</b></div>'
+    +((c.pending)?'<div class="result-line"><span>직접 확인(△)</span><b>'+c.pending+'개</b></div>':'')
+    +'</div>'
+    +'<div style="margin-top:14px;font-size:13px;color:var(--muted);">수정이 필요하면 선생님께 말씀해 주세요.</div></div>';
+}
+function updateSummary(){
+  // 채점 결과는 숨기고, 답한 개수만 보여줌 (제출 전에는 O/X 노출 안 함)
+  var s=hwRec.qStart, e=hwRec.qEnd, total=e-s+1, answered=0, selfCnt=0;
+  for(var n=s;n<=e;n++){
+    var meta=Grader.getAnswer(ak,hwRec.unitKey,n);
+    if(meta && meta.k==='self'){ selfCnt++; continue; }
+    var raw=(inputs[n]||{}).raw;
+    if(raw!=null && String(raw).trim()!=='') answered++;
+  }
+  var gradable=total-selfCnt;
+  var sum=document.getElementById('summary');
+  if(sum) sum.innerHTML='입력 <b>'+answered+'</b> / '+gradable+'문제'
+    + (selfCnt?' <span style="color:var(--muted)">(직접확인 '+selfCnt+')</span>':'');
+}
+
+var _submitting=false;
+function submit(){
+  if(_submitting) return;
+  var r=gradeAll();
+  var unanswered=r.blank.length; // self(△)는 학생이 답하는 게 아니므로 제외
+  if(unanswered>0 && !confirm('아직 답하지 않은 문제가 '+unanswered+'개 있어요. 그래도 제출할까요?')) return;
+  _submitting=true;
+  var btn=document.getElementById('submitBtn'); if(btn){ btn.disabled=true; btn.textContent='제출 중…'; }
+  var payload={ inputs:inputs, wrong:r.wrong, correct:r.correct, pending:r.pending, counts:r.counts,
+    done:true, submittedAt:new Date().toISOString().slice(0,10), submittedFull:new Date().toISOString() };
+  db.ref('wronganswers/'+hwId+'/'+studentId).set(payload).then(function(){
+    var bar=document.querySelector('.submit-bar'); if(bar) bar.remove();
+    document.getElementById('wrap').innerHTML=
+      '<div class="state"><div class="state-emoji">✅</div><div class="state-title">제출 완료!</div>'
+      +'<div class="result-box">'
+      +'<div class="result-line"><span>전체 문제</span><b>'+r.counts.total+'개</b></div>'
+      +'<div class="result-line"><span>맞은 문제</span><b style="color:var(--green)">'+r.counts.correct+'개</b></div>'
+      +'<div class="result-line"><span>틀린 문제</span><b style="color:var(--red)">'+r.counts.wrong+'개</b></div>'
+      +(r.pending.length?'<div class="result-line"><span>미채점(직접)</span><b>'+r.pending.length+'개</b></div>':'')
+      +'</div><div style="margin-top:14px;font-size:13px;">선생님이 확인할 수 있어요. 수고했어요 👏</div></div>';
+  }).catch(function(){
+    _submitting=false;
+    if(btn){ btn.disabled=false; btn.textContent='제출하기'; }
+    alert('제출 실패. 인터넷 연결을 확인하고 다시 시도해주세요.');
+  });
+}
+
+start();
+</script>
+</body>
+</html>

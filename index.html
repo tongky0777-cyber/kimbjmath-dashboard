@@ -756,6 +756,17 @@ body.role-assistant .teacher-only{ display:none !important; }
   </div>
 </div>
 
+<!-- 모달: 오답 현황 (올인원 자동채점) -->
+<div class="modal-bg" id="modal-wrong">
+  <div class="modal" style="max-width:760px;">
+    <div class="modal-hd"><h3 id="wrong-title">📊 오답 현황</h3><button class="modal-close" onclick="closeModal('modal-wrong')">×</button></div>
+    <div class="modal-body" id="wrong-body" style="max-height:70vh;overflow-y:auto;">
+      <div style="text-align:center;color:var(--muted);padding:32px;">불러오는 중…</div>
+    </div>
+    <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-wrong')">닫기</button></div>
+  </div>
+</div>
+
 <!-- 모달: 일정 입력 -->
  <div class="modal-bg" id="modal-exam"><div class="modal"><div class="modal-hd"><h3>시험 일정 추가</h3><button class="modal-close" onclick="closeModal('modal-exam')">×</button></div><div class="modal-body"><div class="form-row"><div class="form-group"><label>학교명 *</label><input id="exam-school" placeholder="예) 경북고등학교"></div><div class="form-group"><label>시험 종류</label><select id="exam-type"><option value="mid">중간고사</option><option value="final">기말고사</option><option value="mock">모의고사</option><option value="other">기타</option></select></div></div><div class="form-row"><div class="form-group"><label>시작일 *</label><input type="date" id="exam-start"></div><div class="form-group"><label>종료일 *</label><input type="date" id="exam-end"></div></div><div class="form-group full"><label>메모</label><input id="exam-memo" placeholder="추가 메모"></div></div><div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-exam')">취소</button><button class="btn-save" onclick="saveExam()">저장</button></div></div></div>
 <div class="modal-bg" id="modal-schedule">
@@ -1066,6 +1077,8 @@ body.role-assistant .teacher-only{ display:none !important; }
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="./typemap.js"></script>
+<script src="./grader.js"></script>
 <script>
 // ===== Firebase Sync (양방향 + 안전장치) =====
 window._FB_PREFIX = "bjm_";
@@ -2950,7 +2963,7 @@ function hwBlockHtml(n, data){
     +'<div class="form-group"><label>교재</label><select class="hw-book" onchange="onHwBlockSubjectChange(\''+n+'\')">'+_hwBookOptions(book)+'</select></div>'
     +'</div>'
     +'<div class="form-row">'
-    +'<div class="form-group"><label>단원</label><select class="hw-unit">'+_hwUnitOptions(subj, book, data.unit)+'</select></div>'
+    +'<div class="form-group hw-unit-group" style="'+((book===AIO_BOOK_NAME && String(n).charAt(0)!=='g')?'display:none;':'')+'"><label>단원</label><select class="hw-unit">'+_hwUnitOptions(subj, book, data.unit)+'</select></div>'
     +'<div class="form-group"><label>페이지/범위</label><input class="hw-range" placeholder="p.45~50" value="'+(data.range||'')+'"></div>'
     +'</div>'
     + _hwAioSectionHtml(n, data)
@@ -2977,6 +2990,8 @@ function _hwAioUnitOptions(sel){
 }
 function _hwAioSectionHtml(n, data){
   data=data||{};
+  // 그룹 숙제 블록(n이 'g'로 시작)에서는 오답수집을 제공하지 않음 (개별 숙제 전용)
+  if(String(n).charAt(0)==='g') return '';
   var on=(data.book===AIO_BOOK_NAME);
   return '<div class="hw-aio" data-n="'+n+'" style="display:'+(on?'block':'none')+';border:1px dashed var(--teal,#0f5f5a);background:var(--teal-bg,#e8f5f4);border-radius:6px;padding:10px;margin-bottom:10px;">'
     +'<div style="font-size:11px;font-weight:700;color:var(--teal,#0f5f5a);margin-bottom:8px;">📊 오답 수집 (학생이 틀린 번호 클릭 → 유형 자동 집계)</div>'
@@ -2990,10 +3005,16 @@ function _hwAioSectionHtml(n, data){
 }
 // 교재 select가 바뀔 때 All in one 영역 토글
 function _toggleHwAio(n){
+  // 그룹 숙제 블록은 오답수집 비대상 — 기존 단원 드롭다운 그대로 둠
+  if(String(n).charAt(0)==='g') return;
   var block=document.querySelector('.hw-block[data-n="'+n+'"]'); if(!block) return;
   var book=block.querySelector('.hw-book').value;
+  var isAio=(book===AIO_BOOK_NAME);
   var aio=block.querySelector('.hw-aio');
-  if(aio) aio.style.display=(book===AIO_BOOK_NAME?'block':'none');
+  if(aio) aio.style.display=(isAio?'block':'none');
+  // All in one이면 기존 단원 드롭다운 숨김 (오답수집 영역에서 단원 선택하므로 중복 제거)
+  var ug=block.querySelector('.hw-unit-group');
+  if(ug) ug.style.display=(isAio?'none':'');
 }
 function onHwBlockSubjectChange(n){
   var block=document.querySelector('.hw-block[data-n="'+n+'"]'); if(!block) return;
@@ -3130,9 +3151,192 @@ function renderHw() {
     if(sdone===null){ checkCell = '<span style="font-size:11px;color:var(--muted);">—</span>'; }
     else if(sdone.done){ var at=(sdone.at||'').replace('T',' ').slice(5,16); checkCell = '<span style="font-size:11px;color:var(--green);font-weight:700;">✓ 학생완료</span>'+(at?'<div style="font-size:10px;color:var(--muted);">'+at+'</div>':''); }
     else { checkCell = '<span style="font-size:11px;color:var(--muted);">미완료</span>'; }
-    return '<tr style="'+(overdue?'background:#fffaf9;':'')+'"><td class="student-name">'+(student?student.name:'—')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+r.name+(overdue?' <span style="color:var(--red);font-size:10px;">⚠ 기한 초과</span>':'')+'</td><td style="font-size:12px;color:'+(overdue?'var(--red)':'var(--muted)')+';">'+r.due+'</td><td style="text-align:center;">'+checkCell+'</td><td><select onchange="updateHwStatus(\''+r.id+'\',this.value)" style="font-size:12px;padding:5px 10px;min-width:96px;border:1px solid var(--line);border-radius:3px;cursor:pointer;font-family:var(--sans);"><option value="pending"'+(r.status==='pending'?' selected':'')+'>미제출</option><option value="done"'+(r.status==='done'?' selected':'')+'>제출 완료</option><option value="half"'+(r.status==='half'?' selected':'')+'>부분 제출</option></select></td><td style="font-size:12px;color:var(--muted);">'+(r.memo||'—')+'</td><td><div class="row-action"><button class="icon-btn" onclick="deleteHw(\''+r.id+'\')">🗑️</button></div></td></tr>';
+    var aioBtns='';
+    if(_isAioHw(r)){
+      aioBtns = '<button class="icon-btn" title="학생 링크 복사" onclick="copyHwLink(\''+r.id+'\',\''+r.sid+'\')">🔗</button>'
+              + '<button class="icon-btn" title="오답 현황" onclick="openWrongView(\''+r.id+'\')">📊</button>';
+    }
+    return '<tr style="'+(overdue?'background:#fffaf9;':'')+'"><td class="student-name">'+(student?student.name:'—')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+r.name+(overdue?' <span style="color:var(--red);font-size:10px;">⚠ 기한 초과</span>':'')+'</td><td style="font-size:12px;color:'+(overdue?'var(--red)':'var(--muted)')+';">'+r.due+'</td><td style="text-align:center;">'+checkCell+'</td><td><select onchange="updateHwStatus(\''+r.id+'\',this.value)" style="font-size:12px;padding:5px 10px;min-width:96px;border:1px solid var(--line);border-radius:3px;cursor:pointer;font-family:var(--sans);"><option value="pending"'+(r.status==='pending'?' selected':'')+'>미제출</option><option value="done"'+(r.status==='done'?' selected':'')+'>제출 완료</option><option value="half"'+(r.status==='half'?' selected':'')+'>부분 제출</option></select></td><td style="font-size:12px;color:var(--muted);">'+(r.memo||'—')+'</td><td><div class="row-action">'+aioBtns+'<button class="icon-btn" onclick="deleteHw(\''+r.id+'\')">🗑️</button></div></td></tr>';
   }).join('');
 }
+// 올인원 오답수집 숙제인지 (unitKey+번호범위가 있으면)
+function _isAioHw(r){
+  return r && r.book===AIO_BOOK_NAME && r.unitKey && r.qStart!=null && r.qEnd!=null;
+}
+
+// ===== [오답수집 C단계] 학생 링크 / 오답 현황 / 선생님 O/X 수정 =====
+// 학생 페이지 링크 만들기 (현재 대시보드와 같은 폴더의 homework_student.html)
+function _hwStudentLinkBase(){
+  // 예: https://.../index.html → https://.../homework_student.html
+  var u = location.href.split('#')[0].split('?')[0];
+  u = u.replace(/[^/]*$/, '');   // 마지막 파일명 제거 → 디렉터리
+  return u + 'homework_student.html';
+}
+function copyHwLink(hwId, sid){
+  var url = _hwStudentLinkBase() + '?hw=' + encodeURIComponent(hwId) + '&student=' + encodeURIComponent(sid);
+  function done(){ toast('학생 링크가 복사되었습니다'); }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(done, function(){ _fallbackCopy(url, done); });
+  } else { _fallbackCopy(url, done); }
+}
+function _fallbackCopy(text, cb){
+  try{
+    var ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); cb();
+  }catch(e){ prompt('아래 링크를 복사하세요:', text); }
+}
+
+// 오답 현황 모달 열기
+var _wrongCtx = null;  // { hwId, hwRec, ak, tm, subs:{studentId:submission} }
+function openWrongView(hwId){
+  var r = DB.get('homework').find(function(x){ return x.id===hwId; });
+  if(!r || !_isAioHw(r)){ toast('오답 수집 대상 숙제가 아닙니다'); return; }
+  openModal('modal-wrong');
+  var body=document.getElementById('wrong-body');
+  document.getElementById('wrong-title').textContent='📊 오답 현황 — '+(r.name||'');
+  body.innerHTML='<div style="text-align:center;color:var(--muted);padding:32px;">불러오는 중…</div>';
+
+  // typemap, 정답표, 제출 데이터 동시 로드
+  Promise.all([
+    (window.TypeMap ? TypeMap.loadTypeMap('올인원') : Promise.reject(new Error('typemap.js 미로드'))),
+    (window.Grader ? Grader.loadAnswerKey('올인원') : Promise.reject(new Error('grader.js 미로드'))),
+    firebase.database().ref('wronganswers/'+hwId).once('value')
+  ]).then(function(arr){
+    var tm=arr[0], ak=arr[1], snap=arr[2];
+    var subs=snap.val()||{};
+    _wrongCtx={ hwId:hwId, hwRec:r, ak:ak, tm:tm, subs:subs };
+    renderWrongView();
+  }).catch(function(e){
+    body.innerHTML='<div style="text-align:center;color:var(--red);padding:32px;">불러오기 실패: '+(e&&e.message||e)+'<br><span style="font-size:12px;color:var(--muted);">typemap.js·grader.js·정답표가 올라가 있고 서버(깃허브 Pages/Vercel)에서 열렸는지 확인하세요.</span></div>';
+  });
+}
+
+// 한 제출 건을 (선생님 보정 반영해) 채점
+function _gradeSub(ctx, sub){
+  var inputs=(sub&&sub.inputs)||{};
+  // 선생님 보정값(teacher)을 inputs에 머지해서 채점
+  var teacher=(sub&&sub.teacher)||{};
+  var merged={};
+  var r=ctx.hwRec;
+  for(var n=r.qStart;n<=r.qEnd;n++){
+    merged[n]=Object.assign({}, inputs[n]||{}, (teacher[n]?{teacher:teacher[n]}:{}));
+  }
+  return Grader.gradeHomework(ctx.ak, r.unitKey, r.qStart, r.qEnd, merged);
+}
+
+function renderWrongView(){
+  var ctx=_wrongCtx; if(!ctx) return;
+  var r=ctx.hwRec;
+  var students=DB.get('students');
+  var sidList=Object.keys(ctx.subs);
+  var body=document.getElementById('wrong-body');
+
+  if(!sidList.length){
+    body.innerHTML='<div style="text-align:center;color:var(--muted);padding:32px;">아직 제출한 학생이 없습니다.</div>';
+    return;
+  }
+
+  // 반 전체 유형 집계용 누적
+  var classByType={}, classByCat={};
+
+  var html='';
+  sidList.forEach(function(sid){
+    var sub=ctx.subs[sid];
+    var stu=students.find(function(s){ return s.id===sid; });
+    var name=stu?stu.name:sid;
+    var g=_gradeSub(ctx, sub);
+    var c=g.counts;
+    var pct=c.total?Math.round(c.correct/c.total*100):0;
+
+    // 유형 집계 (틀린 번호 → typemap)
+    var agg=TypeMap.aggregateWrong(ctx.tm, r.unitKey, g.wrong);
+    Object.keys(agg.byType).forEach(function(t){ classByType[t]=(classByType[t]||0)+agg.byType[t]; });
+    Object.keys(agg.byCat).forEach(function(k){ classByCat[k]=(classByCat[k]||0)+agg.byCat[k]; });
+
+    html+='<div style="border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px;">'
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">'
+      +'<b style="font-size:15px;">'+esc2(name)+'</b>'
+      +'<span style="font-size:12px;color:var(--muted);">'+(sub.submittedAt||'')+'</span>'
+      +'<span style="margin-left:auto;font-size:13px;">맞음 <b style="color:var(--green)">'+c.correct+'</b> · 틀림 <b style="color:var(--red)">'+c.wrong+'</b>'
+      +(c.pending?' · △ <b>'+c.pending+'</b>':'')+' · '+pct+'점</span>'
+      +'</div>';
+
+    // 문항별 O/X 그리드 (선생님이 클릭해 보정)
+    html+='<div style="display:flex;flex-wrap:wrap;gap:5px;">';
+    for(var n=r.qStart;n<=r.qEnd;n++){
+      var st=g.results[n];
+      var bg=st==='correct'?'var(--green)':st==='wrong'?'var(--red)':st==='self'?'var(--gold)':'var(--bg2)';
+      var fg=(st==='blank')?'var(--muted)':'#fff';
+      var sym=st==='correct'?'O':st==='wrong'?'X':st==='self'?'△':'·';
+      html+='<button onclick="cycleMark(\''+sid+'\','+n+')" title="'+n+'번 (눌러서 O/X/△ 변경)" '
+        +'style="width:34px;height:30px;border:none;border-radius:5px;font-size:12px;font-weight:700;cursor:pointer;background:'+bg+';color:'+fg+';">'
+        +n+'<span style="font-size:9px;display:block;line-height:1;">'+sym+'</span></button>';
+    }
+    html+='</div>';
+
+    // 이 학생 유형별 약점
+    var typeKeys=Object.keys(agg.byType);
+    if(typeKeys.length){
+      html+='<div style="margin-top:10px;font-size:12px;color:var(--muted);">틀린 유형: '
+        + typeKeys.sort(function(a,b){return agg.byType[b]-agg.byType[a];}).map(function(t){
+            return '<span style="display:inline-block;background:var(--red-bg);color:var(--red2);border-radius:6px;padding:2px 8px;margin:2px;">'+esc2(t)+' '+agg.byType[t]+'</span>';
+          }).join('')
+        +'</div>';
+    }
+    html+='</div>';
+  });
+
+  // 반 전체 대분류/유형 요약
+  var catNames=(window.TypeMap&&TypeMap.CAT_NAMES)||{};
+  var catKeys=Object.keys(classByCat).sort(function(a,b){return classByCat[b]-classByCat[a];});
+  if(catKeys.length){
+    html='<div style="background:var(--bg2);border-radius:10px;padding:14px;margin-bottom:14px;">'
+      +'<div style="font-size:13px;font-weight:700;margin-bottom:8px;">📚 반 전체 약점 (대분류)</div>'
+      +catKeys.map(function(k){
+        return '<span style="display:inline-block;background:var(--white);border:1px solid var(--line);border-radius:6px;padding:4px 10px;margin:3px;font-size:13px;">'
+          +esc2(catNames[k]||k)+' <b style="color:var(--red)">'+classByCat[k]+'</b></span>';
+      }).join('')
+      +'</div>' + html;
+  }
+
+  body.innerHTML=html;
+}
+
+// O/X/△ 토글: correct → wrong → self → (자동값으로 초기화) 순환
+function cycleMark(sid, n){
+  var ctx=_wrongCtx; if(!ctx) return;
+  var sub=ctx.subs[sid]; if(!sub) return;
+  if(!sub.teacher) sub.teacher={};
+  var cur=sub.teacher[n]; // undefined | correct | wrong | self
+  var next = cur==null ? 'correct' : cur==='correct' ? 'wrong' : cur==='wrong' ? 'self' : null;
+  if(next==null) delete sub.teacher[n]; else sub.teacher[n]=next;
+  renderWrongView();
+  _saveTeacherMarks(sid);  // Firebase에 보정 저장
+}
+
+// 선생님 보정(teacher) + 재채점된 wrong/correct/counts를 Firebase에 저장
+var _saveTimers={};
+function _saveTeacherMarks(sid){
+  var ctx=_wrongCtx; if(!ctx) return;
+  var sub=ctx.subs[sid]; if(!sub) return;
+  var g=_gradeSub(ctx, sub);
+  var update={
+    teacher: sub.teacher||{},
+    wrong: g.wrong, correct: g.correct, pending: g.pending,
+    counts: g.counts,
+    teacherEditedAt: new Date().toISOString()
+  };
+  // 디바운스: 같은 학생 연속 클릭 시 마지막 것만 저장
+  if(_saveTimers[sid]) clearTimeout(_saveTimers[sid]);
+  _saveTimers[sid]=setTimeout(function(){
+    firebase.database().ref('wronganswers/'+ctx.hwId+'/'+sid).update(update)
+      .then(function(){ toast('채점 수정 저장됨'); })
+      .catch(function(){ toast('저장 실패 — 다시 시도해주세요'); });
+  }, 600);
+}
+
+// HTML escape (대시보드용 별칭 — 이미 있으면 그걸 쓰고, 없으면 정의)
+function esc2(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 
 // 일정 저장
 function saveSchedule() {
