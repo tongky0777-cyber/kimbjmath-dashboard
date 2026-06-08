@@ -224,6 +224,7 @@ body.role-assistant .teacher-only{ display:none !important; }
 <div class="sb-item" onclick="showView('students',this)"><span class="sb-icon">👥</span> 학생 목록</div>
     <div class="sb-item" onclick="showView('attendance',this)"><span class="sb-icon">✅</span> 출결 관리</div>
     <div class="sb-item" onclick="showView('homework',this)"><span class="sb-icon">📚</span> 숙제 관리</div>
+    <div class="sb-item teacher-only" onclick="showView('wronganalysis',this)"><span class="sb-icon">📊</span> 교재 오답 분석</div>
     <div class="sb-item" onclick="showView('prep',this)"><span class="sb-icon">🎯</span> 다음 수업 준비</div>
     <div class="sb-item" onclick="showView('progress',this)"><span class="sb-icon">📖</span> 진도 관리</div>
     <div class="sb-item" onclick="showView('tests',this)"><span class="sb-icon">📝</span> 테스트 결과</div>
@@ -426,6 +427,12 @@ body.role-assistant .teacher-only{ display:none !important; }
         <tbody id="hw-body"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">숙제를 추가해보세요</td></tr></tbody></table>
       </div>
     </div>
+
+    <!-- 교재 오답 분석 -->
+    <div class="view" id="view-wronganalysis">
+      <div id="wa-content"><div style="text-align:center;color:var(--muted);padding:40px;">불러오는 중…</div></div>
+    </div>
+
 
 
     <!-- 진도 관리 -->
@@ -1423,7 +1430,7 @@ function activateMemo() {
   }
 }
 
-var viewTitles = {dashboard:'📊 전체 현황',prep:'🎯 다음 수업 준비',progress:'📖 진도 관리',groups:'🏫 반 관리',students:'👥 학생 목록',attendance:'✅ 출결 관리',tests:'📝 테스트 결과',homework:'📚 숙제 관리',schedule:'📅 보강 · 일정',memo:'🗒️ 메모'};
+var viewTitles = {dashboard:'📊 전체 현황',prep:'🎯 다음 수업 준비',progress:'📖 진도 관리',groups:'🏫 반 관리',students:'👥 학생 목록',attendance:'✅ 출결 관리',tests:'📝 테스트 결과',homework:'📚 숙제 관리',schedule:'📅 보강 · 일정',memo:'🗒️ 메모',wronganalysis:'📊 교재 오답 분석'};
 
 
 // ===== 시험 일정 =====
@@ -1549,7 +1556,7 @@ function renderExam() {
 }
 // ===== 시험 일정 끝 =====
 function showView(id, el) {
-  if(isAssistant() && (id==='papers' || id==='groups')){ toast('이 메뉴는 선생님만 볼 수 있어요'); return; }
+  if(isAssistant() && (id==='papers' || id==='groups' || id==='wronganalysis')){ toast('이 메뉴는 선생님만 볼 수 있어요'); return; }
   document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('on'); });
   document.querySelectorAll('.sb-item').forEach(function(i){ i.classList.remove('on'); });
   var target = document.getElementById('view-'+id);
@@ -1568,6 +1575,7 @@ function showView(id, el) {
     loadClassPlanners(afterLoad);
   }
   if(id==='homework')   { renderHw(); hwCalYear=new Date().getFullYear(); hwCalMonth=new Date().getMonth(); renderHwCalendar(); loadClassHwDone(function(){ renderHw(); }); }
+  if(id==='wronganalysis') renderWrongAnalysisHome();
   if(id==='schedule')   { renderSchedule(); }
   if(id==='memo')       activateMemo();
   if(id==='dashboard')  renderDashboard();
@@ -3162,6 +3170,203 @@ function renderHw() {
 // 올인원 오답수집 숙제인지 (unitKey+번호범위가 있으면)
 function _isAioHw(r){
   return r && r.book===AIO_BOOK_NAME && r.unitKey && r.qStart!=null && r.qEnd!=null;
+}
+
+// ===== [교재 오답 분석] 사이드바 메뉴 =====
+var _waData=null;  // { tm, ak, subsByHw, hwById }  로드 캐시
+var _waChart=null;
+
+// 홈: 교재 카드 목록
+function renderWrongAnalysisHome(){
+  var box=document.getElementById('wa-content');
+  if(!box) return;
+  // 올인원 숙제 + 제출 집계 (카드 숫자용)
+  var aioHw=DB.get('homework').filter(_isAioHw);
+  box.innerHTML='<div style="margin-bottom:18px;"><p style="color:var(--muted);font-size:13px;margin:0;">분석할 교재를 선택하세요. 학생들이 제출한 숙제에서 자동으로 모인 데이터입니다.</p></div>'
+    +'<div id="wa-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;">'
+    +'<div style="background:var(--white);border:1px solid var(--line);border-radius:12px;padding:18px 20px;text-align:center;color:var(--muted);">집계 중…</div>'
+    +'</div>';
+
+  // 전체 wronganswers 로드해서 제출/오답 수 계산
+  firebase.database().ref('wronganswers').once('value').then(function(snap){
+    var all=snap.val()||{};
+    var subCnt=0, wrongCnt=0;
+    aioHw.forEach(function(h){
+      var subs=all[h.id]; if(!subs) return;
+      Object.keys(subs).forEach(function(sid){
+        var s=subs[sid]; if(!s||!s.submittedFull) return;
+        subCnt++;
+        // 선생님 보정 반영한 실제 오답 수
+        wrongCnt += _waCountWrong(h, s);
+      });
+    });
+    var cards='<div onclick="openBookAnalysis(\'올인원\')" style="background:var(--white);border:1px solid var(--line);border-radius:12px;padding:18px 20px;cursor:pointer;">'
+      +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">'
+      +'<div style="width:42px;height:42px;border-radius:8px;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:22px;">📘</div>'
+      +'<div><div style="font-weight:700;font-size:15px;">올인원 공수1</div><div style="font-size:12px;color:var(--muted);">3단원 · 750문항</div></div></div>'
+      +'<div style="display:flex;gap:20px;font-size:13px;color:var(--muted);">'
+      +'<span><b style="color:var(--ink);">'+subCnt+'</b> 제출</span>'
+      +'<span><b style="color:var(--ink);">'+wrongCnt+'</b> 오답</span></div>'
+      +'<div style="margin-top:12px;font-size:13px;color:var(--blue);">분석 보기 →</div></div>'
+      +'<div style="background:var(--bg2);border:1px dashed var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);min-height:120px;font-size:13px;">+ 다른 교재는 추후 추가</div>';
+    var cb=document.getElementById('wa-cards'); if(cb) cb.innerHTML=cards;
+  }).catch(function(){
+    var cb=document.getElementById('wa-cards'); if(cb) cb.innerHTML='<div style="color:var(--red);padding:18px;">데이터를 불러오지 못했습니다.</div>';
+  });
+}
+
+// 한 제출 건의 실제 오답 번호 배열 (선생님 보정 반영, △/미입력 제외)
+function _waWrongNumbers(h, sub){
+  if(!_waData || !_waData.ak) return (sub.wrong||[]);
+  var inputs=sub.inputs||{}, teacher=sub.teacher||{}, wrong=[];
+  for(var n=h.qStart;n<=h.qEnd;n++){
+    var meta=Grader.getAnswer(_waData.ak, h.unitKey, n);
+    var merged=Object.assign({}, inputs[n]||{}, teacher[n]?{teacher:teacher[n]}:{});
+    var st=Grader.gradeOne(meta, merged.raw, merged.teacher);
+    if(st==='wrong') wrong.push(n);
+  }
+  return wrong;
+}
+function _waCountWrong(h, sub){
+  // _waData 없을 때(홈 카드)는 저장된 wrong 길이로 근사
+  if(!_waData || !_waData.ak) return (sub.wrong||[]).length;
+  return _waWrongNumbers(h, sub).length;
+}
+
+// 교재 분석 상세 열기
+var _waCurBook=null, _waCurUnit='all';
+function openBookAnalysis(book){
+  _waCurBook=book; _waCurUnit='all';
+  var box=document.getElementById('wa-content');
+  box.innerHTML='<div style="text-align:center;color:var(--muted);padding:40px;">분석 데이터를 불러오는 중…</div>';
+  Promise.all([
+    TypeMap.loadTypeMap(book),
+    Grader.loadAnswerKey(book),
+    firebase.database().ref('wronganswers').once('value')
+  ]).then(function(arr){
+    _waData={ tm:arr[0], ak:arr[1], all:arr[2].val()||{} };
+    renderBookAnalysis();
+  }).catch(function(e){
+    box.innerHTML='<div style="text-align:center;color:var(--red);padding:40px;">불러오기 실패: '+(e&&e.message||e)+'<br><span style="font-size:12px;color:var(--muted);">typemap.js·grader.js·정답표가 올라가 있는지, 서버에서 열렸는지 확인하세요.</span></div>';
+  });
+}
+
+// 단원 탭 전환
+function waSetUnit(u){ _waCurUnit=u; renderBookAnalysis(); }
+
+// 분석 집계 + 렌더
+function renderBookAnalysis(){
+  var box=document.getElementById('wa-content');
+  var tm=_waData.tm, all=_waData.all;
+  var aioHw=DB.get('homework').filter(_isAioHw);
+  var students=DB.get('students');
+
+  // 단원 필터
+  var unitFilter=_waCurUnit; // 'all' | 'unit1' | ...
+  var hwList=aioHw.filter(function(h){ return unitFilter==='all' || h.unitKey===unitFilter; });
+
+  // 집계
+  var subCnt=0, wrongTotal=0, totalQ=0, correctTotal=0;
+  var byCat={}, byType={};
+  var qWrong={};   // "unitKey:no" → {cnt, total(제출자수), unitKey, no, type, cat}
+  hwList.forEach(function(h){
+    var subs=all[h.id]; if(!subs) return;
+    Object.keys(subs).forEach(function(sid){
+      var s=subs[sid]; if(!s||!s.submittedFull) return;
+      subCnt++;
+      var wrongs=_waWrongNumbers(h, s);
+      // 정답률 계산용 (자동채점 가능 문항 기준 counts.total 사용)
+      if(s.counts){ totalQ+=s.counts.total||0; correctTotal+=s.counts.correct||0; }
+      wrongs.forEach(function(no){
+        wrongTotal++;
+        var hit=TypeMap.lookup(tm, h.unitKey, no);
+        if(hit){
+          byCat[hit.cat]=(byCat[hit.cat]||0)+1;
+          byType[hit.type]=(byType[hit.type]||0)+1;
+        }
+        var key=h.unitKey+':'+no;
+        if(!qWrong[key]) qWrong[key]={cnt:0, unitKey:h.unitKey, no:no, type:hit?hit.type:'-', cat:hit?hit.cat:''};
+        qWrong[key].cnt++;
+      });
+      // 문항별 제출자 수(분모)
+      for(var n=h.qStart;n<=h.qEnd;n++){
+        var key2=h.unitKey+':'+n;
+        if(qWrong[key2]) qWrong[key2].denom=(qWrong[key2].denom||0)+1;
+      }
+    });
+  });
+  var avgPct = totalQ>0 ? Math.round(correctTotal/totalQ*100) : 0;
+
+  var catNames=(window.TypeMap&&TypeMap.CAT_NAMES)||{};
+  var unitNames={ all:'전체', unit1:'1단원 다항식', unit2:'2단원 나머지·인수분해', unit3:'3단원 방정식' };
+
+  // 단원 탭
+  var tabs='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">';
+  ['all','unit1','unit2','unit3'].forEach(function(u){
+    var on=(u===_waCurUnit);
+    tabs+='<button onclick="waSetUnit(\''+u+'\')" style="font-size:13px;padding:7px 14px;border-radius:6px;cursor:pointer;font-family:var(--sans);border:'+(on?'2px solid var(--blue)':'1px solid var(--line)')+';background:'+(on?'var(--blue-bg)':'var(--white)')+';color:var(--ink);font-weight:'+(on?'700':'400')+';">'+unitNames[u]+'</button>';
+  });
+  tabs+='</div>';
+
+  // 요약 카드
+  var summary='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px;">'
+    +'<div style="background:var(--bg2);border-radius:8px;padding:14px;"><div style="font-size:13px;color:var(--muted);">제출</div><div style="font-size:24px;font-weight:700;">'+subCnt+'</div></div>'
+    +'<div style="background:var(--bg2);border-radius:8px;padding:14px;"><div style="font-size:13px;color:var(--muted);">전체 오답</div><div style="font-size:24px;font-weight:700;">'+wrongTotal+'</div></div>'
+    +'<div style="background:var(--bg2);border-radius:8px;padding:14px;"><div style="font-size:13px;color:var(--muted);">평균 정답률</div><div style="font-size:24px;font-weight:700;">'+avgPct+'%</div></div></div>';
+
+  // 유형 TOP (소분류)
+  var typeArr=Object.keys(byType).map(function(t){return {t:t,c:byType[t]};}).sort(function(a,b){return b.c-a.c;}).slice(0,8);
+  var typeMax=typeArr.length?typeArr[0].c:1;
+  var typeHtml='<h3 style="font-size:15px;margin:0 0 12px;">많이 틀리는 유형 (TOP '+typeArr.length+')</h3>';
+  if(!typeArr.length){ typeHtml+='<div style="color:var(--muted);font-size:13px;margin-bottom:22px;">아직 오답 데이터가 없습니다.</div>'; }
+  else {
+    typeHtml+='<div style="display:flex;flex-direction:column;gap:7px;margin-bottom:22px;">';
+    typeArr.forEach(function(o){
+      var w=Math.round(o.c/typeMax*100);
+      typeHtml+='<div style="display:flex;align-items:center;gap:10px;">'
+        +'<span style="font-size:13px;flex:1;min-width:0;">'+esc2(o.t)+'</span>'
+        +'<div style="width:160px;height:18px;background:var(--bg2);border-radius:4px;overflow:hidden;flex-shrink:0;"><div style="width:'+w+'%;height:100%;background:var(--blue);"></div></div>'
+        +'<span style="font-size:13px;font-weight:700;width:26px;text-align:right;">'+o.c+'</span></div>';
+    });
+    typeHtml+='</div>';
+  }
+
+  // 문항 TOP 표
+  var qArr=Object.keys(qWrong).map(function(k){return qWrong[k];}).sort(function(a,b){return b.cnt-a.cnt;}).slice(0,8);
+  var qHtml='<h3 style="font-size:15px;margin:0 0 12px;">최다 오답 문항 (TOP '+qArr.length+')</h3>';
+  if(!qArr.length){ qHtml+='<div style="color:var(--muted);font-size:13px;">아직 오답 데이터가 없습니다.</div>'; }
+  else {
+    qHtml+='<div class="tbl-wrap"><table style="width:100%;font-size:13px;"><thead><tr>'
+      +'<th>단원</th><th>번호</th><th style="width:100%;">유형</th><th style="text-align:right;">오답</th></tr></thead><tbody>';
+    qArr.forEach(function(o){
+      var un={unit1:'1단원',unit2:'2단원',unit3:'3단원'}[o.unitKey]||o.unitKey;
+      var rate = o.denom? Math.round(o.cnt/o.denom*100):0;
+      var hot = rate>=50;
+      qHtml+='<tr><td>'+un+'</td><td style="font-weight:700;">'+o.no+'번</td><td>'+esc2(o.type)+'</td>'
+        +'<td style="text-align:right;font-weight:700;'+(hot?'color:var(--red);':'')+'">'+o.cnt+(o.denom?' / '+o.denom:'')+'</td></tr>';
+    });
+    qHtml+='</tbody></table></div>';
+  }
+
+  box.innerHTML='<div style="margin-bottom:14px;"><button onclick="renderWrongAnalysisHome()" style="font-size:13px;padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:var(--white);cursor:pointer;font-family:var(--sans);">← 교재 목록</button></div>'
+    +'<h2 style="font-size:18px;margin:0 0 4px;">올인원 공수1 · 오답 분석</h2>'
+    +'<p style="font-size:13px;color:var(--muted);margin:0 0 18px;">제출 '+subCnt+'건 · 전체 오답 '+wrongTotal+'개 기준'+(unitFilter!=='all'?' · '+unitNames[unitFilter]:'')+'</p>'
+    +tabs+summary
+    +'<h3 style="font-size:15px;margin:0 0 12px;">대분류별 약점</h3>'
+    +'<div style="position:relative;width:100%;height:200px;margin-bottom:24px;"><canvas id="wa-cat-chart"></canvas></div>'
+    +typeHtml+qHtml;
+
+  // 대분류 차트
+  var catArr=Object.keys(byCat).map(function(c){return {c:c,n:byCat[c],name:catNames[c]||c};}).sort(function(a,b){return b.n-a.n;});
+  if(typeof Chart!=='undefined' && catArr.length){
+    if(_waChart){ try{_waChart.destroy();}catch(e){} }
+    var ctx=document.getElementById('wa-cat-chart').getContext('2d');
+    _waChart=new Chart(ctx,{ type:'bar',
+      data:{ labels:catArr.map(function(o){return o.name;}),
+        datasets:[{ data:catArr.map(function(o){return o.n;}), backgroundColor:'#1c3c6e', borderRadius:4 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+        scales:{ y:{ beginAtZero:true, ticks:{precision:0} } } } });
+  }
 }
 
 // ===== [오답수집 C단계] 학생 링크 / 오답 현황 / 선생님 O/X 수정 =====
