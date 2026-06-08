@@ -4726,6 +4726,11 @@ function selectHwDay(dateStr) {
       var st=statusStyle[r.status]||statusStyle.pending;
       var card=document.createElement('div');
       card.style.cssText='display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 14px;';
+      var aioBtns2='';
+      if(_isAioHw(r)){
+        aioBtns2='<button title="학생 링크 복사" onclick="copyHwLink(\''+r.id+'\',\''+r.sid+'\')" style="font-size:11px;padding:4px 8px;border:1px solid var(--line);border-radius:3px;background:var(--white);cursor:pointer;margin-left:4px;">🔗</button>'
+          +'<button title="오답 현황" onclick="openWrongView(\''+r.id+'\')" style="font-size:11px;padding:4px 8px;border:1px solid var(--teal);border-radius:3px;background:var(--teal-bg);cursor:pointer;margin-left:4px;">📊</button>';
+      }
       card.innerHTML='<div style="font-size:13px;font-weight:700;white-space:nowrap;min-width:60px;">'+(s?s.name:'—')+'<span style="font-size:11px;color:var(--muted);margin-left:6px;">'+(s?s.grade:'')+'</span></div>'
         +'<div style="flex:1;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+r.name+'</div>'
         +'<select onchange="updateHwStatus(\''+r.id+'\',this.value);renderHwCalendar();selectHwDay(\''+dateStr+'\')" style="font-size:11px;padding:4px 6px;border:1px solid var(--line);border-radius:3px;background:'+st.bg+';color:'+st.color+';font-weight:700;cursor:pointer;font-family:var(--sans);flex-shrink:0;width:80px;">'
@@ -4733,6 +4738,7 @@ function selectHwDay(dateStr) {
         +'<option value="done"'+(r.status==='done'?' selected':'')+'>제출</option>'
         +'<option value="half"'+(r.status==='half'?' selected':'')+'>부분제출</option>'
         +'</select>'
+        +aioBtns2
         +'<button onclick="editHw(\''+r.id+'\')" style="font-size:11px;padding:4px 8px;border:1px solid var(--line);border-radius:3px;background:var(--white);color:var(--ink);cursor:pointer;margin-left:4px;">✏️</button>'
         +'<button onclick="deleteHw(\''+r.id+'\')" style="font-size:11px;padding:4px 8px;border:1px solid var(--line);border-radius:3px;background:var(--red-bg);color:var(--red);cursor:pointer;margin-left:4px;">🗑</button>';
       list.appendChild(card);
