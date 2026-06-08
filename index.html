@@ -1381,7 +1381,7 @@ window.addEventListener('DOMContentLoaded', function() {
       if(typeof loadCheckSources==='function'){
         loadCheckSources(function(){
           if(typeof renderCheckBanner==='function') renderCheckBanner();
-          if(typeof computeCheckItems==='function'){ var its=computeCheckItems(); window._lastPopupCount=its.length; if(its.length && typeof showCheckPopup==='function') showCheckPopup(its); }
+          if(typeof computeCheckItems==='function'){ var its=computeCheckItems(); window._lastPopupCount=its.length; if(its.length && _hasNewCheckItems(its) && typeof showCheckPopup==='function') showCheckPopup(its); }
           if(typeof _watchCheckSources==='function') _watchCheckSources();
         });
       }
@@ -3389,9 +3389,8 @@ function _onCheckSourceChange(){
   var dv=document.getElementById('view-dashboard');
   var items=computeCheckItems();
   if(dv && dv.classList.contains('on')) renderCheckBanner();
-  // 항목 수가 늘었으면(새 확인거리) 즉시 팝업
-  var prev=(typeof window._lastPopupCount==='number')?window._lastPopupCount:items.length;
-  if(items.length>prev){ showCheckPopup(items); }
+  // 아직 확인 안 한 새 항목이 생겼을 때만 즉시 팝업
+  if(_hasNewCheckItems(items)){ showCheckPopup(items); }
   window._lastPopupCount=items.length;
 }
 
@@ -3458,6 +3457,22 @@ function goCheckItem(go){
 }
 
 // 팝업
+// 항목별 고유 시그니처 (type+내용). 확인 처리/새 항목 판별에 사용
+function _checkItemSigs(items){ return (items||[]).map(function(it){ return it.type+'|'+(it.text||''); }); }
+// "확인했어요"로 이미 확인 처리한 시그니처 목록 (이 기기에 저장)
+function _getAckedSigs(){
+  try{ return JSON.parse(localStorage.getItem('bjm_checkAcked')||'[]'); }catch(e){ return []; }
+}
+function _setAckedSigs(sigs){
+  try{ localStorage.setItem('bjm_checkAcked', JSON.stringify(sigs||[])); }catch(e){}
+}
+// 현재 항목 중 아직 확인 안 한(새로운) 게 하나라도 있는지
+function _hasNewCheckItems(items){
+  if(!items || !items.length) return false;
+  var acked=_getAckedSigs();
+  return _checkItemSigs(items).some(function(sig){ return acked.indexOf(sig)===-1; });
+}
+
 function showCheckPopup(items){
   if(!items || !items.length) return;
   var ov=document.getElementById('check-popup');
@@ -3474,12 +3489,21 @@ function showCheckPopup(items){
   h+='</div>';
   h+='<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">';
   h+='<button class="btn-sm sec" onclick="closeCheckPopup()">나중에</button>';
-  h+='<button class="btn-sm" onclick="closeCheckPopup()">확인했어요</button>';
+  h+='<button class="btn-sm" onclick="ackCheckPopup()">확인했어요</button>';
   h+='</div></div>';
   ov.innerHTML=h;
   ov.style.display='flex';
 }
+// 그냥 닫기(나중에) — 확인 처리 안 함, 다음에 다시 뜸
 function closeCheckPopup(){ var ov=document.getElementById('check-popup'); if(ov) ov.style.display='none'; }
+// "확인했어요" — 현재 항목들을 확인 처리(저장)하고 닫기. 새 항목 생기기 전엔 다시 안 뜸
+function ackCheckPopup(){
+  if(typeof computeCheckItems==='function'){
+    var its=computeCheckItems();
+    _setAckedSigs(_checkItemSigs(its));
+  }
+  closeCheckPopup();
+}
 
 function renderDashboard() {
   var students = DB.get('students');
