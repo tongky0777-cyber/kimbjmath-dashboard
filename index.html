@@ -2814,8 +2814,16 @@ function saveHw() {
   if(!sid){ toast('학생을 선택해주세요'); return; }
   var blocks=_collectHwBlocks();
   // 페이지 비어있는 블록은 제외, 최소 1개 검사
-  var valid=blocks.filter(function(b){ return b.book && b.range; });
+  // (단, All in one 오답수집 숙제는 단원+번호범위만 있어도 유효)
+  var valid=blocks.filter(function(b){ return b.book && (b.range || _isAioBlock(b)); });
   if(!valid.length){ toast('교재·페이지를 입력해주세요'); return; }
+  // All in one 블록은 단원·번호범위 입력 검사
+  for(var vi=0; vi<valid.length; vi++){
+    if(valid[vi].book===AIO_BOOK_NAME){
+      var chk=_validateAioBlock(valid[vi]);
+      if(chk){ toast(chk); return; }
+    }
+  }
   var recs = DB.get('homework');
 
   if(_editingHwId){
@@ -2824,11 +2832,11 @@ function saveHw() {
     var idx=recs.findIndex(function(x){ return x.id===_editingHwId; });
     if(idx>-1){
       var keepBy=recs[idx].by, keepByAt=recs[idx].byAt;
-      recs[idx]=Object.assign({}, recs[idx], {
-        sid:sid, name:b.book+' '+(b.unit?b.unit+' ':'')+b.range,
+      recs[idx]=_applyAioFields(Object.assign({}, recs[idx], {
+        sid:sid, name:_hwName(b),
         subject:b.subject, unit:b.unit, book:b.book, range:b.range,
         status:b.status, due:due, memo:b.memo, by:keepBy, byAt:keepByAt
-      });
+      }), b);
     }
     DB.set('homework', recs);
     _editingHwId=null;
@@ -2841,16 +2849,48 @@ function saveHw() {
   // 신규: 블록마다 한 건씩
   var now=Date.now();
   valid.forEach(function(b,i){
-    recs.push({ id:(now+i).toString(), sid:sid,
-      name:b.book+' '+(b.unit?b.unit+' ':'')+b.range,
+    recs.push(_applyAioFields({ id:(now+i).toString(), sid:sid,
+      name:_hwName(b),
       subject:b.subject, unit:b.unit, book:b.book, range:b.range,
       status:b.status, due:due, memo:b.memo,
-      by:currentInputter(), byAt:new Date().toISOString() });
+      by:currentInputter(), byAt:new Date().toISOString() }, b));
   });
   DB.set('homework', recs);
   closeModal('modal-hw');
   renderHw(); renderHwCalendar(); if(hwSelectedDate) selectHwDay(hwSelectedDate);
   renderDashboard(); toast(valid.length>1 ? valid.length+'개 숙제가 저장되었습니다' : '숙제가 저장되었습니다');
+}
+// [오답수집] 블록이 All in one 오답수집 대상인지 (단원+번호 둘 다 있어야 진짜 대상)
+function _isAioBlock(b){
+  return b && b.book===AIO_BOOK_NAME && b.unitKey && b.qStart!=null && b.qEnd!=null;
+}
+// All in one 블록 입력 검증. 문제 있으면 메시지 문자열, 없으면 '' 반환
+function _validateAioBlock(b){
+  if(!b.unitKey) return '단원을 선택해주세요 (All in one)';
+  if(b.qStart==null || b.qEnd==null) return '시작번호와 끝번호를 입력해주세요';
+  if(b.qStart<1 || b.qEnd>250) return '번호는 1~250 사이여야 합니다';
+  if(b.qStart>b.qEnd) return '시작번호가 끝번호보다 큽니다';
+  return '';
+}
+// 숙제 표시 이름. All in one 오답수집이면 단원+범위로, 아니면 기존 방식
+function _hwName(b){
+  if(_isAioBlock(b)){
+    var u=AIO_UNITS.filter(function(x){return x.key===b.unitKey;})[0];
+    var uname=u?u.name:b.unitKey;
+    return b.book+' '+uname+' '+b.qStart+'~'+b.qEnd+'번';
+  }
+  return b.book+' '+(b.unit?b.unit+' ':'')+b.range;
+}
+// 레코드에 All in one 필드 적용/정리. 대상이면 unitKey/qStart/qEnd 추가, 아니면 깨끗이 제거
+function _applyAioFields(rec, b){
+  if(_isAioBlock(b)){
+    rec.unitKey=b.unitKey;
+    rec.qStart=b.qStart;
+    rec.qEnd=b.qEnd;
+  } else {
+    delete rec.unitKey; delete rec.qStart; delete rec.qEnd;
+  }
+  return rec;
 }
 
 function updateHwStatus(id, status) {
@@ -2913,17 +2953,54 @@ function hwBlockHtml(n, data){
     +'<div class="form-group"><label>단원</label><select class="hw-unit">'+_hwUnitOptions(subj, book, data.unit)+'</select></div>'
     +'<div class="form-group"><label>페이지/범위</label><input class="hw-range" placeholder="p.45~50" value="'+(data.range||'')+'"></div>'
     +'</div>'
+    + _hwAioSectionHtml(n, data)
     +'<div class="form-row">'
     +'<div class="form-group"><label>제출 여부</label><select class="hw-status"><option value="pending"'+((data.status||'pending')==='pending'?' selected':'')+'>미제출</option><option value="done"'+(data.status==='done'?' selected':'')+'>제출 완료</option><option value="half"'+(data.status==='half'?' selected':'')+'>부분 제출</option></select></div>'
     +'<div class="form-group"><label>비고 (메모)</label><input class="hw-memo" placeholder="예) 틀린 것만 다시" value="'+(data.memo||'')+'"></div>'
     +'</div>'
     +'</div>';
 }
+// ===== [오답수집] All in one 전용: 단원 + 번호범위 영역 =====
+// 교재가 "All in one"일 때만 보임. 학생이 이 단원의 시작~끝번호 안에서 틀린 번호를 클릭하게 됨.
+// typeMap은 단원당 1~250 절대번호 체계라, 여기 입력한 번호가 곧 유형 변환 키가 됨.
+var AIO_BOOK_NAME = 'All in one';   // 화면에 보이는 교재명
+var AIO_TYPEMAP_KEY = '올인원';     // typeMap JSON의 book 키
+var AIO_UNITS = [
+  { key:'unit1', name:'1단원 다항식' },
+  { key:'unit2', name:'2단원 나머지정리·인수분해' },
+  { key:'unit3', name:'3단원 방정식' }
+];
+function _hwAioUnitOptions(sel){
+  var opts='<option value="">(단원 선택)</option>';
+  opts+=AIO_UNITS.map(function(u){ return '<option value="'+u.key+'"'+(u.key===sel?' selected':'')+'>'+u.name+'</option>'; }).join('');
+  return opts;
+}
+function _hwAioSectionHtml(n, data){
+  data=data||{};
+  var on=(data.book===AIO_BOOK_NAME);
+  return '<div class="hw-aio" data-n="'+n+'" style="display:'+(on?'block':'none')+';border:1px dashed var(--teal,#0f5f5a);background:var(--teal-bg,#e8f5f4);border-radius:6px;padding:10px;margin-bottom:10px;">'
+    +'<div style="font-size:11px;font-weight:700;color:var(--teal,#0f5f5a);margin-bottom:8px;">📊 오답 수집 (학생이 틀린 번호 클릭 → 유형 자동 집계)</div>'
+    +'<div class="form-row">'
+    +'<div class="form-group"><label>단원</label><select class="hw-aio-unit">'+_hwAioUnitOptions(data.unitKey)+'</select></div>'
+    +'<div class="form-group"><label>시작번호</label><input type="number" class="hw-aio-start" min="1" max="250" placeholder="1" value="'+(data.qStart!=null?data.qStart:'')+'"></div>'
+    +'<div class="form-group"><label>끝번호</label><input type="number" class="hw-aio-end" min="1" max="250" placeholder="45" value="'+(data.qEnd!=null?data.qEnd:'')+'"></div>'
+    +'</div>'
+    +'<div style="font-size:11px;color:var(--muted);margin-top:4px;">각 단원은 1~250번. 학생에게 낼 번호 범위를 적으세요.</div>'
+    +'</div>';
+}
+// 교재 select가 바뀔 때 All in one 영역 토글
+function _toggleHwAio(n){
+  var block=document.querySelector('.hw-block[data-n="'+n+'"]'); if(!block) return;
+  var book=block.querySelector('.hw-book').value;
+  var aio=block.querySelector('.hw-aio');
+  if(aio) aio.style.display=(book===AIO_BOOK_NAME?'block':'none');
+}
 function onHwBlockSubjectChange(n){
   var block=document.querySelector('.hw-block[data-n="'+n+'"]'); if(!block) return;
   var subj=block.querySelector('.hw-subject').value;
   var book=block.querySelector('.hw-book').value;
   block.querySelector('.hw-unit').innerHTML=_hwUnitOptions(subj, book, '');
+  _toggleHwAio(n);
 }
 function onHwBlockBookChange(n){ onHwBlockSubjectChange(n); }
 // n이 'g'로 시작하면 반전체(ghw), 아니면 개별(hw)
@@ -2954,14 +3031,27 @@ function _refreshHwBlockUI(){
 function _collectHwBlocks(){
   var out=[];
   document.querySelectorAll('#hw-blocks .hw-block').forEach(function(b){
-    out.push({
+    var rec={
       subject:b.querySelector('.hw-subject').value,
       book:b.querySelector('.hw-book').value,
       unit:b.querySelector('.hw-unit').value,
       range:(b.querySelector('.hw-range').value||'').trim(),
       status:b.querySelector('.hw-status').value,
       memo:(b.querySelector('.hw-memo').value||'').trim()
-    });
+    };
+    // [오답수집] All in one이면 단원키 + 번호범위 추가
+    if(rec.book===AIO_BOOK_NAME){
+      var uEl=b.querySelector('.hw-aio-unit');
+      var sEl=b.querySelector('.hw-aio-start');
+      var eEl=b.querySelector('.hw-aio-end');
+      var uk=uEl?uEl.value:'';
+      var qs=sEl&&sEl.value!==''?parseInt(sEl.value,10):null;
+      var qe=eEl&&eEl.value!==''?parseInt(eEl.value,10):null;
+      if(uk){ rec.unitKey=uk; }
+      if(qs!=null && !isNaN(qs)){ rec.qStart=qs; }
+      if(qe!=null && !isNaN(qe)){ rec.qEnd=qe; }
+    }
+    out.push(rec);
   });
   return out;
 }
@@ -3012,7 +3102,8 @@ function editHw(id) {
   // 블록 1개에 기존 값 채움, 추가 버튼 숨김(수정은 한 개만)
   document.getElementById('hw-blocks').innerHTML='';
   _hwBlockSeq=0;
-  addHwBlock({ subject:r.subject, book:r.book, unit:r.unit, range:r.range, status:r.status, memo:r.memo });
+  addHwBlock({ subject:r.subject, book:r.book, unit:r.unit, range:r.range, status:r.status, memo:r.memo,
+    unitKey:r.unitKey, qStart:r.qStart, qEnd:r.qEnd });
   document.getElementById('hw-add-row').style.display='none';
   var titleEl=document.getElementById('hw-modal-title'); if(titleEl) titleEl.textContent='숙제 수정';
   var saveBtn=document.getElementById('hw-save-btn'); if(saveBtn) saveBtn.textContent='수정 저장';
