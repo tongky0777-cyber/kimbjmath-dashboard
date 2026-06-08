@@ -2736,7 +2736,7 @@ function paperBarChartHtml(arr){
   var rows=arr.map(function(p){
     var s=p.stat;
     var col=s.avg>=90?'var(--green)':s.avg>=70?'var(--gold)':'var(--red)';
-    var lbl=trendShortLabel(p);
+    var lbl=paperFullLabel(p);
     return '<div style="display:flex;align-items:center;gap:12px;">'
       +'<div style="width:160px;flex-shrink:0;">'
         +'<div style="font-size:13px;font-weight:600;line-height:1.3;word-break:break-word;">'+esc2(lbl)+'</div>'
@@ -2764,6 +2764,13 @@ function trendShortLabel(p){
   if(r.name==='미니모의고사'){ var m=(r.week||'').match(/(\d+)/); return m?m[1]+'주':(r.week||''); }
   if(r.name==='기출 Test'){ return (r.examTerm2||'')+(r.examTerm||''); }
   return (r.unit||p.label).slice(0,6);
+}
+// 막대 차트용 전체 라벨 (자르지 않음)
+function paperFullLabel(p){
+  var r=p.records[0]||{};
+  if(r.name==='미니모의고사'){ var m=(r.week||'').match(/(\d+)/); return m?(m[1]+'주차'):(r.week||p.label); }
+  if(r.name==='기출 Test'){ return [r.examSchool,r.examTerm2,(r.examTerm?r.examTerm+'고사':'')].filter(Boolean).join(' ')||p.label; }
+  return r.unit || p.label;
 }
 
 // 시험지 표 (행 클릭 시 상세 펼침)
