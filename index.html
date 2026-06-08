@@ -2662,6 +2662,9 @@ function paperSortKey(p){
   return idx<0?9998:idx;
 }
 
+var _paperSort = 'unit';  // 'unit' | 'avgDesc' | 'avgAsc'
+function setPaperSort(s){ _paperSort=s; renderPaperStats(); }
+
 function renderPaperStats(){
   var box=document.getElementById('paper-stats-list');
   if(!box) return;
@@ -2683,54 +2686,76 @@ function renderPaperStats(){
   });
 
   var arr=Object.keys(papers).map(function(k){ return papers[k]; });
-  // 주차순/단원순 정렬 (동률이면 라벨순)
-  arr.sort(function(a,b){
-    var ka=paperSortKey(a), kb=paperSortKey(b);
-    if(ka!==kb) return ka-kb;
-    return a.label.localeCompare(b.label);
-  });
-
-  // 통계 미리 계산
   arr.forEach(function(p){ p.stat=paperStatOf(p, students); });
   _paperCache={}; arr.forEach(function(p){ _paperCache[p.key]=p; });
 
-  var graphHtml = paperTrendGraph(arr);
-  var tableHtml = paperTableHtml(arr);
-  box.innerHTML = graphHtml + tableHtml;
+  // 정렬
+  if(_paperSort==='avgDesc'){ arr.sort(function(a,b){ return b.stat.avg-a.stat.avg; }); }
+  else if(_paperSort==='avgAsc'){ arr.sort(function(a,b){ return a.stat.avg-b.stat.avg; }); }
+  else { // 단원/회차순
+    arr.sort(function(a,b){
+      var ka=paperSortKey(a), kb=paperSortKey(b);
+      if(ka!==kb) return ka-kb;
+      return a.label.localeCompare(b.label);
+    });
+  }
+
+  box.innerHTML = paperSummaryHtml(arr) + paperSortBar() + paperBarChartHtml(arr) + paperTableHtml(arr);
 }
 
-// 평균 점수 추세 꺾은선 (SVG)
-function paperTrendGraph(arr){
-  if(arr.length<2) return ''; // 1개면 추세 의미 없음
-  var W=Math.max(360, arr.length*90), H=190, padL=36, padR=16, padT=18, padB=46;
-  var plotW=W-padL-padR, plotH=H-padT-padB;
-  var pts=arr.map(function(p,i){
-    var x=padL + (arr.length===1?plotW/2:plotW*i/(arr.length-1));
-    var y=padT + plotH*(1 - p.stat.avg/100);
-    return {x:x, y:y, p:p};
-  });
-  // 격자/축 라벨 (0,50,100)
-  var grid='';
-  [0,50,100].forEach(function(v){
-    var y=padT+plotH*(1-v/100);
-    grid+='<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="var(--line)" stroke-width="1"/>'
-        +'<text x="'+(padL-6)+'" y="'+(y+3)+'" text-anchor="end" font-size="9" fill="var(--muted)">'+v+'</text>';
-  });
-  var line='';
-  for(var i=0;i<pts.length-1;i++){
-    line+='<line x1="'+pts[i].x+'" y1="'+pts[i].y+'" x2="'+pts[i+1].x+'" y2="'+pts[i+1].y+'" stroke="var(--teal)" stroke-width="2"/>';
-  }
-  var dots=pts.map(function(pt){
-    var col=pt.p.stat.avg>=90?'var(--green)':pt.p.stat.avg>=70?'var(--gold)':'var(--red)';
-    var shortLbl=trendShortLabel(pt.p);
-    return '<circle cx="'+pt.x+'" cy="'+pt.y+'" r="4" fill="'+col+'"/>'
-      +'<text x="'+pt.x+'" y="'+(pt.y-9)+'" text-anchor="middle" font-size="10" font-weight="700" fill="var(--ink)">'+pt.p.stat.avg+'</text>'
-      +'<text x="'+pt.x+'" y="'+(H-padB+16)+'" text-anchor="middle" font-size="9" fill="var(--muted)">'+shortLbl+'</text>';
-  }).join('');
-  return '<div style="background:var(--white);border:1px solid var(--line);border-radius:8px;padding:14px 16px 6px;margin-bottom:14px;overflow-x:auto;">'
-    +'<div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:4px;">📈 평균 점수 추세</div>'
-    +'<svg viewBox="0 0 '+W+' '+H+'" style="min-width:'+W+'px;width:100%;height:auto;">'+grid+line+dots+'</svg>'
+// 요약 카드 (시험지 수 · 전체평균 · 최고/최저 평균 시험지)
+function paperSummaryHtml(arr){
+  var n=arr.length;
+  var avgs=arr.map(function(p){return p.stat.avg;});
+  var overall = n? Math.round(avgs.reduce(function(a,b){return a+b;},0)/n):0;
+  var best=arr.slice().sort(function(a,b){return b.stat.avg-a.stat.avg;})[0];
+  var worst=arr.slice().sort(function(a,b){return a.stat.avg-b.stat.avg;})[0];
+  function shortL(p){ return p? trendShortLabel(p) : '—'; }
+  return '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">'
+    +'<div style="background:var(--bg2);border-radius:8px;padding:12px 14px;"><div style="font-size:12px;color:var(--muted);">시험지</div><div style="font-size:22px;font-weight:800;">'+n+'개</div></div>'
+    +'<div style="background:var(--bg2);border-radius:8px;padding:12px 14px;"><div style="font-size:12px;color:var(--muted);">전체 평균</div><div style="font-size:22px;font-weight:800;">'+overall+'점</div></div>'
+    +'<div style="background:var(--bg2);border-radius:8px;padding:12px 14px;"><div style="font-size:12px;color:var(--muted);">최고 평균</div><div style="font-size:14px;font-weight:700;margin-top:5px;color:var(--green);">'+esc2(shortL(best))+' '+(best?best.stat.avg:0)+'</div></div>'
+    +'<div style="background:var(--bg2);border-radius:8px;padding:12px 14px;"><div style="font-size:12px;color:var(--muted);">최저 평균</div><div style="font-size:14px;font-weight:700;margin-top:5px;color:var(--red);">'+esc2(shortL(worst))+' '+(worst?worst.stat.avg:0)+'</div></div>'
     +'</div>';
+}
+
+// 정렬 버튼 바
+function paperSortBar(){
+  function btn(val,label){
+    var on=(_paperSort===val);
+    return '<button onclick="setPaperSort(\''+val+'\')" style="font-size:12px;padding:6px 14px;border-radius:20px;cursor:pointer;font-family:var(--sans);border:'+(on?'2px solid var(--teal)':'1px solid var(--line)')+';background:'+(on?'var(--teal-bg,var(--bg2))':'var(--white)')+';color:'+(on?'var(--teal)':'var(--ink)')+';font-weight:'+(on?'700':'500')+';">'+label+'</button>';
+  }
+  return '<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">'
+    + btn('unit','단원·회차순') + btn('avgDesc','평균 높은순') + btn('avgAsc','평균 낮은순')
+    + '</div>';
+}
+
+// 막대 차트 (시험지별 평균 — 선으로 잇지 않고 개별 막대)
+function paperBarChartHtml(arr){
+  var maxBar=arr.length;
+  var rows=arr.map(function(p){
+    var s=p.stat;
+    var col=s.avg>=90?'var(--green)':s.avg>=70?'var(--gold)':'var(--red)';
+    var lbl=trendShortLabel(p);
+    return '<div style="display:flex;align-items:center;gap:12px;">'
+      +'<div style="width:140px;flex-shrink:0;">'
+        +'<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc2(lbl)+'</div>'
+        +'<div style="font-size:10.5px;color:var(--muted);">응시 '+s.n+' · 최고 '+s.max+' · 최저 '+s.min+'</div>'
+      +'</div>'
+      +'<div style="flex:1;height:28px;background:var(--bg2);border-radius:6px;overflow:hidden;position:relative;cursor:pointer;" onclick="togglePaperDetail(\''+p.key.replace(/\'/g,"\\\\\'")+'\')">'
+        +'<div style="width:'+Math.max(s.avg,2)+'%;height:100%;background:'+col+';border-radius:6px;"></div>'
+        +'<span style="position:absolute;'+(s.avg>=82?'right:8px;color:#fff':'left:calc('+s.avg+'% + 8px);color:var(--ink)')+';top:50%;transform:translateY(-50%);font-size:13px;font-weight:800;">'+s.avg+'</span>'
+      +'</div></div>';
+  }).join('');
+  return '<div style="background:var(--white);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:14px;">'
+    +'<div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:3px;">시험지별 평균 점수</div>'
+    +'<div style="font-size:11px;color:var(--muted);margin-bottom:14px;">단원·회차가 다른 시험지를 개별 막대로 비교합니다 (막대를 누르면 상세)</div>'
+    +'<div style="display:flex;flex-direction:column;gap:10px;">'+rows+'</div>'
+    +'<div style="display:flex;gap:14px;margin-top:14px;font-size:11px;color:var(--muted);">'
+      +'<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--green);margin-right:4px;"></span>90↑ 우수</span>'
+      +'<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--gold);margin-right:4px;"></span>70↑ 보통</span>'
+      +'<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--red);margin-right:4px;"></span>70↓ 주의</span>'
+    +'</div></div>';
 }
 // 그래프 x축에 쓸 짧은 라벨
 function trendShortLabel(p){
