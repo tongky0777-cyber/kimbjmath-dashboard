@@ -711,23 +711,26 @@ body.role-assistant .teacher-only{ display:none !important; }
       <!-- 기출 Test: 연도/학교급/학교/과목/학기/중간기말 -->
       <div id="test-gicul-rows" style="display:none;">
         <div class="form-row">
-          <div class="form-group"><label>연도</label><select id="test-exam-year"></select></div>
-          <div class="form-group"><label>학교급</label><select id="test-exam-level" onchange="fillExamSchools()"></select></div>
+          <div class="form-group"><label>연도</label><select id="test-exam-year" onchange="maybeLoadExamScoreTable()"></select></div>
+          <div class="form-group"><label>학교급</label><select id="test-exam-level" onchange="fillExamSchools();maybeLoadExamScoreTable()"></select></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>학교</label><select id="test-exam-school"></select></div>
-          <div class="form-group"><label>과목</label><select id="test-exam-subject" onchange="fillExamTerms()"></select></div>
+          <div class="form-group"><label>학교</label><select id="test-exam-school" onchange="maybeLoadExamScoreTable()"></select></div>
+          <div class="form-group"><label>과목</label><select id="test-exam-subject" onchange="fillExamTerms();maybeLoadExamScoreTable()"></select></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>학기</label><select id="test-exam-term2"></select></div>
-          <div class="form-group"><label>중간/기말</label><select id="test-exam-term"></select></div>
+          <div class="form-group"><label>학기</label><select id="test-exam-term2" onchange="maybeLoadExamScoreTable()"></select></div>
+          <div class="form-group"><label>중간/기말</label><select id="test-exam-term" onchange="maybeLoadExamScoreTable()"></select></div>
         </div>
+        <div id="test-exam-scoremsg" style="display:none;font-size:12px;font-weight:700;margin:-2px 0 8px;padding:8px 12px;border-radius:6px;"></div>
       </div>
+      <!-- 모의고사 기출 회차 입력 시에도 배점표 확인 -->
+      <input type="hidden" id="_examscore_anchor">
 
       <!-- 모의고사 기출: 연도/회차 -->
       <div class="form-row" id="test-mock-row" style="display:none;">
-        <div class="form-group"><label>연도</label><select id="test-mock-year"></select></div>
-        <div class="form-group"><label>회차/월</label><input id="test-mock-round" placeholder="예) 3월, 6월"></div>
+        <div class="form-group"><label>연도</label><select id="test-mock-year" onchange="maybeLoadExamScoreTable()"></select></div>
+        <div class="form-group"><label>회차/월</label><input id="test-mock-round" placeholder="예) 3월, 6월" oninput="maybeLoadExamScoreTable()"></div>
       </div>
 
       <div class="form-group full" id="test-total-cell" style="margin-bottom:4px;display:none;"><label>전체 문항</label><input type="number" id="test-total" min="1" placeholder="20" oninput="buildWrongGrid()"></div>
@@ -1105,7 +1108,7 @@ window._fbReady = false;
     var db=firebase.database();window._fbDb=db;
     var PREFIX=window._FB_PREFIX;
     // 동기화 대상 키
-    var SYNC_KEYS=["students","attendance","homework","tests","progress","groups","schedules","exams","memo","memo_todo"].map(function(k){return PREFIX+k;});
+    var SYNC_KEYS=["students","attendance","homework","tests","progress","groups","schedules","exams","memo","memo_todo","examscores"].map(function(k){return PREFIX+k;});
 
     // 저장 시 서버에도 반영 (단, 동기화 준비 전에는 서버 덮어쓰기 금지)
     var _orig=localStorage.setItem.bind(localStorage);
@@ -1359,6 +1362,73 @@ var DB = {
   getOne: function(k) { try { return JSON.parse(localStorage.getItem('bjm_'+k)||'null'); } catch(e){ return null; } },
   setOne: function(k,v) { localStorage.setItem('bjm_'+k, JSON.stringify(v)); }
 };
+
+// ===== 기출 시험지 문항별 배점표 =====
+// 저장 구조: { "<paperKey>": { points:{1:3.3, 2:3.5, ...}, total:문항수, full:만점 } }
+// paperKey 는 getPaperKey() 와 동일 규칙 (기출=gicul||..., 모의=mock||...)
+function getExamScoreTables(){ var o=DB.getOne('examscores'); return (o&&typeof o==='object')?o:{}; }
+function setExamScoreTables(o){ DB.setOne('examscores', o); if(window._fbPush) _fbPush(); }
+function saveExamScoreTable(key, points){
+  var tables=getExamScoreTables();
+  var nums=Object.keys(points).map(Number);
+  var full=nums.reduce(function(s,n){return s+(+points[n]||0);},0);
+  tables[key]={ points:points, total:nums.length, full:Math.round(full*100)/100 };
+  setExamScoreTables(tables);
+  return tables[key];
+}
+// 현재 기출/모의고사 입력폼에서 paperKey 생성 (getPaperKey와 동일 규칙)
+function currentExamScoreKey(){
+  var name=document.getElementById('test-name').value;
+  if(name==='기출 Test'){
+    var parts=[
+      document.getElementById('test-exam-year').value||'',
+      document.getElementById('test-exam-school').value||'',
+      document.getElementById('test-exam-subject').value||'',
+      document.getElementById('test-exam-term2').value||'',
+      document.getElementById('test-exam-term').value||''
+    ];
+    return 'gicul||'+parts.join('||');
+  }
+  if(name==='모의고사 기출'){
+    var mk=[document.getElementById('test-mock-year').value||'', document.getElementById('test-mock-round').value||''].join('||');
+    return 'mock||'+mk;
+  }
+  return '';
+}
+// 시험지 레코드(t)로부터 배점표 키 (집계용)
+function examScoreKeyOfRecord(t){
+  if(t.name==='기출 Test'){
+    return 'gicul||'+[t.examYear||'',t.examSchool||'',t.examSubject||'',t.examTerm2||'',t.examTerm||''].join('||');
+  }
+  if(t.name==='모의고사 기출'){
+    return 'mock||'+[t.examYear||'',t.mockRound||''].join('||');
+  }
+  return '';
+}
+
+// 미리 등록된 배점표 (사용자가 올려준 시험지 기준)
+(function seedExamScores(){
+  var tables=getExamScoreTables();
+  // 2025 경북고 공통수학1 1학기 중간고사 (학교급=고등 → examSchool="경북고")
+  // 학기 라벨은 EXAM_SUBJECTS/SCHOOLS 설정에 맞춰야 함. 키 일부가 달라도 buildExamKey로 보정됨.
+  var KEY='gicul||2025||경북고||공통수학1||1학기||중간';
+  if(!tables[KEY]){
+    tables[KEY]={ points:{
+      1:3.3, 2:3.5, 3:3.5, 4:3.5, 5:3.5, 6:3.6, 7:4.0, 8:4.0, 9:4.2, 10:4.2,
+      11:4.2, 12:4.5, 13:4.5, 14:4.7, 15:4.8, 16:5.0, 17:5.0, 18:5.0, 19:7.0, 20:9.0, 21:9.0
+    }, total:21, full:100.3 };
+    setExamScoreTables(tables);
+  }
+  // 2025 경북여고 대수 1학기 기말고사 (20문항, 만점 100점)
+  var KEY2='gicul||2025||경북여고||대수||1학기||기말';
+  if(!tables[KEY2]){
+    tables[KEY2]={ points:{
+      1:4.0, 2:4.2, 3:4.3, 4:4.4, 5:4.5, 6:4.6, 7:4.6, 8:4.7, 9:4.7, 10:4.8,
+      11:4.9, 12:5.0, 13:5.1, 14:5.2, 15:5.0, 16:6.0, 17:6.0, 18:6.0, 19:6.0, 20:6.0
+    }, total:20, full:100.0 };
+    setExamScoreTables(tables);
+  }
+})();
 
 // 초기화
 window.addEventListener('DOMContentLoaded', function() {
@@ -2322,24 +2392,7 @@ function collectTestData(){
     data.subject=document.getElementById('test-subject').value;
     data.unit=document.getElementById('test-unit').value;
   }
-  var isScoreType = (name==='기출 Test' || name==='모의고사 기출');
-  if(isScoreType){
-    // 기출류: 총점/맞은점수 직접 입력 (틀린 번호 없음)
-    var full=parseFloat(document.getElementById('test-fullscore').value);
-    var got=parseFloat(document.getElementById('test-gotscore').value);
-    data.wrong = [];
-    data.fullScore = isNaN(full)?null:full;
-    data.gotScore = isNaN(got)?null:got;
-    if(isNaN(full)||full<=0||isNaN(got)){
-      data.total=null; data.correct=null; data.score=null; data.pending=true;
-    } else {
-      data.total=full;            // 만점을 total로 저장(집계 호환)
-      data.correct=got;           // 맞은 점수
-      data.score=Math.round(got/full*100);  // 100점 환산
-      data.pending=false;
-    }
-    return data;
-  }
+  var isGicul = (name==='기출 Test' || name==='모의고사 기출');
   var wrong = getWrongList().filter(function(n){ return n<=total; });
   data.wrong = wrong;
   if(isNaN(total) || total<=0){
@@ -2348,11 +2401,36 @@ function collectTestData(){
     data.correct = null;
     data.score = null;
     data.pending = true;
-  } else {
+    return data;
+  }
+  if(isGicul){
+    // 기출/모의고사 기출 — 배점표 있으면 배점 기반, 없으면 균등
+    var tbl=getExamScoreTables()[currentExamScoreKey()];
+    if(tbl && tbl.points){
+      var full = tbl.full || Object.keys(tbl.points).reduce(function(s,k){return s+(+tbl.points[k]||0);},0);
+      var lost = wrong.reduce(function(s,n){ return s+(+tbl.points[n]||0); },0);
+      var got = Math.round((full-lost)*100)/100;
+      data.total=total;           // 문항 수 (그리드 복원용)
+      data.fullScore=full;        // 만점(배점 합)
+      data.gotScore=got;          // 맞은 점수(배점합)
+      data.correct=got;
+      data.score=Math.round(got/full*100);   // 100점 환산
+      data.scoredBy='points';
+      data.pending=false;
+      return data;
+    }
+    // 배점표 없음 → 균등 배점
+    data.total=total;
     data.correct = total - wrong.length;
     data.score = Math.round(data.correct/total*100);
-    data.pending = false;
+    data.scoredBy='even';
+    data.pending=false;
+    return data;
   }
+  // 일반 데일리류 — 균등(문항수) 계산
+  data.correct = total - wrong.length;
+  data.score = Math.round(data.correct/total*100);
+  data.pending = false;
   return data;
 }
 
@@ -2376,12 +2454,6 @@ function saveTestPending(){
 }
 function validateTestData(d){
   if(!d.sid||!d.name){ toast('학생과 테스트명을 입력해주세요'); return false; }
-  if(d.name==='기출 Test' || d.name==='모의고사 기출'){
-    if(d.fullScore==null || d.fullScore<=0){ toast('총점(만점)을 입력해주세요'); return false; }
-    if(d.gotScore==null || isNaN(d.gotScore)){ toast('맞은 점수를 입력해주세요'); return false; }
-    if(d.gotScore>d.fullScore){ toast('맞은 점수가 총점보다 클 수 없어요'); return false; }
-    return true;
-  }
   if(isNaN(d.total)||d.total<=0){ toast('전체 문항을 입력해주세요'); return false; }
   if(d.name==='미니모의고사' && !d.week){ toast('주차를 입력해주세요'); return false; }
   if(d.name==='미니모의고사' && !d.miniTarget){ toast('대상을 선택해주세요'); return false; }
@@ -2482,11 +2554,11 @@ function editTest(id) {
     refreshUnits('test');
     if(t.unit){ var tu=document.getElementById('test-unit'); var th=Array.prototype.some.call(tu.options,function(o){return o.value===t.unit;}); if(th) tu.value=t.unit; }
   }
-  // 기출류 점수 복원 / 그 외 번호 그리드
+  // 기출류도 이제 번호 그리드 사용 — total/wrong 복원 후 배점표 안내
   if(t.name==='기출 Test' || t.name==='모의고사 기출'){
-    document.getElementById('test-fullscore').value = (t.fullScore!=null?t.fullScore:(t.total!=null?t.total:''));
-    document.getElementById('test-gotscore').value  = (t.gotScore!=null?t.gotScore:(t.correct!=null?t.correct:''));
-    updateScorePreview();
+    document.getElementById('test-total').value = t.total||'';
+    maybeLoadExamScoreTable();
+    buildWrongGrid();
   } else {
     buildWrongGrid();
   }
@@ -4652,14 +4724,35 @@ function calcTestPct() {
   var scoreEl = document.getElementById('test-score');
   var correctEl = document.getElementById('test-correct');
   if(isNaN(total) || total<=0){ preview.style.display='none'; scoreEl.value=''; correctEl.value=''; return; }
-  var wrong = getWrongList().filter(function(n){ return n<=total; }).length;
+  var wrongList = getWrongList().filter(function(n){ return n<=total; });
+  var wrong = wrongList.length;
+
+  // 기출/모의고사 기출 + 배점표가 있으면 배점 기반 계산
+  var name=document.getElementById('test-name').value;
+  var isGicul=(name==='기출 Test'||name==='모의고사 기출');
+  var tbl = isGicul ? getExamScoreTables()[currentExamScoreKey()] : null;
+  if(isGicul && tbl && tbl.points){
+    var full = tbl.full || Object.keys(tbl.points).reduce(function(s,k){return s+(+tbl.points[k]||0);},0);
+    var lost = wrongList.reduce(function(s,n){ return s + (+tbl.points[n]||0); },0);
+    var got = Math.round((full - lost)*100)/100;
+    var pct = Math.round(got/full*100);
+    scoreEl.value=pct; correctEl.value=got;
+    preview.style.display='block';
+    preview.style.background = pct>=90?'var(--green-bg)':pct>=70?'var(--gold-bg)':'var(--red-bg)';
+    preview.style.color = pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
+    preview.textContent = '배점 적용: '+got+' / '+full+'점 = '+pct+'점 (틀린 '+wrong+'개'+(wrong?': '+wrongList.join(', ')+'번':'')+')';
+    return;
+  }
+
+  // 그 외(또는 배점표 없음) — 균등 배점(문항수 기준)
   var correct = total - wrong;
   var pct = Math.round(correct/total*100);
   scoreEl.value=pct; correctEl.value=correct;
   preview.style.display='block';
   preview.style.background = pct>=90?'var(--green-bg)':pct>=70?'var(--gold-bg)':'var(--red-bg)';
   preview.style.color = pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
-  preview.textContent = correct + ' / ' + total + ' = ' + pct + '점  (틀린 '+wrong+'개'+(wrong?': '+getWrongList().filter(function(n){return n<=total;}).join(', ')+'번':'')+')';
+  var extra = isGicul ? ' · 배점표 없어 균등계산' : '';
+  preview.textContent = correct + ' / ' + total + ' = ' + pct + '점  (틀린 '+wrong+'개'+(wrong?': '+wrongList.join(', ')+'번':'')+')'+extra;
 }
 
 // 테스트명 바뀌면 입력 칸 전환
@@ -4693,16 +4786,9 @@ function onTestNameChange(){
   if(totalCell) totalCell.style.display='';
   if(memoCell) memoCell.style.display='';
 
+  // (기출도 이제 번호 그리드 사용 — 점수 직접입력 행은 항상 숨김)
   var scoreRow = document.getElementById('test-scoreinput-row');
-  var isScoreType = (name==='기출 Test' || name==='모의고사 기출');
-  // 기출류는 점수 직접 입력 (틀린 번호 그리드·전체문항 숨김)
-  if(isScoreType){
-    if(totalCell) totalCell.style.display='none';
-    if(wrongWrap) wrongWrap.style.display='none';
-    if(scoreRow) scoreRow.style.display='flex';
-  } else {
-    if(scoreRow) scoreRow.style.display='none';
-  }
+  if(scoreRow) scoreRow.style.display='none';
 
   if(name==='미니모의고사'){
     weekRow.style.display='flex'; fillMiniTargets();
@@ -4715,8 +4801,7 @@ function onTestNameChange(){
     if(bookCell) bookCell.style.display='';
     unitRow.style.display='flex';
   }
-  if(isScoreType){ updateScorePreview(); }
-  else { buildWrongGrid(); }
+  buildWrongGrid();
 }
 
 // 점수 직접 입력(기출류) 미리보기 + 환산
@@ -4729,6 +4814,34 @@ function updateScorePreview(){
   var pct=Math.round(got/full*100);
   preview.style.display='';
   preview.textContent='100점 환산 '+pct+'점  ('+got+' / '+full+')';
+}
+
+// 기출 시험지 선택값이 바뀔 때, 저장된 배점표가 있으면 문항수 자동 채움 + 안내
+function maybeLoadExamScoreTable(){
+  var name=document.getElementById('test-name').value;
+  if(name!=='기출 Test' && name!=='모의고사 기출') return;
+  var msg=document.getElementById('test-exam-scoremsg');
+  var key=currentExamScoreKey();
+  var tbl=getExamScoreTables()[key];
+  var totalEl=document.getElementById('test-total');
+  if(tbl && tbl.points){
+    // 문항수 자동 채움 (사용자가 이미 다른 값 넣었으면 덮어쓰되, 배점표 기준이 정확)
+    if(totalEl && (!totalEl.value || parseInt(totalEl.value)!==tbl.total)){
+      totalEl.value=tbl.total;
+    }
+    if(msg){
+      msg.style.display='block';
+      msg.style.background='var(--teal-bg)'; msg.style.color='var(--teal)';
+      msg.textContent='✓ 저장된 배점표 적용 중 ('+tbl.total+'문항 · 만점 '+tbl.full+'점). 틀린 번호만 체크하면 자동 계산돼요.';
+    }
+  } else {
+    if(msg){
+      msg.style.display='block';
+      msg.style.background='var(--gold-bg)'; msg.style.color='var(--gold)';
+      msg.textContent='이 시험지는 배점표가 없어 균등 배점으로 계산돼요. (시험지를 올려주면 배점표를 등록할 수 있어요)';
+    }
+  }
+  buildWrongGrid();
 }
 function fillMiniTargets(){
   var sel=document.getElementById('test-mini-target');
