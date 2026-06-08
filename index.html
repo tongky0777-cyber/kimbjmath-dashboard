@@ -5046,8 +5046,11 @@ function selectTestDay(dateStr) {
         var pct=r.score;
         var color=pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
         var bg=pct>=90?'var(--green-bg)':pct>=70?'var(--gold-bg)':'var(--red-bg)';
+        var numer, denom;
+        if(r.fullScore!=null && r.gotScore!=null){ numer=r.gotScore; denom=r.fullScore; }  // 배점 기반 기출
+        else { numer=r.correct; denom=r.total; }
         scoreHtml='<div style="background:'+bg+';color:'+color+';font-size:14px;font-weight:700;padding:6px 12px;border-radius:4px;">'
-          +(r.correct!==undefined&&r.correct!==null?r.correct+'/'+r.total+' ('+pct+'%)':pct+'%')+'</div>'
+          +(numer!==undefined&&numer!==null?numer+'/'+denom+' ('+pct+'%)':pct+'%')+'</div>'
           +(r.memo?'<div style="font-size:10px;color:var(--muted);margin-top:3px;">'+r.memo+'</div>':'');
       }
       card.innerHTML='<div style="flex:1;">'
