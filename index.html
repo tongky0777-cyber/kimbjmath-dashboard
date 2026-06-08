@@ -732,6 +732,12 @@ body.role-assistant .teacher-only{ display:none !important; }
 
       <div class="form-group full" id="test-total-cell" style="margin-bottom:4px;display:none;"><label>전체 문항</label><input type="number" id="test-total" min="1" placeholder="20" oninput="buildWrongGrid()"></div>
 
+      <!-- 기출/모의고사 기출: 점수 직접 입력 -->
+      <div class="form-row" id="test-scoreinput-row" style="display:none;">
+        <div class="form-group"><label>총점(만점)</label><input type="number" id="test-fullscore" min="1" placeholder="100" oninput="updateScorePreview()"></div>
+        <div class="form-group"><label>맞은 점수</label><input type="number" id="test-gotscore" min="0" placeholder="87" oninput="updateScorePreview()"></div>
+      </div>
+
       <!-- 틀린 번호 체크 그리드 -->
       <div id="test-wrong-wrap" style="display:none;margin-bottom:12px;">
         <label style="display:block;font-size:11px;color:var(--muted);margin-bottom:6px;">틀린 문항 번호를 탭하세요 (탭하면 빨갛게 표시)</label>
@@ -1653,6 +1659,8 @@ function openTestModal() {
   document.getElementById('test-name').value = '';
   testWrongSet = {};
   document.getElementById('test-total').value='';
+  var fs=document.getElementById('test-fullscore'); if(fs) fs.value='';
+  var gs=document.getElementById('test-gotscore'); if(gs) gs.value='';
   document.getElementById('test-memo').value='';
   var wd=document.getElementById('test-date-input'); wd.value=new Date().toISOString().slice(0,10);
   var wn=document.getElementById('test-week-num'); if(wn) wn.value='';
@@ -2314,6 +2322,24 @@ function collectTestData(){
     data.subject=document.getElementById('test-subject').value;
     data.unit=document.getElementById('test-unit').value;
   }
+  var isScoreType = (name==='기출 Test' || name==='모의고사 기출');
+  if(isScoreType){
+    // 기출류: 총점/맞은점수 직접 입력 (틀린 번호 없음)
+    var full=parseFloat(document.getElementById('test-fullscore').value);
+    var got=parseFloat(document.getElementById('test-gotscore').value);
+    data.wrong = [];
+    data.fullScore = isNaN(full)?null:full;
+    data.gotScore = isNaN(got)?null:got;
+    if(isNaN(full)||full<=0||isNaN(got)){
+      data.total=null; data.correct=null; data.score=null; data.pending=true;
+    } else {
+      data.total=full;            // 만점을 total로 저장(집계 호환)
+      data.correct=got;           // 맞은 점수
+      data.score=Math.round(got/full*100);  // 100점 환산
+      data.pending=false;
+    }
+    return data;
+  }
   var wrong = getWrongList().filter(function(n){ return n<=total; });
   data.wrong = wrong;
   if(isNaN(total) || total<=0){
@@ -2350,6 +2376,12 @@ function saveTestPending(){
 }
 function validateTestData(d){
   if(!d.sid||!d.name){ toast('학생과 테스트명을 입력해주세요'); return false; }
+  if(d.name==='기출 Test' || d.name==='모의고사 기출'){
+    if(d.fullScore==null || d.fullScore<=0){ toast('총점(만점)을 입력해주세요'); return false; }
+    if(d.gotScore==null || isNaN(d.gotScore)){ toast('맞은 점수를 입력해주세요'); return false; }
+    if(d.gotScore>d.fullScore){ toast('맞은 점수가 총점보다 클 수 없어요'); return false; }
+    return true;
+  }
   if(isNaN(d.total)||d.total<=0){ toast('전체 문항을 입력해주세요'); return false; }
   if(d.name==='미니모의고사' && !d.week){ toast('주차를 입력해주세요'); return false; }
   if(d.name==='미니모의고사' && !d.miniTarget){ toast('대상을 선택해주세요'); return false; }
@@ -2450,7 +2482,14 @@ function editTest(id) {
     refreshUnits('test');
     if(t.unit){ var tu=document.getElementById('test-unit'); var th=Array.prototype.some.call(tu.options,function(o){return o.value===t.unit;}); if(th) tu.value=t.unit; }
   }
-  buildWrongGrid();
+  // 기출류 점수 복원 / 그 외 번호 그리드
+  if(t.name==='기출 Test' || t.name==='모의고사 기출'){
+    document.getElementById('test-fullscore').value = (t.fullScore!=null?t.fullScore:(t.total!=null?t.total:''));
+    document.getElementById('test-gotscore').value  = (t.gotScore!=null?t.gotScore:(t.correct!=null?t.correct:''));
+    updateScorePreview();
+  } else {
+    buildWrongGrid();
+  }
   var saveBtn = document.querySelector('#modal-test .btn-save');
   if(saveBtn) {
     saveBtn.textContent = '수정 저장';
@@ -4654,6 +4693,17 @@ function onTestNameChange(){
   if(totalCell) totalCell.style.display='';
   if(memoCell) memoCell.style.display='';
 
+  var scoreRow = document.getElementById('test-scoreinput-row');
+  var isScoreType = (name==='기출 Test' || name==='모의고사 기출');
+  // 기출류는 점수 직접 입력 (틀린 번호 그리드·전체문항 숨김)
+  if(isScoreType){
+    if(totalCell) totalCell.style.display='none';
+    if(wrongWrap) wrongWrap.style.display='none';
+    if(scoreRow) scoreRow.style.display='flex';
+  } else {
+    if(scoreRow) scoreRow.style.display='none';
+  }
+
   if(name==='미니모의고사'){
     weekRow.style.display='flex'; fillMiniTargets();
     document.getElementById('test-week-label').style.display='block'; syncWeekLabel();
@@ -4665,7 +4715,20 @@ function onTestNameChange(){
     if(bookCell) bookCell.style.display='';
     unitRow.style.display='flex';
   }
-  buildWrongGrid();
+  if(isScoreType){ updateScorePreview(); }
+  else { buildWrongGrid(); }
+}
+
+// 점수 직접 입력(기출류) 미리보기 + 환산
+function updateScorePreview(){
+  var preview=document.getElementById('test-pct-preview');
+  var full=parseFloat(document.getElementById('test-fullscore').value);
+  var got=parseFloat(document.getElementById('test-gotscore').value);
+  if(!preview) return;
+  if(isNaN(full)||full<=0||isNaN(got)){ preview.style.display='none'; return; }
+  var pct=Math.round(got/full*100);
+  preview.style.display='';
+  preview.textContent='100점 환산 '+pct+'점  ('+got+' / '+full+')';
 }
 function fillMiniTargets(){
   var sel=document.getElementById('test-mini-target');
