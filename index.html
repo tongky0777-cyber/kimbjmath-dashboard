@@ -5149,7 +5149,7 @@ function selectTestDay(dateStr) {
       }
       card.innerHTML='<div style="flex:1;">'
         +'<div style="font-size:13px;font-weight:700;color:var(--ink);">'+(s?s.name:'<span style="color:var(--red);">삭제된 학생</span>')+'<span style="font-size:11px;color:var(--muted);margin-left:6px;">'+(s?s.grade:'')+'</span></div>'
-        +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+r.name+'</div>'
+        +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+getPaperKey(r).label+'</div>'
         +'</div>'
         +'<div style="text-align:center;">'+scoreHtml+'</div>'
         +'<button class="icon-btn" title="수정" onclick="editTest(\''+r.id+'\')" style="flex-shrink:0;">✏️</button>'
