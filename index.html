@@ -1788,7 +1788,7 @@ function openHwModal() {
   addHwBlock();
   openModal('modal-hw');
 }
-function updateSchTarget(){ var sel=document.getElementById('sch-target-sel'); var inp=document.getElementById('sch-target'); var sid=sel.value; if(sid&&sid!=='전체'){ var st=(DB.get('students')||[]).find(function(s){return s.id===sid;}); inp.value=st?st.name:sid; } else { inp.value=''; } } function openScheduleModal() { openModal('modal-schedule'); ['sch-content','sch-target','sch-memo'].forEach(function(id){ document.getElementById(id).value=''; }); var sel=document.getElementById('sch-target-sel'); sel.value=''; var students=(DB.get('students')||[]).filter(function(s){return !s.withdrawn;}); sel.innerHTML='<option value="">-- 학생 선택 --</option><option value="전체">전체</option>'+students.sort(function(a,b){return a.name.localeCompare(b.name);}).map(function(s){return '<option value="'+s.id+'">('+s.grade+') '+s.name+'</option>';}).join(''); }
+function updateSchTarget(){ var sel=document.getElementById('sch-target-sel'); var inp=document.getElementById('sch-target'); var sid=sel.value; if(sid&&sid!=='전체'){ var st=(DB.get('students')||[]).find(function(s){return s.id===sid;}); inp.value=st?st.name:sid; } else { inp.value=''; } } function openScheduleModal() { openModal('modal-schedule'); ['sch-content','sch-target','sch-memo'].forEach(function(id){ document.getElementById(id).value=''; }); var sel=document.getElementById('sch-target-sel'); sel.value=''; var students=(DB.get('students')||[]).filter(function(s){return !s.withdrawn;}); sel.innerHTML='<option value="">-- 학생 선택 --</option><option value="전체">전체</option>'+sortByGrade(students).map(function(s){return '<option value="'+s.id+'">('+s.grade+') '+s.name+'</option>';}).join(''); }
 
 // 토스트
 function toast(msg) {
@@ -2005,16 +2005,21 @@ function applyLastDefault(prefix, dataKey){
   }
 }
 
+// 학생 목록을 학년순(초5→고3) → 이름순으로 정렬하는 공통 헬퍼
+var GRADE_ORDER = ['초5','초6','중1','중2','중3','고1','고2','고3'];
+function sortByGrade(students){
+  return (students||[]).slice().sort(function(a,b){
+    var ai = GRADE_ORDER.indexOf(a.grade||''); if(ai===-1) ai=999;
+    var bi = GRADE_ORDER.indexOf(b.grade||''); if(bi===-1) bi=999;
+    if(ai!==bi) return ai-bi;
+    return (a.name||'').localeCompare(b.name||'');
+  });
+}
+
 // 학생 선택 셀렉트 채우기
 function populateSel() {
   var students = DB.get('students');
-  var gradeOrder = ['초5','초6','중1','중2','중3','고1','고2','고3'];
-  var sorted = students.slice().sort(function(a,b){
-    var ai = gradeOrder.indexOf(a.grade||''); if(ai===-1) ai=999;
-    var bi = gradeOrder.indexOf(b.grade||''); if(bi===-1) bi=999;
-    if(ai!==bi) return ai-bi;
-    return a.name.localeCompare(b.name);
-  });
+  var sorted = sortByGrade(students);
   var opts = sorted.length
     ? sorted.map(function(s){ return '<option value="'+s.id+'">'+s.name+' ('+s.grade+')</option>'; }).join('')
     : '<option value="">학생 없음</option>';
@@ -2200,7 +2205,7 @@ var showWithdrawn = document.getElementById('show-withdrawn') && document.getEle
       +'</tr></thead>';
 
     var tbody = document.createElement('tbody');
-    list.forEach(function(s){
+    list.slice().sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); }).forEach(function(s){
       var myGroups = getStudentGroups(s.id);
       var groupTags = myGroups.length
         ? myGroups.map(function(g){ return '<span class="class-tag ct-1" style="margin-right:3px;">'+g.name+'</span>'; }).join('')
@@ -2306,7 +2311,7 @@ function renderAttendance() {
   var _todayA = (function(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
   var _hwTodayA = {}; DB.get('homework').forEach(function(h){ if(h.due===_todayA) _hwTodayA[h.sid]=true; });
 
-  students.filter(function(s){ return s.status!=='withdrawn'; }).forEach(function(s) {
+  sortByGrade(students.filter(function(s){ return s.status!=='withdrawn'; })).forEach(function(s) {
     var sRecs   = recs.filter(function(r){ return r.sid===s.id; }).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,10);
     var total   = recs.filter(function(r){ return r.sid===s.id; }).length;
     var present = recs.filter(function(r){ return r.sid===s.id && (r.status==='O'||r.status==='B'); }).length;
@@ -4350,7 +4355,7 @@ function openGroupModal(id) {
   var g = id ? groups.find(function(x){ return x.id===id; }) : null;
   var selected = g ? (g.students||[]) : [];
   var listEl = document.getElementById('g-students-list');
-  listEl.innerHTML = students.length ? students.map(function(s){
+  listEl.innerHTML = students.length ? sortByGrade(students).map(function(s){
     var checked = selected.includes(s.id) ? 'checked' : '';
     return '<label style="display:flex;align-items:center;gap:5px;background:var(--white);padding:5px 10px;border-radius:3px;border:1px solid var(--line);cursor:pointer;font-size:12px;"><input type="checkbox" value="'+s.id+'" '+checked+' style="width:auto;"> '+s.name+' <span style="color:var(--muted);font-size:10px;">('+s.class+')</span></label>';
   }).join('') : '<span style="color:var(--muted);font-size:12px;">학생을 먼저 추가해주세요</span>';
@@ -5526,11 +5531,11 @@ function updateGroupProgressList() {
     el.innerHTML = '반에 학생이 없습니다.';
     return;
   }
-  var sNames = g.students.map(function(sid){
-    var s = students.find(function(x){ return x.id===sid; });
-    return s ? '<span style="background:var(--white);padding:3px 8px;border-radius:100px;font-size:11px;font-weight:500;">'+s.name+'</span>' : null;
-  }).filter(Boolean).join(' ');
-  el.innerHTML = '등록 대상 ('+g.students.length+'명): ' + sNames;
+  var gpStudents = sortByGrade(g.students.map(function(sid){ return students.find(function(x){ return x.id===sid; }); }).filter(Boolean));
+  var sNames = gpStudents.map(function(s){
+    return '<span style="background:var(--white);padding:3px 8px;border-radius:100px;font-size:11px;font-weight:500;">'+s.name+'</span>';
+  }).join(' ');
+  el.innerHTML = '등록 대상 ('+gpStudents.length+'명): ' + sNames;
 }
 
 function saveGroupProgress() {
@@ -5682,7 +5687,7 @@ function selectAttDay(dateStr) {
 
   // 임시 상태 초기화 - 기존 저장된 값 불러오기
   attDayState = {};
-  students = students.filter(function(s){ return s.status!=='withdrawn'; });
+  students = sortByGrade(students.filter(function(s){ return s.status!=='withdrawn'; }));
   students.forEach(function(s){
     var existing = recs.find(function(r){ return r.sid===s.id && r.date===dateStr; });
     attDayState[s.id] = existing ? existing.status : '';
@@ -6032,9 +6037,9 @@ function updateGroupTestList() {
       hint.textContent = (!isNaN(total)&&total>0 ? ('학생별 틀린 번호를 클릭하세요 (전체 '+total+'문항)') : '위에서 전체 문항을 입력하면 틀린 번호로 채점됩니다');
     }
   }
-  g.students.forEach(function(sid) {
-    var s = students.find(function(x){ return x.id===sid; });
-    if(!s) return;
+  var gtStudents = sortByGrade(g.students.map(function(sid){ return students.find(function(x){ return x.id===sid; }); }).filter(Boolean));
+  gtStudents.forEach(function(s) {
+    var sid = s.id;
     var row = document.createElement('div');
     // 모든 유형 동일: 번호 그리드 (윗줄 이름+%+메모, 아랫줄 번호)
     row.style.cssText = 'display:flex;flex-direction:column;gap:6px;background:var(--bg2);padding:10px 12px;border-radius:4px;';
