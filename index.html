@@ -1832,7 +1832,7 @@ var BOOKUNITS = {
   }
 };
 // 교재 목록 (학원에서 쓰는 책). 추가/삭제하세요.
-var BOOKLIST = ["내 교재","보충 프린트","고쟁이","절대등급","개념원리","RPM","라이트쎈","쎈","개념+유형","마플시너지","자이스토리","완쏠","All in one","Only one"];
+var BOOKLIST = ["내 교재","보충 프린트","고쟁이","절대등급","개념원리","RPM","라이트쎈","쎈","개념+유형","마플시너지","자이스토리","완쏠","All in one","All in one 대수","Only one"];
 // 테스트 이름 목록 (드롭다운). 추가/삭제하세요.
 var TESTLIST = ["개념반 Daily Test","문풀반 Daily Test - 기본","문풀반 Daily Test - 실전","문풀반 Daily Test - 심화","미니모의고사","기출 Test","모의고사 기출"];
 
@@ -2988,7 +2988,7 @@ function saveHw() {
   if(!valid.length){ toast('교재·페이지를 입력해주세요'); return; }
   // All in one 블록은 단원·번호범위 입력 검사
   for(var vi=0; vi<valid.length; vi++){
-    if(valid[vi].book===AIO_BOOK_NAME){
+    if(isAioBook(valid[vi].book)){
       var chk=_validateAioBlock(valid[vi]);
       if(chk){ toast(chk); return; }
     }
@@ -3031,20 +3031,20 @@ function saveHw() {
 }
 // [오답수집] 블록이 All in one 오답수집 대상인지 (단원+번호 둘 다 있어야 진짜 대상)
 function _isAioBlock(b){
-  return b && b.book===AIO_BOOK_NAME && b.unitKey && b.qStart!=null && b.qEnd!=null;
+  return b && isAioBook(b.book) && b.unitKey && b.qStart!=null && b.qEnd!=null;
 }
 // All in one 블록 입력 검증. 문제 있으면 메시지 문자열, 없으면 '' 반환
 function _validateAioBlock(b){
   if(!b.unitKey) return '단원을 선택해주세요 (All in one)';
   if(b.qStart==null || b.qEnd==null) return '시작번호와 끝번호를 입력해주세요';
-  if(b.qStart<1 || b.qEnd>250) return '번호는 1~250 사이여야 합니다';
+  if(b.qStart<1) return '시작번호는 1 이상이어야 합니다';
   if(b.qStart>b.qEnd) return '시작번호가 끝번호보다 큽니다';
   return '';
 }
 // 숙제 표시 이름. All in one 오답수집이면 단원+범위로, 아니면 기존 방식
 function _hwName(b){
   if(_isAioBlock(b)){
-    var u=AIO_UNITS.filter(function(x){return x.key===b.unitKey;})[0];
+    var u=aioUnitsOf(b.book).filter(function(x){return x.key===b.unitKey;})[0];
     var uname=u?u.name:b.unitKey;
     return b.book+' '+uname+' '+b.qStart+'~'+b.qEnd+'번';
   }
@@ -3119,7 +3119,7 @@ function hwBlockHtml(n, data){
     +'<div class="form-group"><label>교재</label><select class="hw-book" onchange="onHwBlockSubjectChange(\''+n+'\')">'+_hwBookOptions(book)+'</select></div>'
     +'</div>'
     +'<div class="form-row">'
-    +'<div class="form-group hw-unit-group" style="'+((book===AIO_BOOK_NAME && String(n).charAt(0)!=='g')?'display:none;':'')+'"><label>단원</label><select class="hw-unit">'+_hwUnitOptions(subj, book, data.unit)+'</select></div>'
+    +'<div class="form-group hw-unit-group" style="'+((isAioBook(book) && String(n).charAt(0)!=='g')?'display:none;':'')+'"><label>단원</label><select class="hw-unit">'+_hwUnitOptions(subj, book, data.unit)+'</select></div>'
     +'<div class="form-group"><label>페이지/범위</label><input class="hw-range" placeholder="p.45~50" value="'+(data.range||'')+'"></div>'
     +'</div>'
     + _hwAioSectionHtml(n, data)
@@ -3132,31 +3132,60 @@ function hwBlockHtml(n, data){
 // ===== [오답수집] All in one 전용: 단원 + 번호범위 영역 =====
 // 교재가 "All in one"일 때만 보임. 학생이 이 단원의 시작~끝번호 안에서 틀린 번호를 클릭하게 됨.
 // typeMap은 단원당 1~250 절대번호 체계라, 여기 입력한 번호가 곧 유형 변환 키가 됨.
-var AIO_BOOK_NAME = 'All in one';   // 화면에 보이는 교재명
-var AIO_TYPEMAP_KEY = '올인원';     // typeMap JSON의 book 키
-var AIO_UNITS = [
-  { key:'unit1', name:'1단원 다항식' },
-  { key:'unit2', name:'2단원 나머지정리·인수분해' },
-  { key:'unit3', name:'3단원 방정식' }
-];
-function _hwAioUnitOptions(sel){
+var AIO_BOOK_NAME = 'All in one';   // (호환용) 공수1 기본 교재명
+var AIO_TYPEMAP_KEY = '올인원';     // (호환용) 공수1 typeMap 키
+// ===== All in one 교재 레지스트리 (자동채점·오답수집 대상) =====
+// 교재명(화면표시) → { tmKey: typeMap/정답표 book 키, units:[{key,name}] }
+var AIO_BOOKS = {
+  'All in one': {
+    tmKey: '올인원',
+    totalQ: 750,
+    units: [
+      { key:'unit1', name:'1단원 다항식' },
+      { key:'unit2', name:'2단원 나머지정리·인수분해' },
+      { key:'unit3', name:'3단원 방정식' }
+    ]
+  },
+  'All in one 대수': {
+    tmKey: '올인원 대수',
+    totalQ: 200,
+    units: [
+      { key:'unit1_1', name:'1-1 지수 & 로그' },
+      { key:'unit1_2', name:'1-2 지수로그함수' },
+      { key:'unit2_1', name:'2-1 삼각함수' }
+    ]
+  }
+};
+function isAioBook(book){ return !!AIO_BOOKS[book]; }
+function aioCfg(book){ return AIO_BOOKS[book] || null; }
+function aioUnitsOf(book){ var c=aioCfg(book); return c?c.units:[]; }
+function aioTmKeyOf(book){ var c=aioCfg(book); return c?c.tmKey:null; }
+// 단원키 → 교재명 (레코드에 book이 없을 때 역추적)
+function bookOfUnitKey(uk){
+  for(var b in AIO_BOOKS){ if(AIO_BOOKS[b].units.some(function(u){return u.key===uk;})) return b; }
+  return null;
+}
+var AIO_UNITS = AIO_BOOKS['All in one'].units;  // (호환용)
+function _hwAioUnitOptions(sel, book){
+  var units=aioUnitsOf(book||AIO_BOOK_NAME);
   var opts='<option value="">(단원 선택)</option>';
-  opts+=AIO_UNITS.map(function(u){ return '<option value="'+u.key+'"'+(u.key===sel?' selected':'')+'>'+u.name+'</option>'; }).join('');
+  opts+=units.map(function(u){ return '<option value="'+u.key+'"'+(u.key===sel?' selected':'')+'>'+u.name+'</option>'; }).join('');
   return opts;
 }
 function _hwAioSectionHtml(n, data){
   data=data||{};
   // 그룹 숙제 블록(n이 'g'로 시작)에서는 오답수집을 제공하지 않음 (개별 숙제 전용)
   if(String(n).charAt(0)==='g') return '';
-  var on=(data.book===AIO_BOOK_NAME);
+  var on=isAioBook(data.book);
+  var bookForUnits=isAioBook(data.book)?data.book:AIO_BOOK_NAME;
   return '<div class="hw-aio" data-n="'+n+'" style="display:'+(on?'block':'none')+';border:1px dashed var(--teal,#0f5f5a);background:var(--teal-bg,#e8f5f4);border-radius:6px;padding:10px;margin-bottom:10px;">'
     +'<div style="font-size:11px;font-weight:700;color:var(--teal,#0f5f5a);margin-bottom:8px;">📊 오답 수집 (학생이 틀린 번호 클릭 → 유형 자동 집계)</div>'
     +'<div class="form-row">'
-    +'<div class="form-group"><label>단원</label><select class="hw-aio-unit">'+_hwAioUnitOptions(data.unitKey)+'</select></div>'
-    +'<div class="form-group"><label>시작번호</label><input type="number" class="hw-aio-start" min="1" max="250" placeholder="1" value="'+(data.qStart!=null?data.qStart:'')+'"></div>'
-    +'<div class="form-group"><label>끝번호</label><input type="number" class="hw-aio-end" min="1" max="250" placeholder="45" value="'+(data.qEnd!=null?data.qEnd:'')+'"></div>'
+    +'<div class="form-group"><label>단원</label><select class="hw-aio-unit">'+_hwAioUnitOptions(data.unitKey, bookForUnits)+'</select></div>'
+    +'<div class="form-group"><label>시작번호</label><input type="number" class="hw-aio-start" min="1" placeholder="1" value="'+(data.qStart!=null?data.qStart:'')+'"></div>'
+    +'<div class="form-group"><label>끝번호</label><input type="number" class="hw-aio-end" min="1" placeholder="45" value="'+(data.qEnd!=null?data.qEnd:'')+'"></div>'
     +'</div>'
-    +'<div style="font-size:11px;color:var(--muted);margin-top:4px;">각 단원은 1~250번. 학생에게 낼 번호 범위를 적으세요.</div>'
+    +'<div style="font-size:11px;color:var(--muted);margin-top:4px;">학생에게 낼 번호 범위를 적으세요. (단원별 문항 수 안에서)</div>'
     +'</div>';
 }
 // 교재 select가 바뀔 때 All in one 영역 토글
@@ -3165,9 +3194,17 @@ function _toggleHwAio(n){
   if(String(n).charAt(0)==='g') return;
   var block=document.querySelector('.hw-block[data-n="'+n+'"]'); if(!block) return;
   var book=block.querySelector('.hw-book').value;
-  var isAio=(book===AIO_BOOK_NAME);
+  var isAio=isAioBook(book);
   var aio=block.querySelector('.hw-aio');
-  if(aio) aio.style.display=(isAio?'block':'none');
+  if(aio){
+    aio.style.display=(isAio?'block':'none');
+    // 교재가 바뀌면 단원 드롭다운을 그 교재 단원으로 다시 채움
+    var usel=aio.querySelector('.hw-aio-unit');
+    if(usel && isAio){
+      var cur=usel.value;
+      usel.innerHTML=_hwAioUnitOptions(cur, book);
+    }
+  }
   // All in one이면 기존 단원 드롭다운 숨김 (오답수집 영역에서 단원 선택하므로 중복 제거)
   var ug=block.querySelector('.hw-unit-group');
   if(ug) ug.style.display=(isAio?'none':'');
@@ -3216,8 +3253,8 @@ function _collectHwBlocks(){
       status:b.querySelector('.hw-status').value,
       memo:(b.querySelector('.hw-memo').value||'').trim()
     };
-    // [오답수집] All in one이면 단원키 + 번호범위 추가
-    if(rec.book===AIO_BOOK_NAME){
+    // [오답수집] All in one 계열이면 단원키 + 번호범위 추가
+    if(isAioBook(rec.book)){
       var uEl=b.querySelector('.hw-aio-unit');
       var sEl=b.querySelector('.hw-aio-start');
       var eEl=b.querySelector('.hw-aio-end');
@@ -3317,7 +3354,7 @@ function renderHw() {
 }
 // 올인원 오답수집 숙제인지 (unitKey+번호범위가 있으면)
 function _isAioHw(r){
-  return r && r.book===AIO_BOOK_NAME && r.unitKey && r.qStart!=null && r.qEnd!=null;
+  return r && isAioBook(r.book) && r.unitKey && r.qStart!=null && r.qEnd!=null;
 }
 
 // ===== [교재 오답 분석] 사이드바 메뉴 =====
@@ -3348,15 +3385,32 @@ function renderWrongAnalysisHome(){
         wrongCnt += _waCountWrong(h, s);
       });
     });
-    var cards='<div onclick="openBookAnalysis(\'올인원\')" style="background:var(--white);border:1px solid var(--line);border-radius:12px;padding:18px 20px;cursor:pointer;">'
-      +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">'
-      +'<div style="width:42px;height:42px;border-radius:8px;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:22px;">📘</div>'
-      +'<div><div style="font-weight:700;font-size:15px;">올인원 공수1</div><div style="font-size:12px;color:var(--muted);">3단원 · 750문항</div></div></div>'
-      +'<div style="display:flex;gap:20px;font-size:13px;color:var(--muted);">'
-      +'<span><b style="color:var(--ink);">'+subCnt+'</b> 제출</span>'
-      +'<span><b style="color:var(--ink);">'+wrongCnt+'</b> 오답</span></div>'
-      +'<div style="margin-top:12px;font-size:13px;color:var(--blue);">분석 보기 →</div></div>'
-      +'<div style="background:var(--bg2);border:1px dashed var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);min-height:120px;font-size:13px;">+ 다른 교재는 추후 추가</div>';
+    // 교재별 제출/오답 집계
+    var perBook={};
+    Object.keys(AIO_BOOKS).forEach(function(bn){ perBook[bn]={sub:0,wrong:0}; });
+    aioHw.forEach(function(h){
+      var bn=h.book && AIO_BOOKS[h.book] ? h.book : bookOfUnitKey(h.unitKey);
+      if(!bn||!perBook[bn]) return;
+      var subs=all[h.id]; if(!subs) return;
+      Object.keys(subs).forEach(function(sid){
+        var s=subs[sid]; if(!s||!s.submittedFull) return;
+        perBook[bn].sub++;
+        perBook[bn].wrong += _waCountWrong(h, s);
+      });
+    });
+    var icons={'All in one':'📘','All in one 대수':'📐'};
+    var cards=Object.keys(AIO_BOOKS).map(function(bn){
+      var cfg=AIO_BOOKS[bn], pb=perBook[bn];
+      var totalQ=cfg.totalQ||0;
+      return '<div onclick="openBookAnalysis(\''+cfg.tmKey+'\')" style="background:var(--white);border:1px solid var(--line);border-radius:12px;padding:18px 20px;cursor:pointer;">'
+        +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">'
+        +'<div style="width:42px;height:42px;border-radius:8px;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:22px;">'+(icons[bn]||'📗')+'</div>'
+        +'<div><div style="font-weight:700;font-size:15px;">'+bn+'</div><div style="font-size:12px;color:var(--muted);">'+cfg.units.length+'단원 · '+totalQ+'문항</div></div></div>'
+        +'<div style="display:flex;gap:20px;font-size:13px;color:var(--muted);">'
+        +'<span><b style="color:var(--ink);">'+pb.sub+'</b> 제출</span>'
+        +'<span><b style="color:var(--ink);">'+pb.wrong+'</b> 오답</span></div>'
+        +'<div style="margin-top:12px;font-size:13px;color:var(--blue);">분석 보기 →</div></div>';
+    }).join('');
     var cb=document.getElementById('wa-cards'); if(cb) cb.innerHTML=cards;
   }).catch(function(){
     var cb=document.getElementById('wa-cards'); if(cb) cb.innerHTML='<div style="color:var(--red);padding:18px;">데이터를 불러오지 못했습니다.</div>';
@@ -3406,7 +3460,14 @@ function waSetUnit(u){ _waCurUnit=u; renderBookAnalysis(); }
 function renderBookAnalysis(){
   var box=document.getElementById('wa-content');
   var tm=_waData.tm, all=_waData.all;
-  var aioHw=DB.get('homework').filter(_isAioHw);
+  // 현재 분석 교재(_waCurBook=tmKey)에 속한 숙제만
+  var curUnitKeys=null;
+  for(var bn in AIO_BOOKS){ if(AIO_BOOKS[bn].tmKey===_waCurBook){ curUnitKeys=AIO_BOOKS[bn].units.map(function(u){return u.key;}); break; } }
+  var aioHw=DB.get('homework').filter(function(r){
+    if(!_isAioHw(r)) return false;
+    if(curUnitKeys && curUnitKeys.indexOf(r.unitKey)===-1) return false;
+    return true;
+  });
   var students=DB.get('students');
 
   // 단원 필터
@@ -3446,13 +3507,18 @@ function renderBookAnalysis(){
   var avgPct = totalQ>0 ? Math.round(correctTotal/totalQ*100) : 0;
 
   var catNames=(window.TypeMap&&TypeMap.CAT_NAMES)||{};
-  var unitNames={ all:'전체', unit1:'1단원 다항식', unit2:'2단원 나머지·인수분해', unit3:'3단원 방정식' };
+  // 현재 교재 단원 목록 (레지스트리 기반)
+  var curCfg=null;
+  for(var _bn in AIO_BOOKS){ if(AIO_BOOKS[_bn].tmKey===_waCurBook){ curCfg=AIO_BOOKS[_bn]; break; } }
+  var curUnits=curCfg?curCfg.units:[];
+  var unitNames={ all:'전체' };
+  curUnits.forEach(function(u){ unitNames[u.key]=u.name; });
 
   // 단원 탭
   var tabs='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">';
-  ['all','unit1','unit2','unit3'].forEach(function(u){
+  ['all'].concat(curUnits.map(function(u){return u.key;})).forEach(function(u){
     var on=(u===_waCurUnit);
-    tabs+='<button onclick="waSetUnit(\''+u+'\')" style="font-size:13px;padding:7px 14px;border-radius:6px;cursor:pointer;font-family:var(--sans);border:'+(on?'2px solid var(--blue)':'1px solid var(--line)')+';background:'+(on?'var(--blue-bg)':'var(--white)')+';color:var(--ink);font-weight:'+(on?'700':'400')+';">'+unitNames[u]+'</button>';
+    tabs+='<button onclick="waSetUnit(\''+u+'\')" style="font-size:13px;padding:7px 14px;border-radius:6px;cursor:pointer;font-family:var(--sans);border:'+(on?'2px solid var(--blue)':'1px solid var(--line)')+';background:'+(on?'var(--blue-bg)':'var(--white)')+';color:var(--ink);font-weight:'+(on?'700':'400')+';">'+(unitNames[u]||u)+'</button>';
   });
   tabs+='</div>';
 
@@ -3487,7 +3553,7 @@ function renderBookAnalysis(){
     qHtml+='<div class="tbl-wrap"><table style="width:100%;font-size:13px;"><thead><tr>'
       +'<th>단원</th><th>번호</th><th style="width:100%;">유형</th><th style="text-align:right;">오답</th></tr></thead><tbody>';
     qArr.forEach(function(o){
-      var un={unit1:'1단원',unit2:'2단원',unit3:'3단원'}[o.unitKey]||o.unitKey;
+      var un=(unitNames[o.unitKey]||o.unitKey);
       var rate = o.denom? Math.round(o.cnt/o.denom*100):0;
       var hot = rate>=50;
       qHtml+='<tr><td>'+un+'</td><td style="font-weight:700;">'+o.no+'번</td><td>'+esc2(o.type)+'</td>'
@@ -3549,10 +3615,11 @@ function openWrongView(hwId){
   document.getElementById('wrong-title').textContent='📊 오답 현황 — '+(r.name||'');
   body.innerHTML='<div style="text-align:center;color:var(--muted);padding:32px;">불러오는 중…</div>';
 
-  // typemap, 정답표, 제출 데이터 동시 로드
+  // typemap, 정답표, 제출 데이터 동시 로드 (그 숙제 교재 기준)
+  var tmKey = aioTmKeyOf(r.book) || '올인원';
   Promise.all([
-    (window.TypeMap ? TypeMap.loadTypeMap('올인원') : Promise.reject(new Error('typemap.js 미로드'))),
-    (window.Grader ? Grader.loadAnswerKey('올인원') : Promise.reject(new Error('grader.js 미로드'))),
+    (window.TypeMap ? TypeMap.loadTypeMap(tmKey) : Promise.reject(new Error('typemap.js 미로드'))),
+    (window.Grader ? Grader.loadAnswerKey(tmKey) : Promise.reject(new Error('grader.js 미로드'))),
     firebase.database().ref('wronganswers/'+hwId).once('value')
   ]).then(function(arr){
     var tm=arr[0], ak=arr[1], snap=arr[2];
