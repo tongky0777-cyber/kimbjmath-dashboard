@@ -1832,7 +1832,7 @@ var BOOKUNITS = {
   }
 };
 // 교재 목록 (학원에서 쓰는 책). 추가/삭제하세요.
-var BOOKLIST = ["내 교재","보충 프린트","고쟁이","절대등급","개념원리","RPM","라이트쎈","쎈","개념+유형","마플시너지","자이스토리","완쏠","All in one","All in one 대수","Only one"];
+var BOOKLIST = ["내 교재","보충 프린트","고쟁이","절대등급","개념원리","RPM","라이트쎈","쎈","개념+유형","마플시너지","자이스토리","완쏠","All in one 공수1","All in one 대수","Only one"];
 // 테스트 이름 목록 (드롭다운). 추가/삭제하세요.
 var TESTLIST = ["개념반 Daily Test","문풀반 Daily Test - 기본","문풀반 Daily Test - 실전","문풀반 Daily Test - 심화","미니모의고사","기출 Test","모의고사 기출"];
 
@@ -3095,8 +3095,15 @@ var _hwBlockSeq = 0;      // 블록 고유 번호
 function _hwSubjectOptions(sel){
   return Object.keys(CURRICULUM).map(function(s){ return '<option value="'+s+'"'+(s===sel?' selected':'')+'>'+s+'</option>'; }).join('');
 }
-function _hwBookOptions(sel){
-  return BOOKLIST.map(function(b){ return '<option value="'+b+'"'+(b===sel?' selected':'')+'>'+b+'</option>'; }).join('');
+function _hwBookOptions(sel, subject){
+  var list=BOOKLIST.filter(function(b){
+    // 올인원 교재는 선택 과목에 연결된 것만 노출
+    if(AIO_BOOKS[b]) return !subject || AIO_BOOKS[b].subject===subject;
+    return true;
+  });
+  // 현재 선택값이 필터로 빠졌으면(과목 안 맞는 올인원) 첫 항목으로
+  if(sel && list.indexOf(sel)===-1) sel=list[0];
+  return list.map(function(b){ return '<option value="'+b+'"'+(b===sel?' selected':'')+'>'+b+'</option>'; }).join('');
 }
 function _hwUnitOptions(subject, book, sel){
   var units=getUnitsFor(subject, book)||[];
@@ -3116,7 +3123,7 @@ function hwBlockHtml(n, data){
     +'</div>'
     +'<div class="form-row">'
     +'<div class="form-group"><label>과목</label><select class="hw-subject" onchange="onHwBlockSubjectChange(\''+n+'\')">'+_hwSubjectOptions(subj)+'</select></div>'
-    +'<div class="form-group"><label>교재</label><select class="hw-book" onchange="onHwBlockSubjectChange(\''+n+'\')">'+_hwBookOptions(book)+'</select></div>'
+    +'<div class="form-group"><label>교재</label><select class="hw-book" onchange="onHwBlockSubjectChange(\''+n+'\')">'+_hwBookOptions(book, subj)+'</select></div>'
     +'</div>'
     +'<div class="form-row">'
     +'<div class="form-group hw-unit-group" style="'+((isAioBook(book) && String(n).charAt(0)!=='g')?'display:none;':'')+'"><label>단원</label><select class="hw-unit">'+_hwUnitOptions(subj, book, data.unit)+'</select></div>'
@@ -3132,12 +3139,13 @@ function hwBlockHtml(n, data){
 // ===== [오답수집] All in one 전용: 단원 + 번호범위 영역 =====
 // 교재가 "All in one"일 때만 보임. 학생이 이 단원의 시작~끝번호 안에서 틀린 번호를 클릭하게 됨.
 // typeMap은 단원당 1~250 절대번호 체계라, 여기 입력한 번호가 곧 유형 변환 키가 됨.
-var AIO_BOOK_NAME = 'All in one';   // (호환용) 공수1 기본 교재명
+var AIO_BOOK_NAME = 'All in one 공수1';   // (호환용) 공수1 기본 교재명
 var AIO_TYPEMAP_KEY = '올인원';     // (호환용) 공수1 typeMap 키
 // ===== All in one 교재 레지스트리 (자동채점·오답수집 대상) =====
-// 교재명(화면표시) → { tmKey: typeMap/정답표 book 키, units:[{key,name}] }
+// 교재명(=저장되는 book 값) → { subject:연결 과목, tmKey:typeMap/정답표 PATH 키, units:[{key,name}] }
 var AIO_BOOKS = {
-  'All in one': {
+  'All in one 공수1': {
+    subject: '공통수학1',
     tmKey: '올인원',
     totalQ: 750,
     units: [
@@ -3147,6 +3155,7 @@ var AIO_BOOKS = {
     ]
   },
   'All in one 대수': {
+    subject: '대수',
     tmKey: '올인원 대수',
     totalQ: 200,
     units: [
@@ -3160,12 +3169,16 @@ function isAioBook(book){ return !!AIO_BOOKS[book]; }
 function aioCfg(book){ return AIO_BOOKS[book] || null; }
 function aioUnitsOf(book){ var c=aioCfg(book); return c?c.units:[]; }
 function aioTmKeyOf(book){ var c=aioCfg(book); return c?c.tmKey:null; }
+// 과목에 연결된 올인원 교재명 목록 (드롭다운 필터용)
+function aioBooksForSubject(subject){
+  return Object.keys(AIO_BOOKS).filter(function(b){ return AIO_BOOKS[b].subject===subject; });
+}
 // 단원키 → 교재명 (레코드에 book이 없을 때 역추적)
 function bookOfUnitKey(uk){
   for(var b in AIO_BOOKS){ if(AIO_BOOKS[b].units.some(function(u){return u.key===uk;})) return b; }
   return null;
 }
-var AIO_UNITS = AIO_BOOKS['All in one'].units;  // (호환용)
+var AIO_UNITS = AIO_BOOKS['All in one 공수1'].units;  // (호환용)
 function _hwAioUnitOptions(sel, book){
   var units=aioUnitsOf(book||AIO_BOOK_NAME);
   var opts='<option value="">(단원 선택)</option>';
@@ -3212,7 +3225,11 @@ function _toggleHwAio(n){
 function onHwBlockSubjectChange(n){
   var block=document.querySelector('.hw-block[data-n="'+n+'"]'); if(!block) return;
   var subj=block.querySelector('.hw-subject').value;
-  var book=block.querySelector('.hw-book').value;
+  var bookSel=block.querySelector('.hw-book');
+  var book=bookSel.value;
+  // 과목에 맞춰 교재 목록 재구성 (과목용 올인원만 노출)
+  bookSel.innerHTML=_hwBookOptions(book, subj);
+  book=bookSel.value;  // 필터로 선택값이 바뀌었을 수 있음
   block.querySelector('.hw-unit').innerHTML=_hwUnitOptions(subj, book, '');
   _toggleHwAio(n);
 }
@@ -3398,7 +3415,7 @@ function renderWrongAnalysisHome(){
         perBook[bn].wrong += _waCountWrong(h, s);
       });
     });
-    var icons={'All in one':'📘','All in one 대수':'📐'};
+    var icons={'All in one 공수1':'📘','All in one 대수':'📐'};
     var cards=Object.keys(AIO_BOOKS).map(function(bn){
       var cfg=AIO_BOOKS[bn], pb=perBook[bn];
       var totalQ=cfg.totalQ||0;
