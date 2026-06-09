@@ -940,23 +940,23 @@ body.role-assistant .teacher-only{ display:none !important; }
       <!-- 기출 Test -->
       <div id="gt-gicul-rows" style="display:none;">
         <div class="form-row">
-          <div class="form-group"><label>연도</label><select id="gt-exam-year"></select></div>
-          <div class="form-group"><label>학교급</label><select id="gt-exam-level" onchange="fillGtExamSchools()"></select></div>
+          <div class="form-group"><label>연도</label><select id="gt-exam-year" onchange="updateGroupTestList()"></select></div>
+          <div class="form-group"><label>학교급</label><select id="gt-exam-level" onchange="fillGtExamSchools();updateGroupTestList()"></select></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>학교</label><select id="gt-exam-school"></select></div>
-          <div class="form-group"><label>과목</label><select id="gt-exam-subject" onchange="fillGtExamTerms()"></select></div>
+          <div class="form-group"><label>학교</label><select id="gt-exam-school" onchange="updateGroupTestList()"></select></div>
+          <div class="form-group"><label>과목</label><select id="gt-exam-subject" onchange="fillGtExamTerms();updateGroupTestList()"></select></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>학기</label><select id="gt-exam-term2"></select></div>
-          <div class="form-group"><label>중간/기말</label><select id="gt-exam-term"></select></div>
+          <div class="form-group"><label>학기</label><select id="gt-exam-term2" onchange="updateGroupTestList()"></select></div>
+          <div class="form-group"><label>중간/기말</label><select id="gt-exam-term" onchange="updateGroupTestList()"></select></div>
         </div>
       </div>
 
       <!-- 모의고사 기출 -->
       <div class="form-row" id="gt-mock-row" style="display:none;">
-        <div class="form-group"><label>연도</label><select id="gt-mock-year"></select></div>
-        <div class="form-group"><label>회차/월</label><input id="gt-mock-round" placeholder="예) 3월, 6월"></div>
+        <div class="form-group"><label>연도</label><select id="gt-mock-year" onchange="updateGroupTestList()"></select></div>
+        <div class="form-group"><label>회차/월</label><input id="gt-mock-round" placeholder="예) 3월, 6월" oninput="updateGroupTestList()"></div>
       </div>
 
       <div class="form-group full" id="gt-total-cell" style="margin-bottom:8px;display:none;"><label>전체 문항</label><input type="number" id="gt-total" min="1" placeholder="20" oninput="updateGroupTestList()"></div>
@@ -1395,6 +1395,25 @@ function currentExamScoreKey(){
   }
   return '';
 }
+// 반별(그룹) 모달용 배점표 키 — currentExamScoreKey의 gt- 버전
+function currentGtExamScoreKey(){
+  var name=document.getElementById('gt-name').value;
+  if(name==='기출 Test'){
+    var parts=[
+      document.getElementById('gt-exam-year').value||'',
+      document.getElementById('gt-exam-school').value||'',
+      document.getElementById('gt-exam-subject').value||'',
+      document.getElementById('gt-exam-term2').value||'',
+      document.getElementById('gt-exam-term').value||''
+    ];
+    return 'gicul||'+parts.join('||');
+  }
+  if(name==='모의고사 기출'){
+    var mk=[document.getElementById('gt-mock-year').value||'', document.getElementById('gt-mock-round').value||''].join('||');
+    return 'mock||'+mk;
+  }
+  return '';
+}
 // 시험지 레코드(t)로부터 배점표 키 (집계용)
 function examScoreKeyOfRecord(t){
   if(t.name==='기출 Test'){
@@ -1438,64 +1457,6 @@ function examScoreKeyOfRecord(t){
       1:3.0, 2:3.0, 3:3.0, 4:3.1, 5:3.1, 6:3.2, 7:3.2, 8:3.4, 9:3.4, 10:3.7,
       11:3.7, 12:3.9, 13:3.9, 14:4.2, 15:4.2, 16:12.0, 17:12.0, 18:12.0, 19:4.0, 20:4.0, 21:4.0
     }, total:21, full:100.0 };
-    changed=true;
-  }
-  // 2025 경북고 공통수학1 1학기 기말고사 (21문항, 만점 100점)
-  var KEY4='gicul||2025||경북고||공통수학1||1학기||기말';
-  if(!tables[KEY4]){
-    tables[KEY4]={ points:{
-      1:3.3, 2:3.5, 3:3.5, 4:3.5, 5:3.5, 6:3.6, 7:3.8, 8:4.2, 9:4.2, 10:4.2,
-      11:4.2, 12:4.4, 13:4.6, 14:4.7, 15:4.8, 16:5.0, 17:6.0, 18:7.0, 19:7.0, 20:7.0,
-      21:8.0
-    }, total:21, full:100 };
-    changed=true;
-  }
-  // 2025 경신고 공통수학1 1학기 기말고사 (20문항, 만점 100점)
-  var KEY5='gicul||2025||경신고||공통수학1||1학기||기말';
-  if(!tables[KEY5]){
-    tables[KEY5]={ points:{
-      1:4.6, 2:4.6, 3:4.6, 4:4.8, 5:4.8, 6:4.8, 7:4.8, 8:5.0, 9:5.0, 10:5.0,
-      11:5.0, 12:5.0, 13:5.0, 14:5.2, 15:5.2, 16:5.2, 17:5.2, 18:5.4, 19:5.4, 20:5.4
-    }, total:20, full:100 };
-    changed=true;
-  }
-  // 2025 남산고 공통수학1 1학기 기말고사 (25문항, 만점 100점)
-  var KEY6='gicul||2025||남산고||공통수학1||1학기||기말';
-  if(!tables[KEY6]){
-    tables[KEY6]={ points:{
-      1:2.0, 2:2.0, 3:2.0, 4:2.0, 5:2.4, 6:2.5, 7:2.5, 8:2.5, 9:2.6, 10:2.9,
-      11:3.0, 12:3.0, 13:3.3, 14:3.3, 15:3.5, 16:3.5, 17:2.0, 18:3.0, 19:4.0, 20:4.0,
-      21:4.0, 22:5.0, 23:10.0, 24:12.0, 25:13.0
-    }, total:25, full:100 };
-    changed=true;
-  }
-  // 2025 대구여고 공통수학1 1학기 기말고사 (22문항, 만점 100점)
-  var KEY7='gicul||2025||대구여고||공통수학1||1학기||기말';
-  if(!tables[KEY7]){
-    tables[KEY7]={ points:{
-      1:3.7, 2:3.7, 3:3.7, 4:3.7, 5:3.9, 6:3.9, 7:3.9, 8:4.1, 9:4.1, 10:4.1,
-      11:4.1, 12:4.3, 13:4.3, 14:4.5, 15:4.5, 16:4.5, 17:5.0, 18:6.0, 19:6.0, 20:6.0,
-      21:6.0, 22:6.0
-    }, total:22, full:100 };
-    changed=true;
-  }
-  // 2025 대륜고 공통수학1 1학기 기말고사 (20문항, 만점 100점)
-  var KEY8='gicul||2025||대륜고||공통수학1||1학기||기말';
-  if(!tables[KEY8]){
-    tables[KEY8]={ points:{
-      1:2.3, 2:2.4, 3:2.5, 4:2.6, 5:2.7, 6:2.8, 7:2.9, 8:3.0, 9:3.1, 10:3.2,
-      11:3.4, 12:3.5, 13:3.6, 14:12.0, 15:12.0, 16:13.0, 17:13.0, 18:4.0, 19:3.8, 20:4.2
-    }, total:20, full:100 };
-    changed=true;
-  }
-  // 2025 덕원고 공통수학1 1학기 기말고사 (22문항, 만점 100점)
-  var KEY9='gicul||2025||덕원고||공통수학1||1학기||기말';
-  if(!tables[KEY9]){
-    tables[KEY9]={ points:{
-      1:3.0, 2:3.0, 3:3.0, 4:3.0, 5:4.0, 6:4.0, 7:4.0, 8:4.0, 9:4.0, 10:4.0,
-      11:4.0, 12:5.0, 13:5.0, 14:5.0, 15:4.0, 16:6.0, 17:5.0, 18:5.0, 19:6.0, 20:6.0,
-      21:6.0, 22:7.0
-    }, total:22, full:100 };
     changed=true;
   }
   if(changed) setExamScoreTables(tables);
@@ -6038,85 +5999,100 @@ function updateGroupTestList() {
   var el = document.getElementById('gt-student-scores');
   var name = document.getElementById('gt-name') ? document.getElementById('gt-name').value : '';
   var total = parseInt(document.getElementById('gt-total') ? document.getElementById('gt-total').value : '');
-  var isPoints = (name==='기출 Test' || name==='모의고사 기출');  // 점수 직접 입력 유형
+  var isGicul = (name==='기출 Test' || name==='모의고사 기출');
   var hint = document.getElementById('gt-scores-hint');
   el.innerHTML = '';
   if(!name){ if(hint) hint.textContent=''; el.innerHTML='<div style="text-align:center;color:var(--muted);padding:16px;font-size:12px;">테스트명을 먼저 선택하세요</div>'; return; }
+
+  // 기출/모의: 저장된 배점표 자동적용 (문항수 채움 + 안내)
+  var tbl = null;
+  if(isGicul){
+    var key = currentGtExamScoreKey();
+    tbl = getExamScoreTables()[key];
+    var totalEl = document.getElementById('gt-total');
+    if(tbl && tbl.points){
+      if(totalEl && (!totalEl.value || parseInt(totalEl.value)!==tbl.total)){
+        totalEl.value = tbl.total;
+        total = tbl.total;
+      }
+    }
+  }
+
   if(!g || !g.students || !g.students.length) {
     if(hint) hint.textContent='';
     el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:16px;font-size:12px;">반에 학생이 없습니다</div>';
     return;
   }
   if(hint){
-    hint.textContent = isPoints ? '학생별 점수(100점 만점)를 입력하세요'
-      : (!isNaN(total)&&total>0 ? ('학생별 틀린 개수를 입력하세요 (전체 '+total+'문항)') : '위에서 전체 문항을 입력하면 틀린 개수로 채점됩니다');
+    if(isGicul && tbl && tbl.points){
+      hint.innerHTML = '<span style="color:var(--teal);font-weight:700;">✓ 저장된 배점표 적용 중 ('+tbl.total+'문항 · 만점 '+tbl.full+'점)</span> · 학생별 틀린 번호를 클릭하면 자동 계산돼요';
+    } else if(isGicul){
+      hint.innerHTML = '<span style="color:var(--gold);font-weight:700;">배점표 없어 균등계산</span> · 위에서 전체 문항을 입력하면 틀린 번호로 채점됩니다';
+    } else {
+      hint.textContent = (!isNaN(total)&&total>0 ? ('학생별 틀린 번호를 클릭하세요 (전체 '+total+'문항)') : '위에서 전체 문항을 입력하면 틀린 번호로 채점됩니다');
+    }
   }
   g.students.forEach(function(sid) {
     var s = students.find(function(x){ return x.id===sid; });
     if(!s) return;
     var row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--bg2);padding:8px 12px;border-radius:4px;';
+    // 모든 유형 동일: 번호 그리드 (윗줄 이름+%+메모, 아랫줄 번호)
+    row.style.cssText = 'display:flex;flex-direction:column;gap:6px;background:var(--bg2);padding:10px 12px;border-radius:4px;';
+    var top=document.createElement('div'); top.style.cssText='display:flex;align-items:center;gap:8px;';
+    var nm=document.createElement('div'); nm.style.cssText='font-size:13px;font-weight:700;min-width:80px;'; nm.textContent=s.name; top.appendChild(nm);
+    var pctEl=document.createElement('span'); pctEl.id='gt-pct-'+sid; pctEl.style.cssText='font-size:12px;font-weight:700;color:var(--teal);min-width:90px;'; top.appendChild(pctEl);
+    var memoEl=document.createElement('input'); memoEl.type='text'; memoEl.placeholder='메모'; memoEl.id='gt-memo-'+sid;
+    memoEl.style.cssText='flex:1;padding:5px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:12px;font-family:var(--sans);background:var(--white);';
+    top.appendChild(memoEl);
+    row.appendChild(top);
 
-    var nameEl = document.createElement('div');
-    nameEl.style.cssText = 'font-size:13px;font-weight:700;min-width:80px;';
-    nameEl.textContent = s.name;
-    row.appendChild(nameEl);
-
-    if(isPoints){
-      // 점수 직접 입력
-      var scoreEl = document.createElement('input');
-      scoreEl.type='number'; scoreEl.min='0'; scoreEl.max='100'; scoreEl.placeholder='점수';
-      scoreEl.id='gt-score-'+sid;
-      scoreEl.style.cssText='width:90px;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:13px;font-family:var(--sans);background:var(--white);';
-      row.appendChild(scoreEl);
-      var unitTxt=document.createElement('span'); unitTxt.style.cssText='color:var(--muted);font-size:13px;'; unitTxt.textContent='점'; row.appendChild(unitTxt);
-      var memoEl0 = document.createElement('input');
-      memoEl0.type='text'; memoEl0.placeholder='메모'; memoEl0.id='gt-memo-'+sid;
-      memoEl0.style.cssText='flex:1;padding:6px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:12px;font-family:var(--sans);background:var(--white);';
-      row.appendChild(memoEl0);
-      el.appendChild(row);
-    } else {
-      // 번호 채점 — 틀린 번호 버튼 그리드 (방법1)
-      // 행을 세로 구조로: 윗줄(이름+%+메모), 아랫줄(번호 그리드)
-      row.style.cssText = 'display:flex;flex-direction:column;gap:6px;background:var(--bg2);padding:10px 12px;border-radius:4px;';
-      row.innerHTML='';
-      var top=document.createElement('div'); top.style.cssText='display:flex;align-items:center;gap:8px;';
-      var nm=document.createElement('div'); nm.style.cssText='font-size:13px;font-weight:700;min-width:80px;'; nm.textContent=s.name; top.appendChild(nm);
-      var pctEl=document.createElement('span'); pctEl.id='gt-pct-'+sid; pctEl.style.cssText='font-size:12px;font-weight:700;color:var(--teal);min-width:60px;'; pctEl.textContent= (!isNaN(total)&&total>0)?'100%':'—'; top.appendChild(pctEl);
-      var memoEl=document.createElement('input'); memoEl.type='text'; memoEl.placeholder='메모'; memoEl.id='gt-memo-'+sid;
-      memoEl.style.cssText='flex:1;padding:5px 10px;border:1.5px solid var(--line);border-radius:4px;font-size:12px;font-family:var(--sans);background:var(--white);';
-      top.appendChild(memoEl);
-      row.appendChild(top);
-
-      if(!isNaN(total) && total>0){
-        var grid=document.createElement('div'); grid.style.cssText='display:flex;flex-wrap:wrap;gap:4px;';
-        if(!gtWrongSets[sid]) gtWrongSets[sid]={};
-        for(var i=1;i<=total;i++){
-          (function(num){
-            var b=document.createElement('div');
-            var on = !!gtWrongSets[sid][num];
-            b.textContent=num;
-            b.style.cssText='width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:12px;cursor:pointer;border:1.5px solid '+(on?'var(--red)':'var(--line)')+';background:'+(on?'#fdecea':'var(--white)')+';color:'+(on?'var(--red)':'var(--ink)')+';font-weight:'+(on?'700':'400')+';';
-            b.onclick=function(){
-              if(gtWrongSets[sid][num]) delete gtWrongSets[sid][num]; else gtWrongSets[sid][num]=true;
-              var nowOn=!!gtWrongSets[sid][num];
-              b.style.border='1.5px solid '+(nowOn?'var(--red)':'var(--line)');
-              b.style.background=nowOn?'#fdecea':'var(--white)';
-              b.style.color=nowOn?'var(--red)':'var(--ink)';
-              b.style.fontWeight=nowOn?'700':'400';
-              var wc=Object.keys(gtWrongSets[sid]).length;
-              var pct=Math.round((total-wc)/total*100);
-              pctEl.textContent=pct+'%'; pctEl.style.color=pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
-            };
-            grid.appendChild(b);
-          })(i);
-        }
-        row.appendChild(grid);
+    // 학생별 %(배점표 반영) 갱신 헬퍼
+    function refreshPct(){
+      if(isNaN(total) || total<=0){ pctEl.textContent='—'; return; }
+      var wset = gtWrongSets[sid] || {};
+      var wrongArr = Object.keys(wset).map(Number).filter(function(n){ return n<=total; });
+      if(isGicul && tbl && tbl.points){
+        var full = tbl.full || Object.keys(tbl.points).reduce(function(a,k){return a+(+tbl.points[k]||0);},0);
+        var lost = wrongArr.reduce(function(a,n){ return a+(+tbl.points[n]||0); },0);
+        var got = Math.round((full-lost)*100)/100;
+        var pct = Math.round(got/full*100);
+        pctEl.textContent = pct+'점 ('+got+')';
+        pctEl.style.color = pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
       } else {
-        var hintEl=document.createElement('div'); hintEl.style.cssText='font-size:12px;color:var(--muted);'; hintEl.textContent='↑ 전체 문항을 입력하면 번호가 나와요'; row.appendChild(hintEl);
+        var pct2 = Math.round((total-wrongArr.length)/total*100);
+        pctEl.textContent = pct2+'%';
+        pctEl.style.color = pct2>=90?'var(--green)':pct2>=70?'var(--gold)':'var(--red)';
       }
-      el.appendChild(row);
     }
+
+    if(!isNaN(total) && total>0){
+      var grid=document.createElement('div'); grid.style.cssText='display:flex;flex-wrap:wrap;gap:4px;';
+      if(!gtWrongSets[sid]) gtWrongSets[sid]={};
+      for(var i=1;i<=total;i++){
+        (function(num){
+          var b=document.createElement('div');
+          var on = !!gtWrongSets[sid][num];
+          b.textContent=num;
+          b.style.cssText='width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:12px;cursor:pointer;border:1.5px solid '+(on?'var(--red)':'var(--line)')+';background:'+(on?'#fdecea':'var(--white)')+';color:'+(on?'var(--red)':'var(--ink)')+';font-weight:'+(on?'700':'400')+';';
+          b.onclick=function(){
+            if(gtWrongSets[sid][num]) delete gtWrongSets[sid][num]; else gtWrongSets[sid][num]=true;
+            var nowOn=!!gtWrongSets[sid][num];
+            b.style.border='1.5px solid '+(nowOn?'var(--red)':'var(--line)');
+            b.style.background=nowOn?'#fdecea':'var(--white)';
+            b.style.color=nowOn?'var(--red)':'var(--ink)';
+            b.style.fontWeight=nowOn?'700':'400';
+            refreshPct();
+          };
+          grid.appendChild(b);
+        })(i);
+      }
+      row.appendChild(grid);
+      refreshPct();
+    } else {
+      var hintEl=document.createElement('div'); hintEl.style.cssText='font-size:12px;color:var(--muted);'; hintEl.textContent='↑ 전체 문항을 입력하면 번호가 나와요'; row.appendChild(hintEl);
+      pctEl.textContent='—';
+    }
+    el.appendChild(row);
   });
 }
 
@@ -6129,9 +6105,11 @@ function saveGroupTest() {
   var groups = DB.get('groups');
   var g = groups.find(function(x){ return x.id===gid; });
   if(!g || !g.students || !g.students.length) { toast('반에 학생이 없습니다'); return; }
-  var isPoints = (name==='기출 Test' || name==='모의고사 기출');
+  var isGicul = (name==='기출 Test' || name==='모의고사 기출');
   var total = parseInt(document.getElementById('gt-total').value);
-  if(!isPoints && (isNaN(total)||total<=0)){ toast('전체 문항을 입력해주세요'); return; }
+  if(isNaN(total)||total<=0){ toast('전체 문항을 입력해주세요'); return; }
+  // 기출/모의 + 배점표가 있으면 배점 기반 채점
+  var tbl = isGicul ? getExamScoreTables()[currentGtExamScoreKey()] : null;
   var recs = DB.get('tests');
   var allStudents = DB.get('students');
   var saved = 0;
@@ -6140,17 +6118,22 @@ function saveGroupTest() {
     if(!allStudents.find(function(s){ return s.id===sid; })) return;
     var memoEl = document.getElementById('gt-memo-'+sid);
     var rec = Object.assign({}, meta, { id:Date.now().toString()+sid, sid:sid, memo:memoEl?memoEl.value:'', by:currentInputter(), byAt:new Date().toISOString() });
-    if(isPoints){
-      var scoreEl = document.getElementById('gt-score-'+sid);
-      if(!scoreEl || scoreEl.value==='') return;
-      var sc = parseInt(scoreEl.value); if(isNaN(sc)) return;
-      if(sc<0)sc=0; if(sc>100)sc=100;
-      rec.score = sc; rec.correct = (typeof total==='number'&&total>0)?Math.round(total*sc/100):null; rec.pending=false;
+    var wset = gtWrongSets[sid] || {};
+    var wrongArr = Object.keys(wset).map(Number).filter(function(n){ return n<=total; }).sort(function(a,b){return a-b;});
+    rec.total = total; rec.wrong = wrongArr; rec.pending=false;
+    if(tbl && tbl.points){
+      // 배점 기반: 점수 = 만점 − 틀린 문항 배점 합 (100점 환산)
+      var full = tbl.full || Object.keys(tbl.points).reduce(function(a,k){return a+(+tbl.points[k]||0);},0);
+      var lost = wrongArr.reduce(function(a,n){ return a+(+tbl.points[n]||0); },0);
+      var got = Math.round((full-lost)*100)/100;
+      rec.score = Math.round(got/full*100);
+      rec.correct = got;        // 획득 점수(배점 기반)
+      rec.fullScore = full;
+      rec.gotScore = got;
+      rec.scoreMode = 'points';
     } else {
-      var wset = gtWrongSets[sid] || {};
-      var wrongArr = Object.keys(wset).map(Number).filter(function(n){ return n<=total; }).sort(function(a,b){return a-b;});
-      rec.total = total; rec.wrong = wrongArr; rec.correct = total - wrongArr.length;
-      rec.score = Math.round((total-wrongArr.length)/total*100); rec.pending=false;
+      rec.correct = total - wrongArr.length;
+      rec.score = Math.round((total-wrongArr.length)/total*100);
     }
     recs.push(rec);
     saved++;
