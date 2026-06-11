@@ -15,6 +15,8 @@
 // 교재 JSON 파일 위치 (깃허브 Pages / raw 어디서든 상대경로로 읽힘)
 const TYPEMAP_PATH = {
   '올인원': './data/올인원_통합_typeMap.json',
+  '올인원 대수': './data/올인원대수_통합_typeMap.json',
+  '온리원': './data/온리원_통합_typeMap.json',
   // 다른 교재 추가 시 여기에 한 줄씩:
   // '자이스토리': './data/자이스토리_통합_typeMap.json',
 };
@@ -27,6 +29,7 @@ const CAT_NAMES = {
   equation: '방정식·근의 성질',
   function: '이차함수',
   application: '활용·종합',
+  inequality: '부등식',
 };
 
 // 교재 JSON을 한 번 읽어 캐시
