@@ -939,6 +939,124 @@
      "grade": "self"
     }
    }
+  },
+  "gicul||2025||정화여고||공통수학1||1학기||기말": {
+   "school": "정화여고",
+   "year": "2025",
+   "term": "기말",
+   "totalCount": 22,
+   "typeMap": {
+    "1": {
+     "type": "행렬 성분 정의→성분합",
+     "cat": "matrix",
+     "grade": "mc"
+    },
+    "2": {
+     "type": "연립이차방정식 풀이(절댓값)",
+     "cat": "equation",
+     "grade": "mc"
+    },
+    "3": {
+     "type": "주사위 합 경우의 수(배수)",
+     "cat": "count",
+     "grade": "mc"
+    },
+    "4": {
+     "type": "반원 위 점→삼각형 개수",
+     "cat": "count",
+     "grade": "mc"
+    },
+    "5": {
+     "type": "지불 방법·금액의 수",
+     "cat": "count",
+     "grade": "mc"
+    },
+    "6": {
+     "type": "행렬 곱=경로 수(거듭제곱 의미)",
+     "cat": "matrix",
+     "grade": "mc"
+    },
+    "7": {
+     "type": "나머지 조건→최대 개수(부등식)",
+     "cat": "function",
+     "grade": "mc"
+    },
+    "8": {
+     "type": "조건부 조합(포함·배제)",
+     "cat": "count",
+     "grade": "mc"
+    },
+    "9": {
+     "type": "연립부등식 정수해 최대→최솟값",
+     "cat": "function",
+     "grade": "mc"
+    },
+    "10": {
+     "type": "행렬 거듭제곱(규칙성)",
+     "cat": "matrix",
+     "grade": "mc"
+    },
+    "11": {
+     "type": "삼차방정식 서로 다른 세 실근 조건",
+     "cat": "equation",
+     "grade": "mc"
+    },
+    "12": {
+     "type": "이차방정식 근의 위치(두 근>k)",
+     "cat": "equation",
+     "grade": "mc"
+    },
+    "13": {
+     "type": "조건부 자리 배치(같은 학교 제외)",
+     "cat": "count",
+     "grade": "mc"
+    },
+    "14": {
+     "type": "허근 ω 식의 값(주기성)",
+     "cat": "complex",
+     "grade": "mc"
+    },
+    "15": {
+     "type": "절댓값 부등식 정수해 개수→최댓값",
+     "cat": "function",
+     "grade": "self"
+    },
+    "16": {
+     "type": "이웃 자리 다른 수 나열(중복순열)",
+     "cat": "count",
+     "grade": "self"
+    },
+    "17": {
+     "type": "순열 방정식 풀이(nP r 식)",
+     "cat": "count",
+     "grade": "self"
+    },
+    "18": {
+     "type": "항상 성립 이차부등식→정수 개수",
+     "cat": "function",
+     "grade": "self"
+    },
+    "19": {
+     "type": "두 자리 수 조건(연립)",
+     "cat": "equation",
+     "grade": "self"
+    },
+    "20": {
+     "type": "행렬 거듭제곱 성분합 조건→순서쌍",
+     "cat": "matrix",
+     "grade": "self"
+    },
+    "21": {
+     "type": "잘못 변형 연립부등식→정수 합",
+     "cat": "function",
+     "grade": "self"
+    },
+    "22": {
+     "type": "분배 경우의 수(빈 곳 허용)",
+     "cat": "count",
+     "grade": "self"
+    }
+   }
   }
  }
 }
