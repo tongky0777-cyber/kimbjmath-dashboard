@@ -2990,22 +2990,58 @@ function paperDetailHtml(p, students){
     var denom=withWrong.length;
     var qList=[];
     for(var q=1;q<=totalQ;q++){ var c=counts[q]||0; qList.push({q:q, c:c, rate:Math.round(c/denom*100)}); }
-    wrongHtml='<div style="margin-top:12px;"><div style="font-size:11px;color:var(--muted);margin-bottom:8px;">문항별 오답률 (응시 '+denom+'명 기준 · 빨강=50%↑)</div><div style="display:flex;flex-direction:column;gap:4px;">'
+    // 파스텔 색 단계: 0%(연한 중립) → 민트(낮음) → 앰버(중간) → 로즈(높음)
+    function paperRateBg(rate){
+      if(rate<=0)  return '#f5f8f6';
+      if(rate<15)  return '#f2f7f5';
+      if(rate<30)  return '#e4f0ea';   // 연민트
+      if(rate<40)  return '#faf0d8';
+      if(rate<50)  return '#f7e8c9';   // 연앰버
+      if(rate<65)  return '#f6d9d5';
+      if(rate<80)  return '#f0c5c0';
+      return '#ecb3ac';                // 연로즈(진함)
+    }
+    function paperRateInk(rate){
+      if(rate<=0)  return '#a3aaa6';
+      if(rate<30)  return '#5f7a70';
+      if(rate<50)  return '#9a7d3f';
+      if(rate<65)  return '#a8554d';
+      if(rate<80)  return '#9c473f';
+      return '#8e3a33';
+    }
+    // 상위 3개 최다오답
+    var top=qList.slice().filter(function(o){return o.c>0;}).sort(function(a,b){return b.c-a.c;}).slice(0,3);
+    var topQs={}; top.forEach(function(o){ topQs[o.q]=true; });
+    var maxRate=Math.max.apply(null, top.map(function(o){return o.rate;}).concat([1]));
+    // ① 최다오답 TOP3 가로막대
+    if(top.length){
+      topHtml='<div style="margin-top:14px;">'
+        + '<div style="font-size:11px;font-weight:700;color:#8a8478;margin-bottom:8px;">🔥 최다오답 TOP '+top.length+'</div>'
+        + '<div style="display:flex;flex-direction:column;gap:6px;">'
+        + top.map(function(o){
+            var w=Math.max(12, Math.round(o.rate/maxRate*100));
+            var bg=paperRateBg(o.rate), ink=paperRateInk(o.rate);
+            return '<div style="display:flex;align-items:center;gap:8px;">'
+              +'<div style="width:40px;font-size:12px;font-weight:700;color:'+ink+';">'+o.q+'번</div>'
+              +'<div style="flex:1;background:#f5f2ec;border-radius:5px;height:18px;overflow:hidden;">'
+                +'<div style="width:'+w+'%;height:100%;background:'+bg+';border-radius:5px;display:flex;align-items:center;justify-content:flex-end;padding-right:7px;box-sizing:border-box;font-size:10.5px;font-weight:700;color:'+ink+';white-space:nowrap;">'+o.rate+'% · '+o.c+'명</div>'
+              +'</div>'
+              +'</div>';
+          }).join('')
+        + '</div></div>';
+    }
+    // ② 전체 문항 히트맵 그리드
+    wrongHtml='<div style="margin-top:14px;">'
+      + '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">문항별 오답률 (응시 '+denom+'명 기준 · 진할수록 많이 틀림)</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(8,1fr);gap:5px;">'
       + qList.map(function(o){
-          var col=o.rate>=50?'var(--red)':o.rate>=30?'var(--gold)':'var(--teal)';
-          return '<div style="display:flex;align-items:center;gap:8px;">'
-            +'<div style="width:34px;font-size:11px;font-weight:700;color:'+(o.rate>=50?'var(--red)':'var(--ink)')+';">'+o.q+'번</div>'
-            +'<div style="flex:1;background:var(--line);border-radius:3px;height:14px;overflow:hidden;"><div style="width:'+o.rate+'%;height:100%;background:'+col+';"></div></div>'
-            +'<div style="width:64px;font-size:11px;color:var(--muted);text-align:right;">'+o.rate+'% ('+o.c+')</div>'
-            +'</div>';
+          var bg=paperRateBg(o.rate), ink=paperRateInk(o.rate);
+          var ol=topQs[o.q]?'outline:1.5px solid #d9968f;':'';
+          var fw=topQs[o.q]?'font-weight:700;':'';
+          return '<div style="background:'+bg+';border-radius:7px;padding:7px 0;text-align:center;font-size:12px;color:'+ink+';'+fw+ol+'">'+o.q
+            +'<div style="font-size:9px;opacity:.85;">'+o.rate+'%</div></div>';
         }).join('')
       + '</div></div>';
-    var top=qList.slice().filter(function(o){return o.c>0;}).sort(function(a,b){return b.c-a.c;}).slice(0,3);
-    if(top.length){
-      topHtml='<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">'
-        + top.map(function(o,i){ return '<div style="background:var(--red-bg);border:1px solid var(--red);border-radius:6px;padding:6px 12px;font-size:12px;"><b style="color:var(--red);">최다오답 '+(i+1)+'위</b> · '+o.q+'번 ('+o.rate+'%)</div>'; }).join('')
-        + '</div>';
-    }
   } else {
     wrongHtml='<div style="margin-top:12px;font-size:12px;color:var(--muted);">※ 이 시험지에는 틀린 번호가 기록된 결과가 없어 오답 집계를 못 했어요. 새로 입력할 땐 틀린 번호를 체크하면 집계됩니다.</div>';
   }
