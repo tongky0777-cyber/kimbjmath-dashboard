@@ -1093,6 +1093,7 @@ body.role-assistant .teacher-only{ display:none !important; }
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="./typemap.js"></script>
 <script src="./grader.js"></script>
 <script>
@@ -1106,6 +1107,12 @@ window._fbReady = false;
     var FBCONFIG={apiKey:"AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",databaseURL:"https://kimbjmath-default-rtdb.firebaseio.com",projectId:"kimbjmath",appId:"1:664889936709:web:2df1494b0cd978c64e4c2c"};
     if(!firebase.apps.length)firebase.initializeApp(FBCONFIG);
     var db=firebase.database();window._fbDb=db;
+    // 익명 로그인: Firebase 보안 규칙이 "로그인한 세션만" 통과시키도록 신분(토큰) 확보.
+    // 데이터 접근 전에 로그인이 끝나도록 _authReady 약속을 만들어 둔다.
+    window._authReady = (firebase.auth ? firebase.auth().signInAnonymously()
+      .then(function(){ window._fbReady=true; })
+      .catch(function(e){ console.error('익명 로그인 실패:', e&&e.code, e&&e.message); })
+      : Promise.resolve());
     var PREFIX=window._FB_PREFIX;
     // 동기화 대상 키
     var SYNC_KEYS=["students","attendance","homework","tests","progress","groups","schedules","exams","memo","memo_todo","examscores"].map(function(k){return PREFIX+k;});
@@ -1533,7 +1540,9 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 
   // 서버에서 최신 데이터를 받아온 뒤 화면을 그린다 (기기 간 동일하게 보이도록)
+  // 익명 로그인이 끝난 뒤 시작해야 보안 규칙(로그인 세션만 허용)에 막히지 않는다.
   if(typeof window._fbPull === 'function'){
+    (window._authReady || Promise.resolve()).then(function(){
     _fbPull(function(){ _renderStart(); if(typeof window._fbWatchMemoTodo==='function') _fbWatchMemoTodo(); if(typeof window._fbWatchMemo==='function') _fbWatchMemo(); if(typeof window._fbWatchAll==='function') _fbWatchAll(); if(typeof window._fbAutoBackup==='function') setTimeout(window._fbAutoBackup, 2000);
       // 오늘 확인할 것: 클래스룸 데이터 로드 후 배너 갱신 + 팝업, 실시간 구독
       if(typeof loadCheckSources==='function'){
@@ -1543,6 +1552,7 @@ window.addEventListener('DOMContentLoaded', function() {
           if(typeof _watchCheckSources==='function') _watchCheckSources();
         });
       }
+    });
     });
   } else {
     window._fbReady = true;
