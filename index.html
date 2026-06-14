@@ -3868,8 +3868,25 @@ function renderWrongView(){
     return;
   }
 
+  // 대분류(cat)별 배지 색 — 같은 단원은 어느 숙제에서나 같은 색
+  var CAT_BADGE={
+    calc:        {bg:'#B5D4F4', fg:'#0C447C'},  // 다항식·계산  (파랑)
+    factor:      {bg:'#9FE1CB', fg:'#085041'},  // 인수분해     (청록)
+    complex:     {bg:'#CECBF6', fg:'#3C3489'},  // 복소수       (보라)
+    equation:    {bg:'#FAC775', fg:'#633806'},  // 방정식       (주황)
+    function:    {bg:'#F7C1C1', fg:'#791F1F'},  // 이차함수     (빨강)
+    application: {bg:'#F5C4B3', fg:'#712B13'},  // 활용·종합    (코랄)
+    matrix:      {bg:'#C0DD97', fg:'#27500A'},  // 행렬         (연두)
+    count:       {bg:'#F4C0D1', fg:'#72243E'}   // 경우의수     (분홍)
+  };
+  function catBadge(cat, label){
+    var c=CAT_BADGE[cat]||{bg:'var(--bg2)', fg:'var(--muted)'};
+    return '<span style="flex-shrink:0;background:'+c.bg+';color:'+c.fg+';border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;">'+esc2(label||cat||'-')+'</span>';
+  }
+
   // 반 전체 유형 집계용 누적
   var classByType={}, classByCat={};
+  var _catNamesWV=(window.TypeMap&&TypeMap.CAT_NAMES)||{};
 
   var html='';
   sidList.forEach(function(sid){
@@ -3906,12 +3923,34 @@ function renderWrongView(){
     }
     html+='</div>';
 
-    // 이 학생 유형별 약점
-    var typeKeys=Object.keys(agg.byType);
+    // 이 학생 유형별 약점 — 소분류별 {cat, 개수} 목록
+    var typeInfo={};   // type → {cat, cnt}
+    (g.wrong||[]).forEach(function(no){
+      var hit=(window.TypeMap)?TypeMap.lookup(ctx.tm, r.unitKey, no):null;
+      if(!hit) return;
+      if(!typeInfo[hit.type]) typeInfo[hit.type]={cat:hit.cat, cnt:0};
+      typeInfo[hit.type].cnt++;
+    });
+    var typeKeys=Object.keys(typeInfo);
     if(typeKeys.length){
-      html+='<div style="margin-top:10px;font-size:12px;color:var(--muted);">틀린 유형: '
-        + typeKeys.sort(function(a,b){return agg.byType[b]-agg.byType[a];}).map(function(t){
-            return '<span style="display:inline-block;background:var(--red-bg);color:var(--red2);border-radius:6px;padding:2px 8px;margin:2px;">'+esc2(t)+' '+agg.byType[t]+'</span>';
+      // 대분류로 묶어 같은 단원끼리 인접하게, 그 안에서 개수 많은 순
+      typeKeys.sort(function(a,b){
+        if(typeInfo[a].cat!==typeInfo[b].cat) return (typeInfo[a].cat||'').localeCompare(typeInfo[b].cat||'');
+        return typeInfo[b].cnt-typeInfo[a].cnt;
+      });
+      html+='<div style="margin-top:12px;font-size:12px;color:var(--muted);margin-bottom:4px;">틀린 유형</div>'
+        +'<div style="border:1px solid var(--line);border-radius:10px;padding:2px 12px;">'
+        + typeKeys.map(function(t,i){
+            var info=typeInfo[t];
+            var catLabel=_catNamesWV[info.cat]||info.cat;
+            var border=(i<typeKeys.length-1)?'border-bottom:1px solid var(--line);':'';
+            return '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;font-size:13px;'+border+'">'
+              +'<span style="display:flex;align-items:center;gap:8px;min-width:0;">'
+                + catBadge(info.cat, catLabel)
+                + '<span style="color:var(--ink);">'+esc2(t)+'</span>'
+              +'</span>'
+              +'<span style="flex-shrink:0;color:var(--red);font-weight:700;">'+info.cnt+'</span>'
+              +'</div>';
           }).join('')
         +'</div>';
     }
