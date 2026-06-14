@@ -11,119 +11,6 @@
     "count": "경우의 수·순열·조합"
   },
   "exams": {
-    "gicul||2025||능인고||공통수학1||1학기||기말": {
-      "school": "능인고",
-      "year": "2025",
-      "term": "기말",
-      "totalCount": 21,
-      "typeMap": {
-        "1": {
-          "type": "행렬의 성분",
-          "cat": "matrix",
-          "grade": "mc"
-        },
-        "2": {
-          "type": "조합 방정식 (nCr 꼴)",
-          "cat": "count",
-          "grade": "mc"
-        },
-        "3": {
-          "type": "행렬의 상등",
-          "cat": "matrix",
-          "grade": "mc"
-        },
-        "4": {
-          "type": "연립부등식 정수해",
-          "cat": "function",
-          "grade": "mc"
-        },
-        "5": {
-          "type": "이차부등식 정수해 개수",
-          "cat": "function",
-          "grade": "mc"
-        },
-        "6": {
-          "type": "주사위 경우의 수",
-          "cat": "count",
-          "grade": "mc"
-        },
-        "7": {
-          "type": "행렬의 덧셈·실수배 연산",
-          "cat": "matrix",
-          "grade": "mc"
-        },
-        "8": {
-          "type": "순열 (이웃 조건)",
-          "cat": "count",
-          "grade": "mc"
-        },
-        "9": {
-          "type": "이차부등식 항상성립 (판별식)",
-          "cat": "function",
-          "grade": "mc"
-        },
-        "10": {
-          "type": "행렬의 거듭제곱",
-          "cat": "matrix",
-          "grade": "mc"
-        },
-        "11": {
-          "type": "절댓값 부등식 (구간별)",
-          "cat": "function",
-          "grade": "mc"
-        },
-        "12": {
-          "type": "행렬 곱셈식 연립",
-          "cat": "matrix",
-          "grade": "mc"
-        },
-        "13": {
-          "type": "순열 (이웃·비이웃 복합)",
-          "cat": "count",
-          "grade": "mc"
-        },
-        "14": {
-          "type": "조합 분배 (경우 나눔)",
-          "cat": "count",
-          "grade": "mc"
-        },
-        "15": {
-          "type": "절댓값함수 부등식·직선 교점",
-          "cat": "function",
-          "grade": "self"
-        },
-        "16": {
-          "type": "행렬 거듭제곱 조건 (서술)",
-          "cat": "matrix",
-          "grade": "self"
-        },
-        "17": {
-          "type": "이차부등식 활용 (도형·속도)",
-          "cat": "function",
-          "grade": "self"
-        },
-        "18": {
-          "type": "조합 여사건 (서술)",
-          "cat": "count",
-          "grade": "self"
-        },
-        "19": {
-          "type": "행렬 성분=교점개수 (판별식)",
-          "cat": "matrix",
-          "grade": "self"
-        },
-        "20": {
-          "type": "연립부등식 해 없음 (순서쌍)",
-          "cat": "function",
-          "grade": "self"
-        },
-        "21": {
-          "type": "색칠 경우의 수 (인접조건)",
-          "cat": "count",
-          "grade": "self"
-        }
-      }
-    },
     "gicul||2025||경북고||공통수학1||1학기||기말": {
       "school": "경북고",
       "year": "2025",
@@ -474,6 +361,119 @@
         "25": {
           "type": "이차함수 조건 근과계수 최솟값(서술)",
           "cat": "function",
+          "grade": "self"
+        }
+      }
+    },
+    "gicul||2025||능인고||공통수학1||1학기||기말": {
+      "school": "능인고",
+      "year": "2025",
+      "term": "기말",
+      "totalCount": 21,
+      "typeMap": {
+        "1": {
+          "type": "행렬의 성분",
+          "cat": "matrix",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "조합 방정식 (nCr 꼴)",
+          "cat": "count",
+          "grade": "mc"
+        },
+        "3": {
+          "type": "행렬의 상등",
+          "cat": "matrix",
+          "grade": "mc"
+        },
+        "4": {
+          "type": "연립부등식 정수해",
+          "cat": "function",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "이차부등식 정수해 개수",
+          "cat": "function",
+          "grade": "mc"
+        },
+        "6": {
+          "type": "주사위 경우의 수",
+          "cat": "count",
+          "grade": "mc"
+        },
+        "7": {
+          "type": "행렬의 덧셈·실수배 연산",
+          "cat": "matrix",
+          "grade": "mc"
+        },
+        "8": {
+          "type": "순열 (이웃 조건)",
+          "cat": "count",
+          "grade": "mc"
+        },
+        "9": {
+          "type": "이차부등식 항상성립 (판별식)",
+          "cat": "function",
+          "grade": "mc"
+        },
+        "10": {
+          "type": "행렬의 거듭제곱",
+          "cat": "matrix",
+          "grade": "mc"
+        },
+        "11": {
+          "type": "절댓값 부등식 (구간별)",
+          "cat": "function",
+          "grade": "mc"
+        },
+        "12": {
+          "type": "행렬 곱셈식 연립",
+          "cat": "matrix",
+          "grade": "mc"
+        },
+        "13": {
+          "type": "순열 (이웃·비이웃 복합)",
+          "cat": "count",
+          "grade": "mc"
+        },
+        "14": {
+          "type": "조합 분배 (경우 나눔)",
+          "cat": "count",
+          "grade": "mc"
+        },
+        "15": {
+          "type": "절댓값함수 부등식·직선 교점",
+          "cat": "function",
+          "grade": "self"
+        },
+        "16": {
+          "type": "행렬 거듭제곱 조건 (서술)",
+          "cat": "matrix",
+          "grade": "self"
+        },
+        "17": {
+          "type": "이차부등식 활용 (도형·속도)",
+          "cat": "function",
+          "grade": "self"
+        },
+        "18": {
+          "type": "조합 여사건 (서술)",
+          "cat": "count",
+          "grade": "self"
+        },
+        "19": {
+          "type": "행렬 성분=교점개수 (판별식)",
+          "cat": "matrix",
+          "grade": "self"
+        },
+        "20": {
+          "type": "연립부등식 해 없음 (순서쌍)",
+          "cat": "function",
+          "grade": "self"
+        },
+        "21": {
+          "type": "색칠 경우의 수 (인접조건)",
+          "cat": "count",
           "grade": "self"
         }
       }
@@ -940,6 +940,119 @@
         }
       }
     },
+    "gicul||2025||시지고||공통수학1||1학기||기말": {
+      "school": "시지고",
+      "year": "2025",
+      "term": "기말",
+      "totalCount": 21,
+      "typeMap": {
+        "1": {
+          "type": "행렬 상등(성분 비교)",
+          "cat": "matrix",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "공약수 개수(소인수분해)",
+          "cat": "count",
+          "grade": "mc"
+        },
+        "3": {
+          "type": "연립부등식 정수해 최대·최소",
+          "cat": "function",
+          "grade": "mc"
+        },
+        "4": {
+          "type": "음 아닌 정수해 순서쌍 개수",
+          "cat": "count",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "행렬 방정식(X 구하기)",
+          "cat": "matrix",
+          "grade": "mc"
+        },
+        "6": {
+          "type": "이차부등식 해 없을 조건→정수 개수",
+          "cat": "function",
+          "grade": "mc"
+        },
+        "7": {
+          "type": "카드 곱·합 홀짝 경우의 수",
+          "cat": "count",
+          "grade": "mc"
+        },
+        "8": {
+          "type": "행렬 곱 조건→성분합",
+          "cat": "matrix",
+          "grade": "mc"
+        },
+        "9": {
+          "type": "순열·조합 방정식(nCr·nPr)",
+          "cat": "count",
+          "grade": "mc"
+        },
+        "10": {
+          "type": "절댓값 부등식 정수해 개수",
+          "cat": "function",
+          "grade": "mc"
+        },
+        "11": {
+          "type": "행렬 거듭제곱+단위행렬 조건",
+          "cat": "matrix",
+          "grade": "mc"
+        },
+        "12": {
+          "type": "점에서 사각형·삼각형 개수",
+          "cat": "count",
+          "grade": "mc"
+        },
+        "13": {
+          "type": "삼차방정식 근과 계수",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "14": {
+          "type": "허근 ω 식의 값(주기성)",
+          "cat": "complex",
+          "grade": "mc"
+        },
+        "15": {
+          "type": "사차식 네 근 곱(인수분해)",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "16": {
+          "type": "조합·순열 종합(대표·이웃)",
+          "cat": "count",
+          "grade": "self"
+        },
+        "17": {
+          "type": "자연수 순서대로 나열(순열)",
+          "cat": "count",
+          "grade": "self"
+        },
+        "18": {
+          "type": "행렬 거듭제곱 성분합 조건",
+          "cat": "matrix",
+          "grade": "self"
+        },
+        "19": {
+          "type": "연립방정식 공통해 조건",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "20": {
+          "type": "연립이차부등식 해 없을 조건",
+          "cat": "function",
+          "grade": "self"
+        },
+        "21": {
+          "type": "이차부등식 중근 조건→정수 합",
+          "cat": "function",
+          "grade": "self"
+        }
+      }
+    },
     "gicul||2025||정화여고||공통수학1||1학기||기말": {
       "school": "정화여고",
       "year": "2025",
@@ -1054,119 +1167,6 @@
         "22": {
           "type": "분배 경우의 수(빈 곳 허용)",
           "cat": "count",
-          "grade": "self"
-        }
-      }
-    },
-    "gicul||2025||시지고||공통수학1||1학기||기말": {
-      "school": "시지고",
-      "year": "2025",
-      "term": "기말",
-      "totalCount": 21,
-      "typeMap": {
-        "1": {
-          "type": "행렬 상등(성분 비교)",
-          "cat": "matrix",
-          "grade": "mc"
-        },
-        "2": {
-          "type": "공약수 개수(소인수분해)",
-          "cat": "count",
-          "grade": "mc"
-        },
-        "3": {
-          "type": "연립부등식 정수해 최대·최소",
-          "cat": "function",
-          "grade": "mc"
-        },
-        "4": {
-          "type": "음 아닌 정수해 순서쌍 개수",
-          "cat": "count",
-          "grade": "mc"
-        },
-        "5": {
-          "type": "행렬 방정식(X 구하기)",
-          "cat": "matrix",
-          "grade": "mc"
-        },
-        "6": {
-          "type": "이차부등식 해 없을 조건→정수 개수",
-          "cat": "function",
-          "grade": "mc"
-        },
-        "7": {
-          "type": "카드 곱·합 홀짝 경우의 수",
-          "cat": "count",
-          "grade": "mc"
-        },
-        "8": {
-          "type": "행렬 곱 조건→성분합",
-          "cat": "matrix",
-          "grade": "mc"
-        },
-        "9": {
-          "type": "순열·조합 방정식(nCr·nPr)",
-          "cat": "count",
-          "grade": "mc"
-        },
-        "10": {
-          "type": "절댓값 부등식 정수해 개수",
-          "cat": "function",
-          "grade": "mc"
-        },
-        "11": {
-          "type": "행렬 거듭제곱+단위행렬 조건",
-          "cat": "matrix",
-          "grade": "mc"
-        },
-        "12": {
-          "type": "점에서 사각형·삼각형 개수",
-          "cat": "count",
-          "grade": "mc"
-        },
-        "13": {
-          "type": "삼차방정식 근과 계수",
-          "cat": "equation",
-          "grade": "mc"
-        },
-        "14": {
-          "type": "허근 ω 식의 값(주기성)",
-          "cat": "complex",
-          "grade": "mc"
-        },
-        "15": {
-          "type": "사차식 네 근 곱(인수분해)",
-          "cat": "equation",
-          "grade": "mc"
-        },
-        "16": {
-          "type": "조합·순열 종합(대표·이웃)",
-          "cat": "count",
-          "grade": "self"
-        },
-        "17": {
-          "type": "자연수 순서대로 나열(순열)",
-          "cat": "count",
-          "grade": "self"
-        },
-        "18": {
-          "type": "행렬 거듭제곱 성분합 조건",
-          "cat": "matrix",
-          "grade": "self"
-        },
-        "19": {
-          "type": "연립방정식 공통해 조건",
-          "cat": "equation",
-          "grade": "self"
-        },
-        "20": {
-          "type": "연립이차부등식 해 없을 조건",
-          "cat": "function",
-          "grade": "self"
-        },
-        "21": {
-          "type": "이차부등식 중근 조건→정수 합",
-          "cat": "function",
           "grade": "self"
         }
       }
@@ -1964,6 +1964,696 @@
         },
         "12": {
           "type": "두 함수 max 최댓값 범위",
+          "cat": "function",
+          "grade": "self"
+        }
+      }
+    },
+    "mini||2026||공통수학1||11주차": {
+      "kind": "mini",
+      "year": "2026",
+      "target": "공통수학1",
+      "week": "11주차",
+      "totalCount": 12,
+      "typeMap": {
+        "1": {
+          "type": "허근 차수내림(복소수 곱셈)",
+          "cat": "complex",
+          "grade": "self"
+        },
+        "2": {
+          "type": "사차방정식 상반방정식(치환)",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "3": {
+          "type": "i의 거듭제곱 주기합",
+          "cat": "complex",
+          "grade": "mc"
+        },
+        "4": {
+          "type": "사차방정식 치환·실근 개수",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "5": {
+          "type": "음수 제곱근 성질·순허수 조건",
+          "cat": "complex",
+          "grade": "self"
+        },
+        "6": {
+          "type": "변형 인수분해·삼각형 판정",
+          "cat": "factor",
+          "grade": "mc"
+        },
+        "7": {
+          "type": "항상 x축 접함(항등식+판별식)",
+          "cat": "function",
+          "grade": "self"
+        },
+        "8": {
+          "type": "이차부등식 항상 성립(판별식)",
+          "cat": "function",
+          "grade": "mc"
+        },
+        "9": {
+          "type": "근과계수 변형·새 방정식",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "10": {
+          "type": "근과계수(잘못 본 계수)·복소수 인수분해",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "11": {
+          "type": "순열·조합 조건부 경우의 수",
+          "cat": "count",
+          "grade": "mc"
+        },
+        "12": {
+          "type": "허근 ω 성질·식의 값",
+          "cat": "complex",
+          "grade": "self"
+        }
+      }
+    },
+    "mini||2026||공통수학1||12주차": {
+      "kind": "mini",
+      "year": "2026",
+      "target": "공통수학1",
+      "week": "12주차",
+      "totalCount": 12,
+      "typeMap": {
+        "1": {
+          "type": "행렬 성분 연산·합",
+          "cat": "matrix",
+          "grade": "self"
+        },
+        "2": {
+          "type": "행렬 거듭제곱·성분 부호 개수",
+          "cat": "matrix",
+          "grade": "self"
+        },
+        "3": {
+          "type": "순열 자리조건(이웃·짝수)",
+          "cat": "count",
+          "grade": "self"
+        },
+        "4": {
+          "type": "인수정리·나머지정리(삼차)",
+          "cat": "calc",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "포물선·직선 둘러싼 영역 격자점",
+          "cat": "function",
+          "grade": "mc"
+        },
+        "6": {
+          "type": "삼차방정식 실근 개수(조립제법)",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "7": {
+          "type": "이차함수 매출 최대(활용)",
+          "cat": "application",
+          "grade": "self"
+        },
+        "8": {
+          "type": "곱셈공식 변형 인수분해",
+          "cat": "factor",
+          "grade": "mc"
+        },
+        "9": {
+          "type": "합차공식·나머지정리",
+          "cat": "calc",
+          "grade": "mc"
+        },
+        "10": {
+          "type": "포물선·직선 접함(판별식)",
+          "cat": "function",
+          "grade": "mc"
+        },
+        "11": {
+          "type": "사차식 나눗셈 몫·나머지",
+          "cat": "calc",
+          "grade": "self"
+        },
+        "12": {
+          "type": "삼차함수 세 근·근과계수",
+          "cat": "equation",
+          "grade": "self"
+        }
+      }
+    },
+    "mini||2026||공통수학1||13주차": {
+      "kind": "mini",
+      "year": "2026",
+      "target": "공통수학1",
+      "week": "13주차",
+      "totalCount": 12,
+      "typeMap": {
+        "1": {
+          "type": "조립제법 반복·나머지",
+          "cat": "calc",
+          "grade": "self"
+        },
+        "2": {
+          "type": "이항계수 항등식(홀수항 합)",
+          "cat": "calc",
+          "grade": "mc"
+        },
+        "3": {
+          "type": "인수정리·나머지(삼차)",
+          "cat": "calc",
+          "grade": "self"
+        },
+        "4": {
+          "type": "부피 인수분해·겉넓이",
+          "cat": "factor",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "다항식 나머지(나머지정리)",
+          "cat": "calc",
+          "grade": "mc"
+        },
+        "6": {
+          "type": "f(g(x)) 나머지(나머지정리)",
+          "cat": "calc",
+          "grade": "self"
+        },
+        "7": {
+          "type": "세 항 완전제곱·인수분해",
+          "cat": "factor",
+          "grade": "self"
+        },
+        "8": {
+          "type": "근과계수·삼각형 넓이",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "9": {
+          "type": "최대최소(음의 정수 조건)",
+          "cat": "function",
+          "grade": "self"
+        },
+        "10": {
+          "type": "인수정리 연립(나누어떨어짐)",
+          "cat": "calc",
+          "grade": "mc"
+        },
+        "11": {
+          "type": "복소수 실수 조건(켤레)",
+          "cat": "complex",
+          "grade": "self"
+        },
+        "12": {
+          "type": "절댓값 이차함수·근 개수",
+          "cat": "function",
+          "grade": "self"
+        }
+      }
+    },
+    "mini||2026||공통수학1||14주차": {
+      "kind": "mini",
+      "year": "2026",
+      "target": "공통수학1",
+      "week": "14주차",
+      "totalCount": 12,
+      "typeMap": {
+        "1": {
+          "type": "나눗셈 항등식·계수 비교",
+          "cat": "calc",
+          "grade": "self"
+        },
+        "2": {
+          "type": "연산 정의·특정 계수 값",
+          "cat": "calc",
+          "grade": "self"
+        },
+        "3": {
+          "type": "곱셈공식 변형·부호 판정(절댓값)",
+          "cat": "calc",
+          "grade": "self"
+        },
+        "4": {
+          "type": "곱셈공식 변형 식의 값",
+          "cat": "calc",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "항상 중근(항등식+판별식)",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "6": {
+          "type": "i 거듭제곱 주기·식의 값",
+          "cat": "complex",
+          "grade": "self"
+        },
+        "7": {
+          "type": "항상 두 실근(항등식+판별식)",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "8": {
+          "type": "i 거듭제곱 주기합",
+          "cat": "complex",
+          "grade": "self"
+        },
+        "9": {
+          "type": "다항식 나눗셈 몫·나머지",
+          "cat": "calc",
+          "grade": "self"
+        },
+        "10": {
+          "type": "삼각형 변 조건·넓이(인수분해)",
+          "cat": "factor",
+          "grade": "mc"
+        },
+        "11": {
+          "type": "근과계수·소수 조건",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "12": {
+          "type": "두 포물선 교점·사각형 넓이 최대",
+          "cat": "function",
+          "grade": "self"
+        }
+      }
+    },
+    "mini||2026||공통수학1||15주차": {
+      "kind": "mini",
+      "year": "2026",
+      "target": "공통수학1",
+      "week": "15주차",
+      "totalCount": 12,
+      "typeMap": {
+        "1": {
+          "type": "인수정리 연립·계수 결정",
+          "cat": "calc",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "치환·서로 다른 일차식 곱(두 양근)",
+          "cat": "factor",
+          "grade": "self"
+        },
+        "3": {
+          "type": "인수분해·나눗셈 몫의 나머지",
+          "cat": "factor",
+          "grade": "mc"
+        },
+        "4": {
+          "type": "제곱근 부등식·자연수 값",
+          "cat": "calc",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "복소수 식·켤레 곱",
+          "cat": "complex",
+          "grade": "mc"
+        },
+        "6": {
+          "type": "포물선·직선 접함(판별식)",
+          "cat": "function",
+          "grade": "self"
+        },
+        "7": {
+          "type": "두 접선 교점·근과계수",
+          "cat": "function",
+          "grade": "self"
+        },
+        "8": {
+          "type": "곱셈공식 변형·식의 값",
+          "cat": "calc",
+          "grade": "self"
+        },
+        "9": {
+          "type": "곱셈공식·치환 합답형(보기)",
+          "cat": "calc",
+          "grade": "mc"
+        },
+        "10": {
+          "type": "항등식 완전제곱·계수합",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "11": {
+          "type": "z^n=-i 복소수 거듭제곱 주기",
+          "cat": "complex",
+          "grade": "self"
+        },
+        "12": {
+          "type": "직사각형 정사각형 분할(나눗셈)",
+          "cat": "application",
+          "grade": "self"
+        }
+      }
+    },
+    "mini||2026||공통수학1||16주차": {
+      "kind": "mini",
+      "year": "2026",
+      "target": "공통수학1",
+      "week": "16주차",
+      "totalCount": 12,
+      "typeMap": {
+        "1": {
+          "type": "허근 켤레·근과계수(합 양수)",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "나머지정리·미정계수",
+          "cat": "calc",
+          "grade": "mc"
+        },
+        "3": {
+          "type": "조립제법 인수분해·곱셈공식 변형",
+          "cat": "factor",
+          "grade": "self"
+        },
+        "4": {
+          "type": "곱셈공식 변형 식의 값",
+          "cat": "calc",
+          "grade": "self"
+        },
+        "5": {
+          "type": "두 근 차·근과계수",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "6": {
+          "type": "제한구간 최대최소(위로 볼록)",
+          "cat": "function",
+          "grade": "self"
+        },
+        "7": {
+          "type": "허근 켤레·근과계수(합 양수)",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "8": {
+          "type": "근과계수·치환 최대최소",
+          "cat": "function",
+          "grade": "mc"
+        },
+        "9": {
+          "type": "치환 항등식·식의 값",
+          "cat": "calc",
+          "grade": "self"
+        },
+        "10": {
+          "type": "근의 곱 조건·미정계수",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "11": {
+          "type": "복소수 실수 조건(켤레)",
+          "cat": "complex",
+          "grade": "mc"
+        },
+        "12": {
+          "type": "절댓값 이차함수·실근 개수",
+          "cat": "function",
+          "grade": "self"
+        }
+      }
+    },
+    "mini||2026||공통수학1||17주차": {
+      "kind": "mini",
+      "year": "2026",
+      "target": "공통수학1",
+      "week": "17주차",
+      "totalCount": 12,
+      "typeMap": {
+        "1": {
+          "type": "두 근 차·근과계수(x축 교점)",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "2": {
+          "type": "삼차식 근과계수·인수분해",
+          "cat": "factor",
+          "grade": "self"
+        },
+        "3": {
+          "type": "곱셈공식 변형·식의 값",
+          "cat": "calc",
+          "grade": "self"
+        },
+        "4": {
+          "type": "제한구간 최대최소(꼭짓점 포함)",
+          "cat": "function",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "관계식 대입·비율(활용)",
+          "cat": "application",
+          "grade": "mc"
+        },
+        "6": {
+          "type": "근과계수·치환 최대최소",
+          "cat": "function",
+          "grade": "mc"
+        },
+        "7": {
+          "type": "허근 켤레·근과계수(합 음수)",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "8": {
+          "type": "나머지정리·미정계수",
+          "cat": "calc",
+          "grade": "self"
+        },
+        "9": {
+          "type": "f(x^2) 나머지(나눗셈 변형)",
+          "cat": "calc",
+          "grade": "self"
+        },
+        "10": {
+          "type": "다항식 나눗셈 연립·계수합",
+          "cat": "calc",
+          "grade": "mc"
+        },
+        "11": {
+          "type": "두 포물선 접선·근 개수 조건",
+          "cat": "function",
+          "grade": "self"
+        },
+        "12": {
+          "type": "사차식 인수·접선 조건(최대)",
+          "cat": "function",
+          "grade": "self"
+        }
+      }
+    },
+    "mini||2026||공통수학1||18주차": {
+      "kind": "mini",
+      "year": "2026",
+      "target": "공통수학1",
+      "week": "18주차",
+      "totalCount": 12,
+      "typeMap": {
+        "1": {
+          "type": "항등식 계수 비교(곱 형태)",
+          "cat": "calc",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "이차식 두 일차식 곱(판별식)",
+          "cat": "factor",
+          "grade": "mc"
+        },
+        "3": {
+          "type": "넓이 인수분해·도형 길이(활용)",
+          "cat": "application",
+          "grade": "mc"
+        },
+        "4": {
+          "type": "나머지정리 활용(곱의 제곱)",
+          "cat": "calc",
+          "grade": "self"
+        },
+        "5": {
+          "type": "근과계수 세 이차함수·식의 값",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "6": {
+          "type": "제한구간 최댓값 조건(대칭축)",
+          "cat": "function",
+          "grade": "self"
+        },
+        "7": {
+          "type": "절댓값 이차함수·근 개수",
+          "cat": "function",
+          "grade": "self"
+        },
+        "8": {
+          "type": "켤레복소수 조건·식의 값",
+          "cat": "complex",
+          "grade": "self"
+        },
+        "9": {
+          "type": "곱 형태 방정식·근 개수",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "10": {
+          "type": "세 이차다항식 합·미정계수",
+          "cat": "calc",
+          "grade": "self"
+        },
+        "11": {
+          "type": "근의 차·항등식 계수 비교",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "12": {
+          "type": "세 다항식 순환 인수(나누어떨어짐)",
+          "cat": "factor",
+          "grade": "mc"
+        }
+      }
+    },
+    "mini||2026||공통수학1||19주차": {
+      "kind": "mini",
+      "year": "2026",
+      "target": "공통수학1",
+      "week": "19주차",
+      "totalCount": 12,
+      "typeMap": {
+        "1": {
+          "type": "내림차순 인수분해·자연수 조건",
+          "cat": "factor",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "다항식 나눗셈 나머지·미정계수",
+          "cat": "calc",
+          "grade": "mc"
+        },
+        "3": {
+          "type": "황금비·식의 값(분수식 변형)",
+          "cat": "calc",
+          "grade": "mc"
+        },
+        "4": {
+          "type": "근과계수·두 근 차(판별식)",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "복소수 실수화·자연수 개수",
+          "cat": "complex",
+          "grade": "mc"
+        },
+        "6": {
+          "type": "사차·이차 나눗셈 종합",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "7": {
+          "type": "i 성질·허수부 0 조건(값의 합)",
+          "cat": "complex",
+          "grade": "mc"
+        },
+        "8": {
+          "type": "제한구간 최대최소 차 함수",
+          "cat": "function",
+          "grade": "self"
+        },
+        "9": {
+          "type": "최대최소·순서쌍 개수",
+          "cat": "function",
+          "grade": "self"
+        },
+        "10": {
+          "type": "접선·도형 넓이비(무게중심)",
+          "cat": "function",
+          "grade": "mc"
+        },
+        "11": {
+          "type": "구간 정의 함수·교점 조건",
+          "cat": "function",
+          "grade": "self"
+        },
+        "12": {
+          "type": "항등식·분모조건·이차함수 합",
+          "cat": "function",
+          "grade": "self"
+        }
+      }
+    },
+    "mini||2026||공통수학1||20주차": {
+      "kind": "mini",
+      "year": "2026",
+      "target": "공통수학1",
+      "week": "20주차",
+      "totalCount": 12,
+      "typeMap": {
+        "1": {
+          "type": "인수분해·소인수 표현",
+          "cat": "factor",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "치환 인수분해·미정계수",
+          "cat": "factor",
+          "grade": "mc"
+        },
+        "3": {
+          "type": "제한구간 최대최소·순서쌍 합",
+          "cat": "function",
+          "grade": "mc"
+        },
+        "4": {
+          "type": "닮음 비례식·식의 값(분수식)",
+          "cat": "calc",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "복소수 실수화·자연수 개수",
+          "cat": "complex",
+          "grade": "mc"
+        },
+        "6": {
+          "type": "근과계수·두 근 차(판별식)",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "7": {
+          "type": "사차·이차 나눗셈 종합",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "8": {
+          "type": "접함 조건·도형 넓이비",
+          "cat": "function",
+          "grade": "self"
+        },
+        "9": {
+          "type": "구간 정의 함수·교점·근 개수",
+          "cat": "function",
+          "grade": "self"
+        },
+        "10": {
+          "type": "절댓값 합성·실근 개수 조건",
+          "cat": "function",
+          "grade": "self"
+        },
+        "11": {
+          "type": "두 이차함수 접함·실근 개수",
+          "cat": "function",
+          "grade": "self"
+        },
+        "12": {
+          "type": "근의 곱·사다리꼴 넓이 최대",
           "cat": "function",
           "grade": "self"
         }
