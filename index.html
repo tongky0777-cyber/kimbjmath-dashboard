@@ -3526,7 +3526,24 @@ function renderHw() {
       aioBtns = '<button class="icon-btn" title="학생 링크 복사" onclick="copyHwLink(\''+r.id+'\',\''+r.sid+'\')">🔗</button>'
               + '<button class="icon-btn" title="오답 현황" onclick="openWrongView(\''+r.id+'\')">📊</button>';
     }
-    return '<tr style="'+(overdue?'background:#fffaf9;':'')+'"><td class="student-name">'+(student?student.name:'—')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+r.name+(overdue?' <span style="color:var(--red);font-size:10px;">⚠ 기한 초과</span>':'')+'</td><td style="font-size:12px;color:'+(overdue?'var(--red)':'var(--muted)')+';">'+r.due+'</td><td style="text-align:center;">'+checkCell+'</td><td><select onchange="updateHwStatus(\''+r.id+'\',this.value)" style="font-size:12px;padding:5px 10px;min-width:96px;border:1px solid var(--line);border-radius:3px;cursor:pointer;font-family:var(--sans);"><option value="pending"'+(r.status==='pending'?' selected':'')+'>미제출</option><option value="done"'+(r.status==='done'?' selected':'')+'>제출 완료</option><option value="half"'+(r.status==='half'?' selected':'')+'>부분 제출</option></select></td><td style="font-size:12px;color:var(--muted);">'+(r.memo||'—')+'</td><td><div class="row-action">'+aioBtns+'<button class="icon-btn" onclick="deleteHw(\''+r.id+'\')">🗑️</button></div></td></tr>';
+    // 제출 여부: 선생님이 직접 done/half로 바꿨으면 그 값 우선,
+    // pending이어도 학생이 클래스룸에서 완료 체크했으면 자동으로 '제출됨'으로 본다
+    var autoDone = (r.status!=='done' && r.status!=='half') && (sdone && sdone.done);
+    if(autoDone) overdue = false;
+    var statusCell;
+    if(autoDone){
+      statusCell = '<div style="font-size:11px;color:var(--green);font-weight:700;margin-bottom:4px;">✓ 학생이 제출함 (자동)</div>'
+        + '<select onchange="updateHwStatus(\''+r.id+'\',this.value)" style="font-size:12px;padding:5px 10px;min-width:96px;border:1px solid var(--line);border-radius:3px;cursor:pointer;font-family:var(--sans);">'
+        + '<option value="pending">미제출</option>'
+        + '<option value="done" selected>제출 완료</option>'
+        + '<option value="half">부분 제출</option></select>';
+    } else {
+      statusCell = '<select onchange="updateHwStatus(\''+r.id+'\',this.value)" style="font-size:12px;padding:5px 10px;min-width:96px;border:1px solid var(--line);border-radius:3px;cursor:pointer;font-family:var(--sans);">'
+        + '<option value="pending"'+(r.status==='pending'?' selected':'')+'>미제출</option>'
+        + '<option value="done"'+(r.status==='done'?' selected':'')+'>제출 완료</option>'
+        + '<option value="half"'+(r.status==='half'?' selected':'')+'>부분 제출</option></select>';
+    }
+    return '<tr style="'+(overdue?'background:#fffaf9;':'')+'"><td class="student-name">'+(student?student.name:'—')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+r.name+(overdue?' <span style="color:var(--red);font-size:10px;">⚠ 기한 초과</span>':'')+'</td><td style="font-size:12px;color:'+(overdue?'var(--red)':'var(--muted)')+';">'+r.due+'</td><td style="text-align:center;">'+checkCell+'</td><td>'+statusCell+'</td><td style="font-size:12px;color:var(--muted);">'+(r.memo||'—')+'</td><td><div class="row-action">'+aioBtns+'<button class="icon-btn" onclick="deleteHw(\''+r.id+'\')">🗑️</button></div></td></tr>';
   }).join('');
 }
 // 올인원 오답수집 숙제인지 (unitKey+번호범위가 있으면)
@@ -4177,7 +4194,7 @@ function computeCheckItems(){
 
   // ④ 숙제 미제출 누적 3회 이상
   var missCount={};
-  homework.forEach(function(h){ if(h.status==='pending' && activeIds[h.sid]){ missCount[h.sid]=(missCount[h.sid]||0)+1; } });
+  homework.forEach(function(h){ if(!isHwSubmitted(h) && activeIds[h.sid]){ missCount[h.sid]=(missCount[h.sid]||0)+1; } });
   var chronicNames=Object.keys(missCount).filter(function(sid){ return missCount[sid]>=3; }).map(function(sid){ return activeIds[sid].name+'('+missCount[sid]+'회)'; });
   if(chronicNames.length){
     items.push({ type:'chronic', icon:'📕', tone:'red',
@@ -4415,7 +4432,7 @@ function renderDashboard() {
   var weekRate = weekRecs.length ? Math.round(weekRecs.filter(function(r){ return r.status==='O'||r.status==='B'; }).length/weekRecs.length*100)+'%' : '—';
   if(el('dash-att')) el('dash-att').textContent = weekRate;
 
-  var hwMiss = [...new Set(homework.filter(function(h){ return h.status==='pending'; }).map(function(h){ return h.sid; }))].length;
+  var hwMiss = [...new Set(homework.filter(function(h){ return !isHwSubmitted(h); }).map(function(h){ return h.sid; }))].length;
   if(el('dash-hw')) el('dash-hw').textContent = hwMiss;
 
   var thisMonth = today.toISOString().slice(0,7);
@@ -4441,7 +4458,7 @@ function renderDashboard() {
   // 숙제 미제출
   var hwbody = el('dash-hw-body');
   if(hwbody) {
-    var missed = homework.filter(function(h){ return h.status==='pending'; });
+    var missed = homework.filter(function(h){ return !isHwSubmitted(h); });
     var grouped = {};
     missed.forEach(function(h){ if(!grouped[h.sid]) grouped[h.sid]=[]; grouped[h.sid].push(h.name); });
     var rows = Object.entries(grouped).map(function(entry){
@@ -6349,6 +6366,13 @@ function hwDoneBySid(hwId, sid){
   var rec = HW_DONE[hwId] && HW_DONE[hwId][s.classKey];
   return rec || null;
 }
+// 이 숙제가 실질적으로 제출된 상태인지 (선생님 status done/half OR 학생 클래스룸 완료체크)
+function isHwSubmitted(r){
+  if(!r) return false;
+  if(r.status==='done' || r.status==='half') return true;
+  var sd = hwDoneBySid(r.id, r.sid);
+  return !!(sd && sd.done);
+}
 
 // 학생 학습기록 (클래스룸 플래너) 렌더
 function _slEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -6501,7 +6525,7 @@ function openStudentDetail(sid) {
 
   var tests = DB.get('tests').filter(function(t){ return t.sid===sid; }).sort(function(a,b){ return a.date.localeCompare(b.date); });
   var att   = DB.get('attendance').filter(function(r){ return r.sid===sid; });
-  var hw    = DB.get('homework').filter(function(h){ return h.sid===sid && h.status==='pending'; });
+  var hw    = DB.get('homework').filter(function(h){ return h.sid===sid && !isHwSubmitted(h); });
   var myGroups = getStudentGroups(sid);
 
   // 헤더
