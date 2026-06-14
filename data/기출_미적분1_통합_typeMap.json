@@ -1,0 +1,149 @@
+{
+  "subject": "미적분Ⅰ",
+  "categories": {
+    "diff_tan": "미분-접선",
+    "diff_ext": "미분-극값·그래프",
+    "diff_app": "미분-방정식·부등식·실근",
+    "diff_rate": "미분-속도·가속도",
+    "integ_calc": "적분-부정·정적분 계산",
+    "integ_def": "적분-정적분으로 정의된 함수",
+    "integ_area": "적분-넓이",
+    "integ_dist": "적분-속도와 거리",
+    "integ_app": "적분-종합·함수결정"
+  },
+  "exams": {
+    "gicul||2025||남산고||미적분Ⅰ||1학기||기말": {
+      "school": "남산고",
+      "year": "2025",
+      "term": "기말",
+      "totalCount": 25,
+      "typeMap": {
+        "1": {
+          "type": "부정적분→함숫값",
+          "cat": "integ_calc",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "정적분 계산(다항)",
+          "cat": "integ_calc",
+          "grade": "mc"
+        },
+        "3": {
+          "type": "정적분으로 정의된 함수(상수구간)",
+          "cat": "integ_def",
+          "grade": "mc"
+        },
+        "4": {
+          "type": "속도의 최댓값(속력)",
+          "cat": "diff_rate",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "정적분 정의 함수→f 결정",
+          "cat": "integ_def",
+          "grade": "mc"
+        },
+        "6": {
+          "type": "부정적분 관계식→최댓값",
+          "cat": "integ_calc",
+          "grade": "mc"
+        },
+        "7": {
+          "type": "미적분 종합(대칭+부정적분 조건)",
+          "cat": "integ_app",
+          "grade": "mc"
+        },
+        "8": {
+          "type": "두 곡선 교점 개수→정수 개수",
+          "cat": "diff_app",
+          "grade": "mc"
+        },
+        "9": {
+          "type": "접선 기울기 곱→최솟값",
+          "cat": "diff_tan",
+          "grade": "mc"
+        },
+        "10": {
+          "type": "연속·부등식 조건→정적분값",
+          "cat": "integ_app",
+          "grade": "mc"
+        },
+        "11": {
+          "type": "부정적분 관계식→함숫값 합",
+          "cat": "integ_calc",
+          "grade": "mc"
+        },
+        "12": {
+          "type": "절댓값 함수 미분가능 조건",
+          "cat": "diff_ext",
+          "grade": "mc"
+        },
+        "13": {
+          "type": "정적분 정의 함수 극값 조건",
+          "cat": "diff_ext",
+          "grade": "mc"
+        },
+        "14": {
+          "type": "삼차함수 실근 개수 조건",
+          "cat": "diff_app",
+          "grade": "mc"
+        },
+        "15": {
+          "type": "폐구간 최대·최소",
+          "cat": "diff_ext",
+          "grade": "self"
+        },
+        "16": {
+          "type": "움직인 거리→속도 결정",
+          "cat": "integ_dist",
+          "grade": "self"
+        },
+        "17": {
+          "type": "정적분 정의 함수→f(a−b)",
+          "cat": "integ_def",
+          "grade": "self"
+        },
+        "18": {
+          "type": "주기함수 정적분",
+          "cat": "integ_app",
+          "grade": "self"
+        },
+        "19": {
+          "type": "두 곡선 넓이(대칭조건)",
+          "cat": "integ_area",
+          "grade": "self"
+        },
+        "20": {
+          "type": "절댓값 삼차+실근 조건→자연수 합",
+          "cat": "diff_app",
+          "grade": "self"
+        },
+        "21": {
+          "type": "미분가능 조각함수+절댓값 미분불가",
+          "cat": "diff_ext",
+          "grade": "self"
+        },
+        "22": {
+          "type": "원뿔 부피 최대(미분 최적화)",
+          "cat": "diff_app",
+          "grade": "self"
+        },
+        "23": {
+          "type": "도함수 조건→정적분(사차)",
+          "cat": "integ_calc",
+          "grade": "self"
+        },
+        "24": {
+          "type": "절댓값 도함수→정적분",
+          "cat": "integ_dist",
+          "grade": "self"
+        },
+        "25": {
+          "type": "조각함수 그래프 넓이 최대",
+          "cat": "integ_area",
+          "grade": "self"
+        }
+      }
+    }
+  }
+}

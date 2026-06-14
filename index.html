@@ -1541,6 +1541,26 @@ function examScoreKeyOfRecord(t){
     tables[KEY13]={ points:{ 1:3, 2:3, 3:3, 4:3, 5:4, 6:4, 7:4, 8:4, 9:4, 10:4, 11:4, 12:5, 13:5, 14:5, 15:5, 16:5, 17:5, 18:5, 19:6, 20:6, 21:6, 22:7 }, total:22, full:100 };
     changed=true;
   }
+  // 2025 남산고 미적분Ⅰ 1학기 기말고사 (25문항, 만점 100점 / 22~25번 서술형)
+  var KEY14='gicul||2025||남산고||미적분Ⅰ||1학기||기말';
+  if(!tables[KEY14]){
+    tables[KEY14]={ points:{
+      1:2.3, 2:2.3, 3:2.4, 4:2.5, 5:2.6, 6:2.7, 7:2.8, 8:2.9, 9:3.0, 10:3.1,
+      11:3.2, 12:3.3, 13:3.4, 14:3.5, 15:2.0, 16:2.0, 17:2.0, 18:3.0, 19:3.0, 20:4.0,
+      21:4.0, 22:7.0, 23:10.0, 24:11.0, 25:12.0
+    }, total:25, full:100 };
+    changed=true;
+  }
+  // 2025 남산고 대수 1학기 기말고사 (30문항, 만점 100점 / 28~30번 서술형)
+  var KEY15='gicul||2025||남산고||대수||1학기||기말';
+  if(!tables[KEY15]){
+    tables[KEY15]={ points:{
+      1:2.0, 2:2.0, 3:2.0, 4:2.0, 5:2.0, 6:2.1, 7:2.1, 8:2.2, 9:2.3, 10:2.4,
+      11:2.5, 12:2.6, 13:2.7, 14:2.8, 15:2.9, 16:3.0, 17:3.0, 18:3.0, 19:3.2, 20:3.2,
+      21:1.0, 22:1.0, 23:2.0, 24:2.0, 25:3.0, 26:3.0, 27:3.0, 28:9.0, 29:12.0, 30:14.0
+    }, total:30, full:100 };
+    changed=true;
+  }
   if(changed) setExamScoreTables(tables);
 })();
 
@@ -3905,6 +3925,7 @@ function renderWrongView(){
     html+='<div style="border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px;">'
       +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">'
       +'<b style="font-size:15px;">'+esc2(name)+'</b>'
+      +'<button onclick="openCompareView(\''+sid+'\')" style="margin-left:8px;font-size:11px;padding:3px 9px;border:1px solid var(--line);border-radius:6px;background:none;color:var(--ink);cursor:pointer;">📊 교재 vs 시험</button>'
       +'<span style="font-size:12px;color:var(--muted);">'+(sub.submittedAt||'')+'</span>'
       +'<span style="margin-left:auto;font-size:13px;">맞음 <b style="color:var(--green)">'+c.correct+'</b> · 틀림 <b style="color:var(--red)">'+c.wrong+'</b>'
       +(c.pending?' · △ <b>'+c.pending+'</b>':'')+' · '+pct+'점</span>'
@@ -6421,6 +6442,154 @@ function loadWaSubs(cb){
     }).catch(function(){ if(cb) cb(); });
   }catch(e){ if(cb) cb(); }
 }
+
+/* ===== 교재 오답 vs 시험지 오답 비교 (신규, 독립 모듈) =====
+ * 교재(올인원, wronganswers)와 기출 시험(bjm_tests의 t.wrong)을
+ * 같은 중단원 cat 코드로 집계해 학생별로 비교한다.
+ */
+var _GICUL_TM = null;        // { paperKey: { "번호": {type,cat} } }
+var _GICUL_TM_CACHE = {};
+// 기출 통합 typeMap 3개 로드 → paperKey별 typeMap 평탄화
+function loadGiculTypeMaps(cb){
+  if(_GICUL_TM){ if(cb)cb(_GICUL_TM); return; }
+  var files=['./data/기출_공수1_통합_typeMap.json','./data/기출_대수_통합_typeMap.json','./data/기출_미적분1_통합_typeMap.json'];
+  Promise.all(files.map(function(f){
+    return fetch(f).then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; });
+  })).then(function(arr){
+    var map={};
+    arr.forEach(function(d){
+      if(!d || !d.exams) return;
+      Object.keys(d.exams).forEach(function(pk){
+        map[pk]=d.exams[pk].typeMap||{};
+      });
+    });
+    _GICUL_TM=map;
+    if(cb)cb(map);
+  });
+}
+
+// 한 학생의 시험지 오답 cat 집계: bjm_tests에서 sid의 기출 t.wrong → cat
+function examWrongByCat(sid){
+  var tests=DB.get('tests')||[];
+  var byCat={};
+  tests.forEach(function(t){
+    if(t.sid!==sid) return;
+    if(!Array.isArray(t.wrong) || !t.wrong.length) return;
+    var pk=getPaperKey(t).key;
+    var tm=_GICUL_TM && _GICUL_TM[pk];
+    if(!tm) return;  // 분류 안 된 시험
+    t.wrong.forEach(function(no){
+      var e=tm[String(no)];
+      if(e && e.cat) byCat[e.cat]=(byCat[e.cat]||0)+1;
+    });
+  });
+  return byCat;
+}
+
+// 한 학생의 교재 오답 cat 집계: wronganswers에서 sid의 틀린 번호 → 올인원 tm → cat
+// (올인원 typeMap을 미리 로드해 둬야 함: _CMP_BOOK_TM[tmKey])
+var _CMP_BOOK_TM={};
+function bookWrongByCat(sid, cb){
+  // 이 학생의 올인원 숙제 제출들을 모아 cat 집계
+  var byCat={};
+  var subs=WA_SUBS||{};
+  var homework=DB.get('homework')||[];
+  // hwId → 숙제레코드 (교재/단원 정보)
+  var hwById={};
+  homework.forEach(function(h){ hwById[h.id]=h; });
+  var needTm={};  // 로드 필요한 tmKey 수집
+  Object.keys(subs).forEach(function(hwId){
+    var rec=hwById[hwId]; if(!rec) return;
+    var sub=subs[hwId] && subs[hwId][sid]; if(!sub || !sub.submittedFull) return;
+    var tmKey=aioTmKeyOf(rec.book); if(tmKey) needTm[tmKey]=true;
+  });
+  var keys=Object.keys(needTm);
+  Promise.all(keys.map(function(k){
+    if(_CMP_BOOK_TM[k]) return Promise.resolve();
+    return TypeMap.loadTypeMap(k).then(function(d){ _CMP_BOOK_TM[k]=d; }).catch(function(){});
+  })).then(function(){
+    Object.keys(subs).forEach(function(hwId){
+      var rec=hwById[hwId]; if(!rec) return;
+      var sub=subs[hwId] && subs[hwId][sid]; if(!sub || !sub.submittedFull) return;
+      var tmKey=aioTmKeyOf(rec.book); var tmData=_CMP_BOOK_TM[tmKey]; if(!tmData) return;
+      var wrong=sub.wrong||[];
+      wrong.forEach(function(no){
+        var hit=TypeMap.lookup(tmData, rec.unitKey, no);
+        if(hit && hit.cat) byCat[hit.cat]=(byCat[hit.cat]||0)+1;
+      });
+    });
+    if(cb)cb(byCat);
+  });
+}
+
+// 비교 화면 진입
+function openCompareView(sid){
+  if(typeof loadGiculTypeMaps!=='function') return;
+  var modal=document.getElementById('compare-modal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='compare-modal';
+    modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    modal.onclick=function(e){ if(e.target===modal) modal.remove(); };
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML='<div style="background:var(--white);border-radius:14px;max-width:640px;width:100%;max-height:85vh;overflow:auto;padding:20px;box-shadow:0 24px 60px rgba(0,0,0,.18);"><div id="compare-body">불러오는 중…</div></div>';
+  Promise.resolve(window._authReady).then(function(){
+    loadGiculTypeMaps(function(){
+      loadWaSubs(function(){
+        bookWrongByCat(sid, function(bookCat){
+          var examCat=examWrongByCat(sid);
+          renderCompareBody(sid, bookCat, examCat);
+        });
+      });
+    });
+  });
+}
+
+function renderCompareBody(sid, bookCat, examCat){
+  var body=document.getElementById('compare-body'); if(!body) return;
+  var students=DB.get('students');
+  var stu=students.find(function(s){ return s.id===sid; });
+  var name=stu?stu.name:sid;
+  var catNames=(window.TypeMap&&TypeMap.CAT_NAMES)||{};
+  // 합집합 cat, 합계 많은 순
+  var allCats={};
+  Object.keys(bookCat).forEach(function(c){ allCats[c]=(allCats[c]||0)+bookCat[c]; });
+  Object.keys(examCat).forEach(function(c){ allCats[c]=(allCats[c]||0)+examCat[c]; });
+  var cats=Object.keys(allCats).sort(function(a,b){ return allCats[b]-allCats[a]; });
+  var maxV=1;
+  cats.forEach(function(c){ maxV=Math.max(maxV, bookCat[c]||0, examCat[c]||0); });
+
+  var html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
+    +'<div style="font-size:16px;font-weight:700;">📊 교재 vs 시험지 약점 비교 — '+esc2(name)+'</div>'
+    +'<button onclick="document.getElementById(\'compare-modal\').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);">×</button></div>';
+  html+='<div style="display:flex;gap:12px;font-size:12px;color:var(--muted);margin-bottom:14px;">'
+    +'<span><span style="display:inline-block;width:10px;height:10px;background:#85B7EB;border-radius:2px;vertical-align:-1px;margin-right:4px;"></span>교재 오답</span>'
+    +'<span><span style="display:inline-block;width:10px;height:10px;background:#F09595;border-radius:2px;vertical-align:-1px;margin-right:4px;"></span>시험지 오답</span></div>';
+  if(!cats.length){
+    html+='<div style="color:var(--muted);text-align:center;padding:24px;">아직 분류된 교재·시험 오답 데이터가 없습니다.</div>';
+  } else {
+    html+='<div style="display:flex;flex-direction:column;gap:11px;">';
+    cats.forEach(function(c){
+      var bv=bookCat[c]||0, ev=examCat[c]||0;
+      var label=catNames[c]||c;
+      html+='<div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px;">'
+        +'<span style="font-weight:500;">'+esc2(label)+'</span>'
+        +'<span style="color:var(--muted);font-size:12px;">교재 '+bv+' · 시험 '+ev+'</span></div>'
+        +'<div style="display:flex;flex-direction:column;gap:2px;">'
+        +'<div style="height:14px;background:#85B7EB;border-radius:3px;width:'+Math.round(bv/maxV*100)+'%;min-width:'+(bv?'8px':'0')+';"></div>'
+        +'<div style="height:14px;background:#F09595;border-radius:3px;width:'+Math.round(ev/maxV*100)+'%;min-width:'+(ev?'8px':'0')+';"></div>'
+        +'</div></div>';
+    });
+    html+='</div>';
+    html+='<div style="margin-top:14px;padding-top:12px;border-top:0.5px solid var(--line);font-size:12px;color:var(--muted);line-height:1.7;">'
+      +'교재에선 적게 틀렸는데 시험에서 많이 틀린 유형 = 실전 약점. 교재에서만 틀린 유형 = 연습 부족.</div>';
+  }
+  body.innerHTML=html;
+}
+
+
 
 function loadClassPlanners(cb){
   try{

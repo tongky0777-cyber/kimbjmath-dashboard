@@ -7,473 +7,477 @@
       "unitKey": "unit1",
       "totalCount": 250,
       "categories": {
-        "calc": "다항식·계산",
+        "calc_mul": "다항식-곱셈공식·변형",
+        "calc_div": "다항식-나눗셈·조립제법",
+        "calc_rem": "다항식-나머지·인수정리",
+        "calc_id": "다항식-항등식·미정계수",
+        "calc_etc": "다항식-수의 계산·이항",
         "application": "활용·종합"
       },
       "typeMap": {
         "1": {
           "type": "다항식 정리(내림차순·동류항)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "2": {
           "type": "다항식 사칙연산(계수의 합)",
-          "cat": "calc"
+          "cat": "calc_etc"
         },
         "3": {
           "type": "다항식 정리(내림차순·동류항)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "4": {
           "type": "다항식 사칙연산(계수 비교)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "5": {
           "type": "연립 다항식(A,B 연산)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "6": {
           "type": "연립 다항식(A,B 연산)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "7": {
           "type": "연립 다항식(A,B 연산)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "8": {
           "type": "연립 다항식(A,B 연산)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "9": {
           "type": "연립 다항식(세 다항식)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "10": {
           "type": "연립 다항식(세 다항식)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "11": {
           "type": "연립 다항식(세 다항식)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "12": {
           "type": "연립 다항식(세 다항식)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "13": {
           "type": "새 연산 정의(다항식)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "14": {
           "type": "새 연산 정의(다항식)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "15": {
           "type": "새 연산 정의(다항식)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "16": {
           "type": "새 연산 정의(다항식)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "17": {
           "type": "전개식 특정 항 계수",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "18": {
           "type": "전개식 특정 항 계수(미정계수)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "19": {
           "type": "전개식 특정 항 계수(미정계수)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "20": {
           "type": "전개식 특정 항 계수(미정계수)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "21": {
           "type": "다항식 제곱 전개 특정 항 계수",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "22": {
           "type": "다항식 제곱 전개 특정 항 계수",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "23": {
           "type": "다항식 제곱 전개 특정 항 계수",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "24": {
           "type": "다항식 제곱 전개 특정 항 계수",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "25": {
           "type": "여러 다항식 곱 전개 특정 항 계수",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "26": {
           "type": "여러 다항식 곱 전개 특정 항 계수",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "27": {
           "type": "여러 다항식 곱 전개 특정 항 계수",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "28": {
           "type": "여러 다항식 곱 전개 특정 항 계수",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "29": {
           "type": "전개식 특정 항 계수(미정계수)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "30": {
           "type": "전개식 특정 항 계수(미정계수)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "31": {
           "type": "전개식 특정 항 계수(미정계수)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "32": {
           "type": "전개식 특정 항 계수(미정계수)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "33": {
           "type": "조건식 이용 고차식 값(나눗셈)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "34": {
           "type": "조건식 이용 고차식 값(나눗셈)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "35": {
           "type": "조건식 이용 고차식 값(나눗셈)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "36": {
           "type": "조건식 이용 고차식 값(나눗셈)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "37": {
           "type": "다항식 나눗셈(몫·나머지)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "38": {
           "type": "다항식 나눗셈(몫·나머지)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "39": {
           "type": "다항식 나눗셈(몫·나머지)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "40": {
           "type": "다항식 나눗셈(몫·나머지)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "41": {
           "type": "나눗셈 관계식 활용(변형식 몫·나머지)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "42": {
           "type": "나눗셈 관계식 활용(변형식 몫·나머지)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "43": {
           "type": "나눗셈 관계식 활용(변형식 몫·나머지)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "44": {
           "type": "나눗셈 관계식 활용(변형식 몫·나머지)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "45": {
           "type": "나눗셈 성질 보기 합답형",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "46": {
           "type": "나눗셈 성질 보기 합답형",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "47": {
           "type": "나눗셈 성질 보기 합답형",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "48": {
           "type": "나눗셈 성질 보기 합답형",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "49": {
           "type": "다항식 곱셈 전개",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "50": {
           "type": "다항식 곱셈·분배 계산",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "51": {
           "type": "다항식 곱셈·분배 계산",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "52": {
           "type": "다항식 곱셈·분배 계산",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "53": {
           "type": "곱셈공식(완전제곱) 계수 비교",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "54": {
           "type": "곱셈공식(다변수 완전제곱) 전개",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "55": {
           "type": "곱셈공식 전개 계수 비교",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "56": {
           "type": "곱셈공식(세제곱·합차) 전개",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "57": {
           "type": "곱셈공식(합차 연쇄) 전개",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "58": {
           "type": "곱셈공식(합차 패턴) 간단히",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "59": {
           "type": "곱셈공식(합차 패턴) 간단히",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "60": {
           "type": "곱셈공식(세제곱합·차) 전개",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "61": {
           "type": "곱셈공식 변형(기본대칭식)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "62": {
           "type": "곱셈공식 변형(대칭식)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "63": {
           "type": "곱셈공식 변형(대칭식)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "64": {
           "type": "곱셈공식 변형(대칭식)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "65": {
           "type": "곱셈공식 대입·정리",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "66": {
           "type": "곱셈공식 대입·정리",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "67": {
           "type": "곱셈공식 대입·정리",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "68": {
           "type": "곱셈공식 대입·정리",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "69": {
           "type": "곱셈공식 보기 합답형",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "70": {
           "type": "곱셈공식 보기 합답형",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "71": {
           "type": "곱셈공식 보기 합답형",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "72": {
           "type": "곱셈공식 보기 합답형",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "73": {
           "type": "곱셈공식 전개 계수 비교",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "74": {
           "type": "곱셈공식 변형(세제곱차 패턴)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "75": {
           "type": "곱셈공식(공통부분 치환) 전개",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "76": {
           "type": "곱셈공식(공통부분 치환) 전개",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "77": {
           "type": "곱셈공식 변형(A²−B²) 대입",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "78": {
           "type": "곱셈공식 변형(A²−B²) 대입",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "79": {
           "type": "곱셈공식 변형(A²−B²) 대입",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "80": {
           "type": "곱셈공식 변형(A²−B²) 대입",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "81": {
           "type": "곱셈공식(공통부분 치환) 계수",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "82": {
           "type": "곱셈공식(공통부분 치환) 전개",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "83": {
           "type": "곱셈공식(공통부분 치환) 계수",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "84": {
           "type": "곱셈공식(공통부분 치환) 계수",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "85": {
           "type": "곱셈공식(다변수) 관계식 판단",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "86": {
           "type": "곱셈공식(다변수) 항의 개수",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "87": {
           "type": "곱셈공식(다변수) 항의 개수",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "88": {
           "type": "곱셈공식(다변수 완전제곱) 전개",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "89": {
           "type": "곱셈공식 변형(대칭식 고차)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "90": {
           "type": "곱셈공식 변형(대칭식 고차)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "91": {
           "type": "곱셈공식 변형(대칭식 고차)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "92": {
           "type": "곱셈공식 변형(대칭식 고차)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "93": {
           "type": "곱셈공식 변형(대칭식 분수식)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "94": {
           "type": "곱셈공식 변형(대칭식 분수식)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "95": {
           "type": "곱셈공식 변형(대칭식 분수식)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "96": {
           "type": "곱셈공식 변형(대칭식 분수식)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "97": {
           "type": "곱셈공식 변형(3변수 대칭식)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "98": {
           "type": "곱셈공식 변형(3변수 대칭식)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "99": {
           "type": "곱셈공식 변형(3변수 대칭식)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "100": {
           "type": "곱셈공식 변형(3변수 대칭식)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "101": {
           "type": "곱셈공식 변형(a²+b²+c²−ab−bc−ca)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "102": {
           "type": "곱셈공식 변형(a²+b²+c²−ab−bc−ca)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "103": {
           "type": "곱셈공식 변형(a²+b²+c²−ab−bc−ca)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "104": {
           "type": "곱셈공식 변형(a²+b²+c²−ab−bc−ca)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "105": {
           "type": "곱셈공식 변형(a³+b³+c³−3abc)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "106": {
           "type": "곱셈공식 변형(a³+b³+c³−3abc)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "107": {
           "type": "곱셈공식 변형(a³+b³+c³−3abc)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "108": {
           "type": "곱셈공식 변형(a³+b³+c³−3abc)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "109": {
           "type": "곱셈공식 변형(x±1/x 대칭형)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "110": {
           "type": "곱셈공식 변형(x±1/x 대칭형)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "111": {
           "type": "곱셈공식 변형(x±1/x 대칭형)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "112": {
           "type": "곱셈공식 변형(x±1/x 대칭형)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "113": {
           "type": "곱셈공식 변형(x±1/x 대칭형)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "114": {
           "type": "곱셈공식 변형(상반방정식 근)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "115": {
           "type": "곱셈공식 변형(상반방정식 근)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "116": {
           "type": "곱셈공식 변형(상반방정식 근)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "117": {
           "type": "곱셈공식 활용(직육면체 도형)",
@@ -509,507 +513,507 @@
         },
         "125": {
           "type": "항등식(미지수 무관 성립)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "126": {
           "type": "항등식(미지수 무관 성립)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "127": {
           "type": "항등식(미지수 무관 성립)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "128": {
           "type": "항등식(미지수 무관 성립)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "129": {
           "type": "항등식(조건식 대입형)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "130": {
           "type": "항등식(조건식 대입형)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "131": {
           "type": "항등식(조건식 대입형)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "132": {
           "type": "항등식(조건식 대입형)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "133": {
           "type": "항등식(다항식 미정계수)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "134": {
           "type": "항등식(함수식)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "135": {
           "type": "항등식(함수식)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "136": {
           "type": "항등식(함수식)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "137": {
           "type": "항등식(분수식 일정)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "138": {
           "type": "항등식(분수식 일정)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "139": {
           "type": "항등식(분수식 일정)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "140": {
           "type": "항등식(분수식 일정)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "141": {
           "type": "항등식(나눗셈 꼴 미정계수)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "142": {
           "type": "항등식(나눗셈 꼴 미정계수)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "143": {
           "type": "항등식(나눗셈 꼴 미정계수)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "144": {
           "type": "항등식(나눗셈 꼴 미정계수)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "145": {
           "type": "항등식(차수변환 (x−1) 거듭제곱)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "146": {
           "type": "항등식(차수변환 (x−1) 거듭제곱)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "147": {
           "type": "항등식(차수변환 (x−1) 거듭제곱)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "148": {
           "type": "항등식(차수변환 (x−1) 거듭제곱)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "149": {
           "type": "항등식(함수방정식형)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "150": {
           "type": "항등식(함수방정식형)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "151": {
           "type": "항등식(함수방정식형)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "152": {
           "type": "항등식(함수방정식형)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "153": {
           "type": "항등식(다항식 미정계수)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "154": {
           "type": "항등식(다항식 미정계수)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "155": {
           "type": "항등식(다항식 미정계수)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "156": {
           "type": "항등식(다항식 미정계수)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "157": {
           "type": "항등식(계수의 합 수치대입)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "158": {
           "type": "항등식(계수의 합 수치대입)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "159": {
           "type": "항등식(계수의 합 수치대입)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "160": {
           "type": "항등식(계수의 합 수치대입)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "161": {
           "type": "항등식(계수의 부분합 수치대입)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "162": {
           "type": "항등식(계수의 부분합 수치대입)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "163": {
           "type": "항등식(계수의 부분합 수치대입)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "164": {
           "type": "항등식(계수의 합 수치대입)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "165": {
           "type": "항등식(계수의 합 수치대입)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "166": {
           "type": "항등식(계수의 합 수치대입)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "167": {
           "type": "항등식(계수의 합 수치대입)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "168": {
           "type": "항등식(계수의 합 수치대입)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "169": {
           "type": "인수정리(나누어떨어짐 미정계수)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "170": {
           "type": "인수정리(나누어떨어짐 미정계수)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "171": {
           "type": "인수정리(나누어떨어짐 미정계수)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "172": {
           "type": "인수정리(나누어떨어짐 미정계수)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "173": {
           "type": "나눗셈 항등식(몫·나머지 미정계수)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "174": {
           "type": "나눗셈 항등식(몫·나머지 미정계수)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "175": {
           "type": "나눗셈 항등식(몫·나머지 미정계수)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "176": {
           "type": "나눗셈 항등식(몫·나머지 미정계수)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "177": {
           "type": "나머지정리(거듭제곱 인수로 나눈 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "178": {
           "type": "나머지정리(곱으로 나눈 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "179": {
           "type": "나머지정리(곱으로 나눈 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "180": {
           "type": "나머지정리(곱으로 나눈 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "181": {
           "type": "나머지정리(결합 다항식 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "182": {
           "type": "나머지정리(결합 다항식 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "183": {
           "type": "나머지정리(결합 다항식 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "184": {
           "type": "나머지정리(결합 다항식 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "185": {
           "type": "나머지정리(결합 다항식 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "186": {
           "type": "나머지정리(곱·제곱 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "187": {
           "type": "나머지정리(결합 다항식 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "188": {
           "type": "나머지정리(곱·제곱 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "189": {
           "type": "나머지정리+항등식(인수분해 활용)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "190": {
           "type": "나머지정리+항등식(인수분해 활용)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "191": {
           "type": "나머지정리+항등식(인수분해 활용)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "192": {
           "type": "나머지정리+항등식(인수분해 활용)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "193": {
           "type": "나머지정리(두 나머지 같은 조건)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "194": {
           "type": "나머지정리(두 나머지 같은 조건)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "195": {
           "type": "나머지정리(두 나머지 같은 조건)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "196": {
           "type": "나머지정리(두 나머지 같은 조건)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "197": {
           "type": "나머지정리(나머지 합·차·곱 조건)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "198": {
           "type": "나머지정리(나머지 합·차·곱 조건)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "199": {
           "type": "나머지정리(나머지 합·차·곱 조건)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "200": {
           "type": "나머지정리(나머지 합·차·곱 조건)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "201": {
           "type": "나머지정리(조건식 연립 관계식)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "202": {
           "type": "나머지정리(조건식 연립 관계식)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "203": {
           "type": "나머지정리(조건식 연립 관계식)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "204": {
           "type": "나머지정리(조건식 연립 관계식)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "205": {
           "type": "나머지정리(이차식으로 나눈 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "206": {
           "type": "나머지정리(이차식으로 나눈 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "207": {
           "type": "나머지정리(이차식으로 나눈 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "208": {
           "type": "나머지정리(이차식으로 나눈 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "209": {
           "type": "나머지정리(결합 다항식 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "210": {
           "type": "나머지정리(결합 다항식 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "211": {
           "type": "나머지정리(결합 다항식 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "212": {
           "type": "나머지정리(결합 다항식 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "213": {
           "type": "나머지정리(함수 대칭조건 활용)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "214": {
           "type": "나머지정리(함수 대칭조건 활용)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "215": {
           "type": "나머지정리(함수 대칭조건 활용)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "216": {
           "type": "나머지정리(함수 대칭조건 활용)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "217": {
           "type": "나머지정리(변형식 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "218": {
           "type": "나머지정리(변형식 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "219": {
           "type": "나머지정리(변형식 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "220": {
           "type": "나머지정리(변형식 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "221": {
           "type": "나머지정리(결합 다항식 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "222": {
           "type": "나머지정리(변형식 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "223": {
           "type": "나머지정리(결합 다항식 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "224": {
           "type": "나머지정리(결합 다항식 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "225": {
           "type": "나머지정리(이중나눗셈 몫의 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "226": {
           "type": "나머지정리(이중나눗셈 몫의 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "227": {
           "type": "나머지정리(이중나눗셈 몫의 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "228": {
           "type": "나머지정리(이중나눗셈 몫의 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "229": {
           "type": "나머지정리(고차식으로 나눈 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "230": {
           "type": "나머지정리(고차식으로 나눈 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "231": {
           "type": "나머지정리(고차식으로 나눈 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "232": {
           "type": "나머지정리(고차식으로 나눈 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "233": {
           "type": "나머지정리(고차식으로 나눈 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "234": {
           "type": "나머지정리(고차식으로 나눈 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "235": {
           "type": "나머지정리(고차식으로 나눈 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "236": {
           "type": "나머지정리(고차식으로 나눈 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "237": {
           "type": "나머지정리(변형식 f(kx) 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "238": {
           "type": "나머지정리(변형식 f(kx) 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "239": {
           "type": "나머지정리(변형식 f(kx) 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "240": {
           "type": "나머지정리(변형식 f(kx) 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "241": {
           "type": "나머지정리(여러 조건 종합)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "242": {
           "type": "나머지정리(여러 조건 종합)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "243": {
           "type": "나머지정리(여러 조건 종합)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "244": {
           "type": "나머지정리(여러 조건 종합)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "245": {
           "type": "나머지정리(결합·변형식 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "246": {
           "type": "나머지정리(곱·제곱 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "247": {
           "type": "나머지정리(곱·제곱 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "248": {
           "type": "나머지정리(곱·제곱 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "249": {
           "type": "인수정리+나머지(변형식)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "250": {
           "type": "나머지정리(변형식 나머지 추론)",
-          "cat": "calc"
+          "cat": "calc_rem"
         }
       },
       "uncertain": [],
@@ -1094,132 +1098,135 @@
       "unitKey": "unit2",
       "totalCount": 250,
       "categories": {
-        "calc": "다항식·계산",
+        "calc_mul": "다항식-곱셈공식·변형",
+        "calc_div": "다항식-나눗셈·조립제법",
+        "calc_rem": "다항식-나머지·인수정리",
         "factor": "인수분해",
-        "complex": "복소수",
-        "equation": "방정식·근의 성질",
+        "complex_op": "복소수-연산·켤레·i",
+        "complex_root": "복소수-방정식 허근",
+        "eq_quad": "방정식-이차(근과계수·판별식)",
         "application": "활용·종합"
       },
       "typeMap": {
         "1": {
           "type": "인수정리+나머지정리(변형식 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "2": {
           "type": "인수정리+나머지정리(변형식 나머지)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "3": {
           "type": "인수정리(나누어떨어짐 조건 종합)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "4": {
           "type": "인수정리(나누어떨어짐 조건 종합)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "5": {
           "type": "인수정리(나누어떨어짐 조건 종합)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "6": {
           "type": "인수정리(나누어떨어짐 조건 종합)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "7": {
           "type": "인수정리(세 근으로 다항식 결정)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "8": {
           "type": "인수정리(세 근으로 다항식 결정)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "9": {
           "type": "인수정리(세 근으로 다항식 결정)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "10": {
           "type": "인수정리(세 근으로 다항식 결정)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "11": {
           "type": "나머지정리(여러 함숫값 조건)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "12": {
           "type": "나머지정리(여러 함숫값 조건)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "13": {
           "type": "나머지정리(여러 함숫값 조건)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "14": {
           "type": "나머지정리(여러 함숫값 조건)",
-          "cat": "calc"
+          "cat": "calc_rem"
         },
         "15": {
           "type": "조립제법(일차항 계수≠1 변형)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "16": {
           "type": "조립제법(빈칸 채우기)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "17": {
           "type": "조립제법(빈칸 채우기)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "18": {
           "type": "조립제법(일차항 계수≠1 변형)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "19": {
           "type": "조립제법(일차항 계수≠1 변형)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "20": {
           "type": "조립제법(일차항 계수≠1 변형)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "21": {
           "type": "조립제법(빈칸 채우기)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "22": {
           "type": "조립제법(빈칸 채우기)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "23": {
           "type": "조립제법((x−a) 거듭제곱 꼴 전개)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "24": {
           "type": "조립제법((x−a) 거듭제곱 꼴 전개)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "25": {
           "type": "조립제법((x−a) 거듭제곱 꼴 전개)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "26": {
           "type": "조립제법((x−a) 거듭제곱 꼴 전개)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "27": {
           "type": "조립제법((x−a) 거듭제곱 꼴 활용 함숫값)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "28": {
           "type": "조립제법((x−a) 거듭제곱 꼴 활용 함숫값)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "29": {
           "type": "조립제법((x−a) 거듭제곱 꼴 활용 함숫값)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "30": {
           "type": "조립제법((x−a) 거듭제곱 꼴 활용 함숫값)",
-          "cat": "calc"
+          "cat": "calc_div"
         },
         "31": {
           "type": "인수분해(세제곱 공식 (a±b)³)",
@@ -1431,19 +1438,19 @@
         },
         "83": {
           "type": "곱셈공식 변형(무리수 대입 대칭식)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "84": {
           "type": "곱셈공식 변형(무리수 대입 대칭식)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "85": {
           "type": "곱셈공식 변형(무리수 대입 대칭식)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "86": {
           "type": "곱셈공식 변형(무리수 대입 대칭식)",
-          "cat": "calc"
+          "cat": "calc_mul"
         },
         "87": {
           "type": "인수분해 항등식(a+b+c=0, a³+b³+c³=3abc)",
@@ -1495,475 +1502,475 @@
         },
         "99": {
           "type": "복소수(실수·순허수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "100": {
           "type": "복소수(실수·순허수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "101": {
           "type": "복소수(실수·순허수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "102": {
           "type": "복소수(실수·순허수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "103": {
           "type": "복소수(제곱이 양/음의 실수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "104": {
           "type": "복소수(제곱이 양/음의 실수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "105": {
           "type": "복소수(제곱이 양/음의 실수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "106": {
           "type": "복소수(제곱이 양/음의 실수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "107": {
           "type": "복소수(제곱이 양/음의 실수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "108": {
           "type": "복소수(제곱이 양/음의 실수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "109": {
           "type": "복소수(제곱이 양/음의 실수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "110": {
           "type": "복소수(제곱이 양/음의 실수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "111": {
           "type": "복소수(제곱이 실수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "112": {
           "type": "복소수(제곱이 실수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "113": {
           "type": "복소수(제곱이 실수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "114": {
           "type": "복소수(제곱이 실수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "115": {
           "type": "복소수(실수·허수·순허수 정의 보기 합답형)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "116": {
           "type": "복소수(실수부·허수부 정의)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "117": {
           "type": "복소수(실수·허수·순허수 분류 개수)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "118": {
           "type": "복소수(실수·허수·순허수 분류 개수)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "119": {
           "type": "복소수(사칙연산)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "120": {
           "type": "복소수(상등 — 사칙연산 후 비교)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "121": {
           "type": "복소수(상등 — 사칙연산 후 비교)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "122": {
           "type": "복소수(상등 — 사칙연산 후 비교)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "123": {
           "type": "복소수(상등 — 실수·허수부 비교)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "124": {
           "type": "복소수(상등 — 실수·허수부 비교)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "125": {
           "type": "복소수(상등 — 실수·허수부 비교)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "126": {
           "type": "복소수(상등 — 실수·허수부 비교)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "127": {
           "type": "복소수(분모 실수화 후 상등)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "128": {
           "type": "복소수(분모 실수화 후 상등)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "129": {
           "type": "복소수(분모 실수화 후 상등)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "130": {
           "type": "복소수(분모 실수화 후 상등)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "131": {
           "type": "복소수(켤레 — z=z̄ 실수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "132": {
           "type": "복소수(켤레 — z=z̄ 실수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "133": {
           "type": "복소수(켤레 — z=z̄ 실수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "134": {
           "type": "복소수(켤레 — z=z̄ 실수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "135": {
           "type": "복소수(켤레 — z+z̄=0 순허수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "136": {
           "type": "복소수(켤레 — z+z̄=0 순허수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "137": {
           "type": "복소수(켤레 — z+z̄=0 순허수 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "138": {
           "type": "복소수(켤레 — z̄=−z 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "139": {
           "type": "복소수(켤레 — 항상 실수인 식 판정 합답형)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "140": {
           "type": "복소수(켤레 — 항상 실수인 식 판정 합답형)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "141": {
           "type": "복소수(켤레 — 항상 실수인 식 판정 합답형)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "142": {
           "type": "복소수(켤레 — 항상 실수인 식 판정 합답형)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "143": {
           "type": "복소수(켤레 성질 보기 합답형)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "144": {
           "type": "복소수(켤레 성질 보기 합답형)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "145": {
           "type": "복소수(켤레 성질 보기 합답형)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "146": {
           "type": "복소수(켤레 성질 보기 합답형)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "147": {
           "type": "복소수(z와 z̄ 연립)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "148": {
           "type": "복소수(z와 z̄ 연립)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "149": {
           "type": "복소수(z와 z̄ 연립)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "150": {
           "type": "복소수(z와 z̄ 연립)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "151": {
           "type": "복소수(켤레 곱·합 식의 값)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "152": {
           "type": "복소수(켤레 곱·합 식의 값)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "153": {
           "type": "복소수(켤레 곱·합 식의 값)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "154": {
           "type": "복소수(켤레 곱·합 식의 값)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "155": {
           "type": "복소수(켤레쌍 대입 대칭식 값)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "156": {
           "type": "복소수(켤레쌍 대입 대칭식 값)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "157": {
           "type": "복소수(켤레쌍 대입 대칭식 값)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "158": {
           "type": "복소수(켤레쌍 대입 대칭식 값)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "159": {
           "type": "복소수(조건 만족 복소수 — z·z̄·실허수부 연립)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "160": {
           "type": "복소수(조건 만족 복소수 — z·z̄·실허수부 연립)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "161": {
           "type": "복소수(조건 만족 복소수 — z·z̄·실허수부 연립)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "162": {
           "type": "복소수(조건 만족 복소수 — z·z̄·실허수부 연립)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "163": {
           "type": "복소수(i의 거듭제곱 주기성)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "164": {
           "type": "복소수(i의 거듭제곱 주기성)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "165": {
           "type": "복소수(i의 거듭제곱 주기성)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "166": {
           "type": "복소수(i의 거듭제곱 주기성)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "167": {
           "type": "복소수((1±i)/(1∓i) 거듭제곱)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "168": {
           "type": "복소수((1±i)/(1∓i) 거듭제곱)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "169": {
           "type": "복소수((1±i)/(1∓i) 거듭제곱)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "170": {
           "type": "복소수((1±i)/(1∓i) 거듭제곱)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "171": {
           "type": "복소수(거듭제곱 주기성 활용 합)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "172": {
           "type": "복소수(거듭제곱 주기성 활용 합)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "173": {
           "type": "복소수(거듭제곱 주기성 활용 합)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "174": {
           "type": "복소수(거듭제곱 주기성 활용 합)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "175": {
           "type": "복소수(거듭제곱 주기성 — 순서쌍 개수)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "176": {
           "type": "복소수(거듭제곱 주기성 — 순서쌍 개수)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "177": {
           "type": "복소수(거듭제곱 주기성 — 순서쌍 개수)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "178": {
           "type": "복소수(거듭제곱 주기성 — 순서쌍 개수)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "179": {
           "type": "복소수(ω 성질 — 1의 세제곱근 합답형)",
-          "cat": "complex"
+          "cat": "complex_root"
         },
         "180": {
           "type": "복소수(ω 성질 — 1의 세제곱근 합답형)",
-          "cat": "complex"
+          "cat": "complex_root"
         },
         "181": {
           "type": "복소수(ω 성질 — 1의 세제곱근 합답형)",
-          "cat": "complex"
+          "cat": "complex_root"
         },
         "182": {
           "type": "복소수(i 거듭제곱 합 주기성 합답형)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "183": {
           "type": "복소수(켤레 점화식 규칙성)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "184": {
           "type": "복소수(켤레 점화식 규칙성)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "185": {
           "type": "복소수(켤레 점화식 규칙성)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "186": {
           "type": "복소수(켤레 점화식 규칙성)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "187": {
           "type": "복소수(음수의 제곱근 — 근호 성질)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "188": {
           "type": "복소수(음수의 제곱근 — 근호 성질)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "189": {
           "type": "복소수(음수의 제곱근 — 근호 성질)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "190": {
           "type": "복소수(음수의 제곱근 — 근호 성질)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "191": {
           "type": "복소수(근호 성질 — √a√b 부호 조건)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "192": {
           "type": "복소수(근호 성질로 부호 판정 후 절댓값 정리)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "193": {
           "type": "복소수(근호 성질로 부호 판정 후 절댓값 정리)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "194": {
           "type": "복소수(근호 성질로 부호 판정 후 절댓값 정리)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "195": {
           "type": "복소수(근호 성질 → 대소관계)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "196": {
           "type": "복소수(근호 성질 → 대소관계)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "197": {
           "type": "복소수(근호 성질 → 대소관계)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "198": {
           "type": "복소수(근호 성질 → 대소관계)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "199": {
           "type": "일차방정식(문자계수 ax=b 해 판별)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "200": {
           "type": "일차방정식(문자계수 ax=b 해 판별)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "201": {
           "type": "절댓값 포함 방정식(|이차식|=상수)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "202": {
           "type": "절댓값 포함 방정식(|이차식|=상수)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "203": {
           "type": "절댓값 포함 방정식(|이차식|=상수)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "204": {
           "type": "절댓값 포함 방정식(|이차식|=상수)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "205": {
           "type": "무리식(√x²=|x|) 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "206": {
           "type": "무리식(√x²=|x|) 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "207": {
           "type": "무리식(√x²=|x|) 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "208": {
           "type": "무리식(√x²=|x|) 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "209": {
           "type": "가우스 기호 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "210": {
           "type": "가우스 기호 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "211": {
           "type": "가우스 기호 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "212": {
           "type": "가우스 기호 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "213": {
           "type": "가우스 기호 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "214": {
           "type": "가우스 기호 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "215": {
           "type": "가우스 기호 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "216": {
           "type": "가우스 기호 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "217": {
           "type": "이차방정식 활용(도형 넓이)",
@@ -2015,91 +2022,91 @@
         },
         "229": {
           "type": "판별식(서로 다른 두 실근 D>0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "230": {
           "type": "판별식(서로 다른 두 실근 D>0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "231": {
           "type": "판별식(서로 다른 두 실근 D>0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "232": {
           "type": "판별식(서로 다른 두 실근 D>0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "233": {
           "type": "판별식(서로 다른 두 허근 D<0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "234": {
           "type": "판별식(서로 다른 두 허근 D<0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "235": {
           "type": "판별식(서로 다른 두 허근 D<0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "236": {
           "type": "판별식(서로 다른 두 허근 D<0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "237": {
           "type": "판별식(중근 D=0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "238": {
           "type": "판별식(중근 D=0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "239": {
           "type": "판별식(중근 D=0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "240": {
           "type": "판별식(중근 D=0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "241": {
           "type": "판별식(이차항 계수 미지수 — 근의 종류)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "242": {
           "type": "판별식(이차항 계수 미지수 — 근의 종류)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "243": {
           "type": "판별식(이차항 계수 미지수 — 근의 종류)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "244": {
           "type": "판별식(이차항 계수 미지수 — 근의 종류)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "245": {
           "type": "판별식(미지수 무관 항상 중근 — 항등식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "246": {
           "type": "판별식(미지수 무관 항상 중근 — 항등식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "247": {
           "type": "판별식(미지수 무관 항상 중근 — 항등식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "248": {
           "type": "판별식(미지수 무관 항상 중근 — 항등식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "249": {
           "type": "판별식(조건식 대입 후 근 판별)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "250": {
           "type": "판별식(조건식 대입 후 근 판별)",
-          "cat": "equation"
+          "cat": "eq_quad"
         }
       },
       "uncertain": [],
@@ -2180,74 +2187,74 @@
       "unitKey": "unit3",
       "totalCount": 250,
       "categories": {
-        "equation": "방정식·근의 성질",
-        "function": "이차함수",
+        "eq_quad": "방정식-이차(근과계수·판별식)",
+        "fn_graph": "이차함수-그래프·최대최소·접선",
         "application": "활용·종합"
       },
       "typeMap": {
         "1": {
           "type": "절댓값 포함 방정식(|이차식|=상수)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "2": {
           "type": "절댓값 포함 방정식(|이차식|=상수)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "3": {
           "type": "절댓값 포함 방정식(|이차식|=상수)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "4": {
           "type": "절댓값 포함 방정식(|이차식|=상수)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "5": {
           "type": "무리식(√x²=|x|) 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "6": {
           "type": "무리식(√x²=|x|) 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "7": {
           "type": "무리식(√x²=|x|) 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "8": {
           "type": "무리식(√x²=|x|) 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "9": {
           "type": "가우스 기호 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "10": {
           "type": "가우스 기호 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "11": {
           "type": "가우스 기호 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "12": {
           "type": "가우스 기호 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "13": {
           "type": "가우스 기호 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "14": {
           "type": "가우스 기호 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "15": {
           "type": "가우스 기호 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "16": {
           "type": "가우스 기호 포함 방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "17": {
           "type": "이차방정식 활용(도형 넓이)",
@@ -2299,115 +2306,115 @@
         },
         "29": {
           "type": "판별식(서로 다른 두 실근 D>0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "30": {
           "type": "판별식(서로 다른 두 실근 D>0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "31": {
           "type": "판별식(서로 다른 두 실근 D>0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "32": {
           "type": "판별식(서로 다른 두 실근 D>0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "33": {
           "type": "판별식(서로 다른 두 허근 D<0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "34": {
           "type": "판별식(서로 다른 두 허근 D<0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "35": {
           "type": "판별식(서로 다른 두 허근 D<0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "36": {
           "type": "판별식(서로 다른 두 허근 D<0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "37": {
           "type": "판별식(중근 D=0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "38": {
           "type": "판별식(중근 D=0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "39": {
           "type": "판별식(중근 D=0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "40": {
           "type": "판별식(중근 D=0)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "41": {
           "type": "판별식(이차항 계수 미지수 — 근의 종류)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "42": {
           "type": "판별식(이차항 계수 미지수 — 근의 종류)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "43": {
           "type": "판별식(이차항 계수 미지수 — 근의 종류)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "44": {
           "type": "판별식(이차항 계수 미지수 — 근의 종류)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "45": {
           "type": "판별식(미지수 무관 항상 중근 — 항등식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "46": {
           "type": "판별식(미지수 무관 항상 중근 — 항등식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "47": {
           "type": "판별식(미지수 무관 항상 중근 — 항등식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "48": {
           "type": "판별식(미지수 무관 항상 중근 — 항등식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "49": {
           "type": "판별식(조건식 대입 후 근 판별)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "50": {
           "type": "판별식(조건식 대입 후 근 판별)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "51": {
           "type": "판별식(조건식 대입 후 근 판별)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "52": {
           "type": "판별식(조건식 대입 후 근 판별)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "53": {
           "type": "판별식(근 조건→다른 방정식 근 판별 합답형)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "54": {
           "type": "판별식(근 조건→다른 방정식 근 판별 합답형)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "55": {
           "type": "판별식(근 조건→다른 방정식 근 판별 합답형)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "56": {
           "type": "판별식(근 조건→다른 방정식 근 판별 합답형)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "57": {
           "type": "판별식 활용(완전제곱·중근→삼각형 판정)",
@@ -2427,163 +2434,163 @@
         },
         "61": {
           "type": "판별식(완전제곱식 조건 D=0 미정계수)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "62": {
           "type": "판별식(완전제곱식 조건 D=0 미정계수)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "63": {
           "type": "판별식(완전제곱식 조건 D=0 미정계수)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "64": {
           "type": "판별식(완전제곱식 조건 D=0 미정계수)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "65": {
           "type": "판별식(k 무관 항상 완전제곱식 — 항등식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "66": {
           "type": "판별식(k 무관 항상 완전제곱식 — 항등식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "67": {
           "type": "판별식(k 무관 항상 완전제곱식 — 항등식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "68": {
           "type": "판별식(k 무관 항상 완전제곱식 — 항등식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "69": {
           "type": "근과 계수의 관계(대칭식 — 합·곱으로 식의 값)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "70": {
           "type": "근과 계수의 관계(대칭식 — 합·곱으로 식의 값)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "71": {
           "type": "근과 계수의 관계(대칭식 — 합·곱으로 식의 값)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "72": {
           "type": "근과 계수의 관계(대칭식 — 합·곱으로 식의 값)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "73": {
           "type": "근과 계수의 관계(근을 정의식에 대입·변형)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "74": {
           "type": "근과 계수의 관계(근을 정의식에 대입·변형)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "75": {
           "type": "근과 계수의 관계(근을 정의식에 대입·변형)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "76": {
           "type": "근과 계수의 관계(근을 정의식에 대입·변형)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "77": {
           "type": "근과 계수의 관계(두 근→계수 결정→다른 방정식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "78": {
           "type": "근과 계수의 관계(두 근→계수 결정→다른 방정식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "79": {
           "type": "근과 계수의 관계(두 근→계수 결정→다른 방정식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "80": {
           "type": "근과 계수의 관계(두 근→계수 결정→다른 방정식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "81": {
           "type": "근과 계수의 관계(두 근의 비)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "82": {
           "type": "근과 계수의 관계(두 근의 비)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "83": {
           "type": "근과 계수의 관계(두 근의 비)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "84": {
           "type": "근과 계수의 관계(두 근의 비)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "85": {
           "type": "근과 계수의 관계(두 방정식 근이 역수/관계)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "86": {
           "type": "근과 계수의 관계(두 방정식 근이 역수/관계)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "87": {
           "type": "근과 계수의 관계(두 방정식 근이 역수/관계)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "88": {
           "type": "근과 계수의 관계(변형한 근이 다른 방정식 근)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "89": {
           "type": "근과 계수의 관계(잘못 본 계수→원래 방정식 복원)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "90": {
           "type": "근과 계수의 관계(잘못 본 계수→원래 방정식 복원)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "91": {
           "type": "근과 계수의 관계(잘못 본 계수→원래 방정식 복원)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "92": {
           "type": "근과 계수의 관계(잘못 본 계수→원래 방정식 복원)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "93": {
           "type": "근과 계수의 관계(잘못된 근의 공식 적용→복원)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "94": {
           "type": "근과 계수의 관계(잘못된 근의 공식 적용→복원)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "95": {
           "type": "근과 계수의 관계(잘못된 근의 공식 적용→복원)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "96": {
           "type": "근과 계수의 관계(잘못된 근의 공식 적용→복원)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "97": {
           "type": "근과 계수의 관계(변형 근을 갖는 새 방정식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "98": {
           "type": "근과 계수의 관계(변형 근을 갖는 새 방정식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "99": {
           "type": "근과 계수의 관계(변형 근을 갖는 새 방정식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "100": {
           "type": "근과 계수의 관계(변형 근을 갖는 새 방정식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "101": {
           "type": "근과 계수의 관계 활용(도형 — 두 길이를 근으로)",
@@ -2603,291 +2610,291 @@
         },
         "105": {
           "type": "근과 계수의 관계(한 근+다른 방정식 근→새 방정식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "106": {
           "type": "근과 계수의 관계(한 근+다른 방정식 근→새 방정식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "107": {
           "type": "근과 계수의 관계(한 근+다른 방정식 근→새 방정식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "108": {
           "type": "근과 계수의 관계(한 근+다른 방정식 근→새 방정식)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "109": {
           "type": "근과 계수의 관계(두 근 함숫값 조건→이차식 결정)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "110": {
           "type": "근과 계수의 관계(두 근 함숫값 조건→이차식 결정)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "111": {
           "type": "근과 계수의 관계(두 근 함숫값 조건→이차식 결정)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "112": {
           "type": "근과 계수의 관계(두 근 함숫값 조건→이차식 결정)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "113": {
           "type": "허근+나머지정리(켤레허근·나머지 조건)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "114": {
           "type": "허근+나머지정리(켤레허근·나머지 조건)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "115": {
           "type": "허근+나머지정리(켤레허근·나머지 조건)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "116": {
           "type": "허근+나머지정리(켤레허근·나머지 조건)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "117": {
           "type": "근과 계수의 관계(변형 방정식 f(ax+b)=0 근의 합·곱)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "118": {
           "type": "근과 계수의 관계(변형 방정식 f(ax+b)=0 근의 합·곱)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "119": {
           "type": "근과 계수의 관계(변형 방정식 f(ax+b)=0 근의 합·곱)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "120": {
           "type": "근과 계수의 관계(변형 방정식 f(ax+b)=0 근의 합·곱)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "121": {
           "type": "근과 계수의 관계(치환 근을 갖는 방정식 판별 합답형)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "122": {
           "type": "근과 계수의 관계(치환 근을 갖는 방정식 판별 합답형)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "123": {
           "type": "근과 계수의 관계(치환 근을 갖는 방정식 판별 합답형)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "124": {
           "type": "근과 계수의 관계(치환 근을 갖는 방정식 판별 합답형)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "125": {
           "type": "이차함수(그래프와 x축 교점→계수 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "126": {
           "type": "이차함수(그래프와 x축 교점→계수 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "127": {
           "type": "이차함수(그래프와 x축 교점→계수 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "128": {
           "type": "이차함수(그래프와 x축 교점→계수 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "129": {
           "type": "이차함수(그래프와 x축 교점→계수 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "130": {
           "type": "이차함수(그래프와 x축 교점→계수 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "131": {
           "type": "이차함수(그래프와 x축 교점→계수 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "132": {
           "type": "이차함수(그래프와 x축 교점→계수 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "133": {
           "type": "이차함수(그래프 x절편→다른 함수 교점 거리)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "134": {
           "type": "이차함수(그래프 x절편→다른 함수 교점 거리)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "135": {
           "type": "이차함수(그래프 x절편→다른 함수 교점 거리)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "136": {
           "type": "이차함수(그래프 x절편→다른 함수 교점 거리)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "137": {
           "type": "이차함수(그래프와 x축 위치관계 — 판별식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "138": {
           "type": "이차함수(그래프와 x축 위치관계 — 판별식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "139": {
           "type": "이차함수(그래프와 x축 위치관계 — 판별식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "140": {
           "type": "이차함수(그래프와 x축 위치관계 — 판별식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "141": {
           "type": "이차함수(x축 위치관계 — 순서쌍 개수)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "142": {
           "type": "이차함수(x축 위치관계 — 순서쌍 개수)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "143": {
           "type": "이차함수(x축 위치관계 — 순서쌍 개수)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "144": {
           "type": "이차함수(x축 위치관계 — 순서쌍 개수)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "145": {
           "type": "이차함수(k 무관 항상 접함 — 판별식 항등식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "146": {
           "type": "이차함수(k 무관 항상 접함 — 판별식 항등식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "147": {
           "type": "이차함수(k 무관 항상 접함 — 판별식 항등식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "148": {
           "type": "이차함수(k 무관 항상 접함 — 판별식 항등식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "149": {
           "type": "이차함수(그래프에서 근 읽기→f(x±p)=0 근의 합·곱)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "150": {
           "type": "이차함수(그래프에서 근 읽기→f(x±p)=0 근의 합·곱)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "151": {
           "type": "이차함수(그래프에서 근 읽기→f(x±p)=0 근의 합·곱)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "152": {
           "type": "이차함수(근과 계수·대칭조건→변형 방정식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "153": {
           "type": "이차함수(근과 계수·대칭조건→변형 방정식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "154": {
           "type": "이차함수(근과 계수·대칭조건→변형 방정식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "155": {
           "type": "이차함수(근과 계수·대칭조건→변형 방정식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "156": {
           "type": "이차함수(그래프에서 근 읽기→f(x±p)=0 근의 합·곱)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "157": {
           "type": "이차함수(그래프에서 근 읽기→f(x±p)=0 근의 합·곱)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "158": {
           "type": "이차함수(그래프에서 근 읽기→f(x±p)=0 근의 합·곱)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "159": {
           "type": "이차함수(그래프에서 근 읽기→f(x±p)=0 근의 합·곱)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "160": {
           "type": "이차함수(그래프에서 근 읽기→f(x±p)=0 근의 합·곱)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "161": {
           "type": "이차함수(두 그래프 교점 f(x)=g(x))",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "162": {
           "type": "이차함수(두 그래프 교점 f(x)=g(x))",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "163": {
           "type": "이차함수(두 그래프 교점 f(x)=g(x))",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "164": {
           "type": "이차함수(두 그래프 교점 f(x)=g(x))",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "165": {
           "type": "이차함수와 직선의 교점(근과 계수, 미정계수)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "166": {
           "type": "이차함수와 직선의 교점(근과 계수, 미정계수)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "167": {
           "type": "이차함수와 직선의 교점(근과 계수, 미정계수)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "168": {
           "type": "이차함수와 직선의 교점(근과 계수, 미정계수)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "169": {
           "type": "이차함수와 직선의 교점(근과 계수, 미정계수)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "170": {
           "type": "이차함수와 직선의 교점(근과 계수, 미정계수)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "171": {
           "type": "이차함수와 직선의 교점(근과 계수, 미정계수)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "172": {
           "type": "이차함수와 직선의 교점(교점 x좌표 합·차 조건)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "173": {
           "type": "이차함수와 직선의 교점(교점 x좌표 합·차 조건)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "174": {
           "type": "이차함수와 직선의 교점(교점 x좌표 합·차 조건)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "175": {
           "type": "이차함수와 직선의 교점(교점 x좌표 합·차 조건)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "176": {
           "type": "이차함수와 직선의 교점(교점 x좌표 합·차 조건)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "177": {
           "type": "이차함수와 직선의 교점(길이비 도형)",
@@ -2907,283 +2914,283 @@
         },
         "181": {
           "type": "이차함수와 직선 위치관계(만남·안만남 — 판별식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "182": {
           "type": "이차함수와 직선 위치관계(만남·안만남 — 판별식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "183": {
           "type": "이차함수와 직선 위치관계(만남·안만남 — 판별식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "184": {
           "type": "이차함수와 직선 위치관계(만남·안만남 — 판별식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "185": {
           "type": "이차함수와 직선 위치관계(안 만나는 조건 — 개수)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "186": {
           "type": "이차함수와 직선 위치관계(안 만나는 조건 — 개수)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "187": {
           "type": "이차함수와 직선 위치관계(안 만나는 조건 — 개수)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "188": {
           "type": "이차함수와 직선 위치관계(안 만나는 조건 — 개수)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "189": {
           "type": "이차함수와 직선(접선 — 기울기 주어진 접선)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "190": {
           "type": "이차함수와 직선(접선 — 기울기 주어진 접선)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "191": {
           "type": "이차함수와 직선(접선 — 기울기 주어진 접선)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "192": {
           "type": "이차함수와 직선(접선 — 기울기 주어진 접선)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "193": {
           "type": "이차함수와 직선(공통접선)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "194": {
           "type": "이차함수와 직선(공통접선)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "195": {
           "type": "이차함수와 직선(공통접선)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "196": {
           "type": "이차함수와 직선(공통접선)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "197": {
           "type": "이차함수와 직선(미지수 무관 항상 접함 — 판별식 항등식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "198": {
           "type": "이차함수와 직선(미지수 무관 항상 접함 — 판별식 항등식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "199": {
           "type": "이차함수와 직선(미지수 무관 항상 접함 — 판별식 항등식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "200": {
           "type": "이차함수와 직선(미지수 무관 항상 만남 — 판별식 항등식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "201": {
           "type": "이차함수 최대·최소(최댓값/최솟값 조건→그래프 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "202": {
           "type": "이차함수 최대·최소(최댓값/최솟값 조건→그래프 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "203": {
           "type": "이차함수 최대·최소(최댓값/최솟값 조건→그래프 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "204": {
           "type": "이차함수 최대·최소(최댓값/최솟값 조건→그래프 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "205": {
           "type": "이차함수 최대·최소(최솟값이 미지수 함수 — 이중 최대·최소)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "206": {
           "type": "이차함수 최대·최소(최솟값이 미지수 함수 — 이중 최대·최소)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "207": {
           "type": "이차함수 최대·최소(최솟값이 미지수 함수 — 이중 최대·최소)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "208": {
           "type": "이차함수 최대·최소(최솟값이 미지수 함수 — 이중 최대·최소)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "209": {
           "type": "이차함수 최대·최소(차함수 f−g 최대·최소)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "210": {
           "type": "이차함수 최대·최소(차함수 f−g 최대·최소)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "211": {
           "type": "이차함수 최대·최소(차함수 f−g 최대·최소)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "212": {
           "type": "이차함수 최대·최소(차함수 f−g 최대·최소)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "213": {
           "type": "이차함수 최대·최소(제한된 범위)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "214": {
           "type": "이차함수 최대·최소(제한된 범위)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "215": {
           "type": "이차함수 최대·최소(제한된 범위)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "216": {
           "type": "이차함수 최대·최소(제한된 범위)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "217": {
           "type": "이차함수 최대·최소(제한 범위 끝이 미지수)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "218": {
           "type": "이차함수 최대·최소(제한 범위 끝이 미지수)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "219": {
           "type": "이차함수 최대·최소(제한 범위 끝이 미지수)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "220": {
           "type": "이차함수 최대·최소(제한 범위 끝이 미지수)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "221": {
           "type": "이차함수 최대·최소(최댓값/최솟값이 미지수 함수 — 이중)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "222": {
           "type": "이차함수 최대·최소(최댓값/최솟값이 미지수 함수 — 이중)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "223": {
           "type": "이차함수 최대·최소(최댓값/최솟값이 미지수 함수 — 이중)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "224": {
           "type": "이차함수 최대·최소(최댓값/최솟값이 미지수 함수 — 이중)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "225": {
           "type": "이차함수 최대·최소(근호 성질로 범위 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "226": {
           "type": "이차함수 최대·최소(근호 성질로 범위 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "227": {
           "type": "이차함수 최대·최소(근호 성질로 범위 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "228": {
           "type": "이차함수 최대·최소(근호 성질로 범위 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "229": {
           "type": "이차함수 최대·최소(제한 범위·미지수 — 조건으로 미지수 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "230": {
           "type": "이차함수 최대·최소(제한 범위·미지수 — 조건으로 미지수 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "231": {
           "type": "이차함수 최대·최소(제한 범위·미지수 — 조건으로 미지수 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "232": {
           "type": "이차함수 최대·최소(제한 범위·미지수 — 조건으로 미지수 결정)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "233": {
           "type": "이차함수 최대·최소(여러 조건 종합)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "234": {
           "type": "이차함수 최대·최소(여러 조건 종합)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "235": {
           "type": "이차함수 최대·최소(여러 조건 종합)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "236": {
           "type": "이차함수 최대·최소(여러 조건 종합)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "237": {
           "type": "이차함수 최대·최소(공통부분 치환형)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "238": {
           "type": "이차함수 최대·최소(공통부분 치환형)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "239": {
           "type": "이차함수 최대·최소(공통부분 치환형)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "240": {
           "type": "이차함수 최대·최소(공통부분 치환형)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "241": {
           "type": "이차함수 최대·최소(공통부분 치환형, 치환변수 범위)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "242": {
           "type": "이차함수 최대·최소(공통부분 치환형, 치환변수 범위)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "243": {
           "type": "이차함수 최대·최소(공통부분 치환형, 치환변수 범위)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "244": {
           "type": "이차함수 최대·최소(공통부분 치환형, 치환변수 범위)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "245": {
           "type": "이차함수 최대·최소(여러 변수 완전제곱)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "246": {
           "type": "이차함수 최대·최소(여러 변수 완전제곱)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "247": {
           "type": "이차함수 최대·최소(여러 변수 완전제곱)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "248": {
           "type": "이차함수 최대·최소(여러 변수 완전제곱)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "249": {
           "type": "이차함수 최대·최소(직선 위의 점 — 식의 최솟값)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "250": {
           "type": "이차함수 최대·최소(직선 위의 점 — 식의 최솟값)",
-          "cat": "function"
+          "cat": "fn_graph"
         }
       },
       "uncertain": [],
@@ -3257,174 +3264,184 @@
       "unitKey": "unit4",
       "totalCount": 200,
       "categories": {
-        "calc": "다항식·계산",
-        "complex": "복소수",
-        "equation": "방정식·근",
-        "function": "이차함수·부등식",
+        "calc_id": "다항식-항등식·미정계수",
+        "complex_op": "복소수-연산·켤레·i",
+        "complex_root": "복소수-방정식 허근",
+        "eq_quad": "방정식-이차(근과계수·판별식)",
+        "eq_cubic": "방정식-삼차",
+        "eq_quartic": "방정식-사차",
+        "eq_sys": "방정식-연립",
+        "fn_graph": "이차함수-그래프·최대최소·접선",
+        "fn_ineq": "이차함수-부등식",
+        "fn_abs": "이차함수-절댓값",
         "application": "활용·종합",
-        "matrix": "행렬",
-        "count": "경우의 수"
+        "mat_op": "행렬-연산·상등·성분",
+        "mat_pow": "행렬-거듭제곱·케일리해밀턴",
+        "cnt_perm": "경우의수-순열",
+        "cnt_comb": "경우의수-조합",
+        "cnt_dist": "경우의수-분배·중복",
+        "cnt_case": "경우의수-경우의 수 종합"
       },
       "typeMap": {
         "1": {
           "type": "삼차방정식 인수분해 풀이과정",
-          "cat": "equation"
+          "cat": "eq_cubic"
         },
         "2": {
           "type": "삼차방정식 허근 식의 값(근과계수)",
-          "cat": "equation"
+          "cat": "eq_cubic"
         },
         "3": {
           "type": "삼차방정식 허근 세제곱 합(근과계수)",
-          "cat": "equation"
+          "cat": "eq_cubic"
         },
         "4": {
           "type": "삼차방정식 한 근 대입→나머지 근 합",
-          "cat": "equation"
+          "cat": "eq_cubic"
         },
         "5": {
           "type": "삼차방정식 세 실근 차(근과계수)",
-          "cat": "equation"
+          "cat": "eq_cubic"
         },
         "6": {
           "type": "삼차방정식 근의 성질 보기합답형",
-          "cat": "equation"
+          "cat": "eq_cubic"
         },
         "7": {
           "type": "삼차방정식 한 근·세제곱곱 조건→계수",
-          "cat": "equation"
+          "cat": "eq_cubic"
         },
         "8": {
           "type": "삼차방정식 인수정리 식의 값",
-          "cat": "equation"
+          "cat": "eq_cubic"
         },
         "9": {
           "type": "삼차방정식 근과계수 대칭식",
-          "cat": "equation"
+          "cat": "eq_cubic"
         },
         "10": {
           "type": "삼차방정식 켤레근 활용→계수",
-          "cat": "equation"
+          "cat": "eq_cubic"
         },
         "11": {
           "type": "새 방정식 만들기 보기합답형",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "12": {
           "type": "새 방정식 f(2x+1) 근의 합",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "13": {
           "type": "유리계수 무리수근 켤레→근의 합",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "14": {
           "type": "새 방정식 만들기(서술)",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "15": {
           "type": "미정계수 다항식 결정→f(5)",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "16": {
           "type": "다항식 값 조건→P(4) 결정",
-          "cat": "calc"
+          "cat": "calc_id"
         },
         "17": {
           "type": "삼차방정식 중근 조건→k 합",
-          "cat": "equation"
+          "cat": "eq_cubic"
         },
         "18": {
           "type": "삼차방정식 실근 개수 조건→a 합",
-          "cat": "equation"
+          "cat": "eq_cubic"
         },
         "19": {
           "type": "삼차방정식 실근+허근 조건→a 최솟값",
-          "cat": "equation"
+          "cat": "eq_cubic"
         },
         "20": {
           "type": "삼차방정식 세 근 부호 조건→범위",
-          "cat": "equation"
+          "cat": "eq_cubic"
         },
         "21": {
           "type": "복소수 조건+삼차방정식 근→a+b",
-          "cat": "complex"
+          "cat": "complex_root"
         },
         "22": {
           "type": "삼차방정식 허근 ω 성질 보기합답형",
-          "cat": "complex"
+          "cat": "complex_root"
         },
         "23": {
           "type": "x²-x+1 허근 ω 성질 보기합답형",
-          "cat": "complex"
+          "cat": "complex_root"
         },
         "24": {
           "type": "x³-1 허근 ω 식의 값",
-          "cat": "complex"
+          "cat": "complex_root"
         },
         "25": {
           "type": "허근 거듭제곱 식의 값(주기성)",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "26": {
           "type": "x³=27 허근 ω 성질 보기합답형",
-          "cat": "complex"
+          "cat": "complex_root"
         },
         "27": {
           "type": "ω 거듭제곱 합 항등식→a-b",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "28": {
           "type": "허근 거듭제곱 합 주기성→n 개수",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "29": {
           "type": "사차방정식 실근·허근 제곱 합",
-          "cat": "equation"
+          "cat": "eq_quartic"
         },
         "30": {
           "type": "사차방정식 허근 활용 식의 값",
-          "cat": "equation"
+          "cat": "eq_quartic"
         },
         "31": {
           "type": "치환 사차방정식 실근의 합",
-          "cat": "equation"
+          "cat": "eq_quartic"
         },
         "32": {
           "type": "공통식 치환 사차방정식→대칭식",
-          "cat": "equation"
+          "cat": "eq_quartic"
         },
         "33": {
           "type": "복이차식 양수근의 합",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "34": {
           "type": "복이차식 켤레근 보기합답형",
-          "cat": "complex"
+          "cat": "complex_op"
         },
         "35": {
           "type": "상반방정식(사차) 실근의 합",
-          "cat": "equation"
+          "cat": "eq_quartic"
         },
         "36": {
           "type": "상반방정식(사차) 근 대소 비교",
-          "cat": "equation"
+          "cat": "eq_quartic"
         },
         "37": {
           "type": "켤레허근 사차방정식 근의 제곱합",
-          "cat": "equation"
+          "cat": "eq_quartic"
         },
         "38": {
           "type": "사차방정식 실근곱·허근곱 조건",
-          "cat": "equation"
+          "cat": "eq_quartic"
         },
         "39": {
           "type": "복이차식 허근·중근 조건→a",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "40": {
           "type": "복이차식 실근·허근 조건 범위",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "41": {
           "type": "직육면체 부피 삼차방정식 활용",
@@ -3436,43 +3453,43 @@
         },
         "43": {
           "type": "연립이차방정식 일차 대입",
-          "cat": "equation"
+          "cat": "eq_sys"
         },
         "44": {
           "type": "연립이차방정식 인수분해 풀이",
-          "cat": "equation"
+          "cat": "eq_sys"
         },
         "45": {
           "type": "연립이차방정식 공통식 치환",
-          "cat": "equation"
+          "cat": "eq_sys"
         },
         "46": {
           "type": "연립이차방정식 x²+y² 값 범위",
-          "cat": "equation"
+          "cat": "eq_sys"
         },
         "47": {
           "type": "대칭식 연립방정식(합·곱 치환)",
-          "cat": "equation"
+          "cat": "eq_sys"
         },
         "48": {
           "type": "대칭식 연립방정식 |x-y|",
-          "cat": "equation"
+          "cat": "eq_sys"
         },
         "49": {
           "type": "대칭식 연립방정식 x+3y 최댓값",
-          "cat": "equation"
+          "cat": "eq_sys"
         },
         "50": {
           "type": "두 연립방정식 공통해→ab+xy",
-          "cat": "equation"
+          "cat": "eq_sys"
         },
         "51": {
           "type": "연립방정식 해 한 쌍 조건→a 합",
-          "cat": "equation"
+          "cat": "eq_sys"
         },
         "52": {
           "type": "연립방정식 해 없을 조건→a 최댓값",
-          "cat": "equation"
+          "cat": "eq_sys"
         },
         "53": {
           "type": "직각삼각형 외접·내접원 활용",
@@ -3484,91 +3501,91 @@
         },
         "55": {
           "type": "마방진 연립방정식",
-          "cat": "equation"
+          "cat": "eq_sys"
         },
         "56": {
           "type": "제곱합=0 부정방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "57": {
           "type": "완전제곱식 부정방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "58": {
           "type": "이차방정식 중근 조건 정수해→ab",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "59": {
           "type": "정수해 부정방정식 순서쌍 개수",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "60": {
           "type": "제곱합=0 정수해 부정방정식",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "61": {
           "type": "이차방정식 정수근 조건→m 합",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "62": {
           "type": "두 이차방정식 공통근→a",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "63": {
           "type": "삼차·이차 공통근+켤레허근",
-          "cat": "equation"
+          "cat": "eq_cubic"
         },
         "64": {
           "type": "두 이차방정식 한 공통근→k",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "65": {
           "type": "부등식 기본성질 보기합답형",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "66": {
           "type": "일차부등식 활용 최대·최소(조건식)",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "67": {
           "type": "연립일차부등식 해 보기합답형",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "68": {
           "type": "연립일차부등식 해 조건→a+b",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "69": {
           "type": "연립일차부등식 정수해 합 조건→a",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "70": {
           "type": "연립일차부등식 해 없을 조건→a",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "71": {
           "type": "절댓값 일차부등식 정수해 합",
-          "cat": "function"
+          "cat": "fn_abs"
         },
         "72": {
           "type": "절댓값 두 개 일차부등식 정수해",
-          "cat": "function"
+          "cat": "fn_abs"
         },
         "73": {
           "type": "연립(절댓값+일차)부등식 정수개수",
-          "cat": "function"
+          "cat": "fn_abs"
         },
         "74": {
           "type": "절댓값 부등식 해 일치 조건→k",
-          "cat": "function"
+          "cat": "fn_abs"
         },
         "75": {
           "type": "일차부등식 해 조건→절댓값부등식 범위",
-          "cat": "function"
+          "cat": "fn_abs"
         },
         "76": {
           "type": "절댓값 부등식 정수개수 조건→k",
-          "cat": "function"
+          "cat": "fn_abs"
         },
         "77": {
           "type": "부등식 활용(승합차 배정)",
@@ -3584,91 +3601,91 @@
         },
         "80": {
           "type": "이차부등식 해 보기합답형",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "81": {
           "type": "연립이차부등식 해+판별식 교점",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "82": {
           "type": "연립이차부등식 정수해 개수",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "83": {
           "type": "이차방정식 근의 차 조건→정수 개수",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "84": {
           "type": "이차부등식 잘못 본 계수 복원",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "85": {
           "type": "절댓값 포함 이차부등식 해 일치→ab",
-          "cat": "function"
+          "cat": "fn_abs"
         },
         "86": {
           "type": "이차부등식 해 조건→계수복원",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "87": {
           "type": "이차부등식 해 조건→계수 바꿔 풀기",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "88": {
           "type": "이차부등식 해 한 점 보기합답형",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "89": {
           "type": "이차부등식 f(2x-1) 해 변환",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "90": {
           "type": "이차함수·직선 그래프 보기합답형",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "91": {
           "type": "이차함수 그래프 부등식 변환 정수개수",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "92": {
           "type": "이변수 이차식 항상성립(판별식)",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "93": {
           "type": "이차부등식 항상성립→정수 합(최고차 분류)",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "94": {
           "type": "이차부등식 해 존재 조건→정수 개수",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "95": {
           "type": "연립이차부등식 해 조건→계수합",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "96": {
           "type": "연립부등식 해와 이차부등식 일치→a+b",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "97": {
           "type": "연립이차부등식 정수해 개수→a 범위",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "98": {
           "type": "연립이차부등식 해 없을 조건→k",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "99": {
           "type": "두 이차부등식 적어도 하나 성립→범위",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "100": {
           "type": "그래프 연립부등식 정수해 합",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "101": {
           "type": "그래프 곱부등식 자연수해 합",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "102": {
           "type": "이차부등식 활용(판매액 최댓값)",
@@ -3680,391 +3697,391 @@
         },
         "104": {
           "type": "두 이차방정식 실근·허근 조건→k 합",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "105": {
           "type": "연립이차방정식 실근 없을 조건→정수개수",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "106": {
           "type": "이차방정식 근의 부호·절댓값 조건→범위",
-          "cat": "function"
+          "cat": "fn_abs"
         },
         "107": {
           "type": "이차방정식 두 근 양수 조건→a 최솟값",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "108": {
           "type": "이차방정식 두 근 특정값보다 큼→범위",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "109": {
           "type": "이차방정식 근이 두 근 사이→범위",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "110": {
           "type": "이차방정식 근 구간 내 조건→최대·최소",
-          "cat": "function"
+          "cat": "fn_graph"
         },
         "111": {
           "type": "구간 내 이차부등식 항상성립→k 최솟값",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "112": {
           "type": "구간 내 이차부등식 항상성립→정수개수",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "113": {
           "type": "이차부등식 해집합 포함관계→k 최댓값",
-          "cat": "function"
+          "cat": "fn_ineq"
         },
         "114": {
           "type": "삼차방정식 실근·허근 조건→정수개수",
-          "cat": "equation"
+          "cat": "eq_cubic"
         },
         "115": {
           "type": "복이차식 서로 다른 네 실근→정수개수",
-          "cat": "equation"
+          "cat": "eq_quad"
         },
         "116": {
           "type": "삼차방정식 서로 다른 세 실근→자연수 개수",
-          "cat": "equation"
+          "cat": "eq_cubic"
         },
         "117": {
           "type": "곱의 전개 항의 개수(곱의 법칙)",
-          "cat": "count"
+          "cat": "cnt_case"
         },
         "118": {
           "type": "길 경로의 경우의 수(왕복)",
-          "cat": "count"
+          "cat": "cnt_case"
         },
         "119": {
           "type": "주사위+이차방정식 허근 조건 경우의 수",
-          "cat": "count"
+          "cat": "cnt_case"
         },
         "120": {
           "type": "부정방정식 순서쌍 개수(서술)",
-          "cat": "count"
+          "cat": "cnt_dist"
         },
         "121": {
           "type": "지불 방법의 수·금액의 수",
-          "cat": "count"
+          "cat": "cnt_case"
         },
         "122": {
           "type": "완전순열(채점 어긋남)",
-          "cat": "count"
+          "cat": "cnt_perm"
         },
         "123": {
           "type": "조건 만족 자연수 개수(자릿수)",
-          "cat": "count"
+          "cat": "cnt_perm"
         },
         "124": {
           "type": "영역 색칠 경우의 수(인접조건)",
-          "cat": "count"
+          "cat": "cnt_case"
         },
         "125": {
           "type": "원형 영역 색칠 경우의 수(인접조건)",
-          "cat": "count"
+          "cat": "cnt_case"
         },
         "126": {
           "type": "합·곱의 법칙(종류별 선택)",
-          "cat": "count"
+          "cat": "cnt_comb"
         },
         "127": {
           "type": "경우의 수 분류(오전·오후 선택)",
-          "cat": "count"
+          "cat": "cnt_comb"
         },
         "128": {
           "type": "진열 배치 경우의 수(이웃조건)",
-          "cat": "count"
+          "cat": "cnt_perm"
         },
         "129": {
           "type": "순열 nPr 공식 보기합답형",
-          "cat": "count"
+          "cat": "cnt_perm"
         },
         "130": {
           "type": "순열 조건 배치(처음·마지막)",
-          "cat": "count"
+          "cat": "cnt_perm"
         },
         "131": {
           "type": "순열 사이 조건 배열",
-          "cat": "count"
+          "cat": "cnt_perm"
         },
         "132": {
           "type": "이웃하는 순열(묶기)",
-          "cat": "count"
+          "cat": "cnt_perm"
         },
         "133": {
           "type": "이웃하지 않는 순열(사이끼우기)",
-          "cat": "count"
+          "cat": "cnt_perm"
         },
         "134": {
           "type": "사전식 배열 순서",
-          "cat": "count"
+          "cat": "cnt_case"
         },
         "135": {
           "type": "조건 배치 경우의 수(대소조건)",
-          "cat": "count"
+          "cat": "cnt_case"
         },
         "136": {
           "type": "조건 배치 좌석(같은 줄)",
-          "cat": "count"
+          "cat": "cnt_perm"
         },
         "137": {
           "type": "순열 적어도 조건(여사건)",
-          "cat": "count"
+          "cat": "cnt_perm"
         },
         "138": {
           "type": "이웃 순열 합집합(포함배제)",
-          "cat": "count"
+          "cat": "cnt_perm"
         },
         "139": {
           "type": "순열·조합 공식 보기합답형",
-          "cat": "count"
+          "cat": "cnt_perm"
         },
         "140": {
           "type": "조합 방정식(nCr 꼴)",
-          "cat": "count"
+          "cat": "cnt_comb"
         },
         "141": {
           "type": "조합 등식 nCr=nCs→n 합",
-          "cat": "count"
+          "cat": "cnt_comb"
         },
         "142": {
           "type": "순열·조합 혼합 방정식",
-          "cat": "count"
+          "cat": "cnt_perm"
         },
         "143": {
           "type": "조합 곱 방정식→n",
-          "cat": "count"
+          "cat": "cnt_comb"
         },
         "144": {
           "type": "조합 포함·제외 선택",
-          "cat": "count"
+          "cat": "cnt_comb"
         },
         "145": {
           "type": "조합+순열 연속 상영 조건",
-          "cat": "count"
+          "cat": "cnt_perm"
         },
         "146": {
           "type": "조건 배정(거리 비교) 조합",
-          "cat": "count"
+          "cat": "cnt_comb"
         },
         "147": {
           "type": "조건 좌석 배치(같은·다른 자리)",
-          "cat": "count"
+          "cat": "cnt_perm"
         },
         "148": {
           "type": "조합 같은 그룹 제외(여사건)",
-          "cat": "count"
+          "cat": "cnt_comb"
         },
         "149": {
           "type": "조합 짝 맞추기 조건",
-          "cat": "count"
+          "cat": "cnt_comb"
         },
         "150": {
           "type": "조합 공통 선택 개수 조건",
-          "cat": "count"
+          "cat": "cnt_comb"
         },
         "151": {
           "type": "조합 분배 대소 조건",
-          "cat": "count"
+          "cat": "cnt_dist"
         },
         "152": {
           "type": "순열 적어도 한쪽 끝 조건(여사건)",
-          "cat": "count"
+          "cat": "cnt_perm"
         },
         "153": {
           "type": "분배(같은 주머니, 묶음 나누기)",
-          "cat": "count"
+          "cat": "cnt_dist"
         },
         "154": {
           "type": "분배(빈 상자 조건)",
-          "cat": "count"
+          "cat": "cnt_dist"
         },
         "155": {
           "type": "대진표 작성 경우의 수",
-          "cat": "count"
+          "cat": "cnt_case"
         },
         "156": {
           "type": "배수 조건 조합(3의 배수)",
-          "cat": "count"
+          "cat": "cnt_comb"
         },
         "157": {
           "type": "곱 배수 조건 경우의 수",
-          "cat": "count"
+          "cat": "cnt_case"
         },
         "158": {
           "type": "짝수 조건 경우의 수",
-          "cat": "count"
+          "cat": "cnt_case"
         },
         "159": {
           "type": "약수의 개수(배수·홀수)",
-          "cat": "count"
+          "cat": "cnt_case"
         },
         "160": {
           "type": "점으로 만드는 삼각형 넓이 조건",
-          "cat": "count"
+          "cat": "cnt_comb"
         },
         "161": {
           "type": "원 위 점 선분 교차 조건(조합)",
-          "cat": "count"
+          "cat": "cnt_comb"
         },
         "162": {
           "type": "평행사변형 개수(조건 포함)",
-          "cat": "count"
+          "cat": "cnt_case"
         },
         "163": {
           "type": "직사각형 개수(격자)",
-          "cat": "count"
+          "cat": "cnt_comb"
         },
         "164": {
           "type": "행렬 성분 정의→행렬 결정",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "165": {
           "type": "행렬 상등→식의 값",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "166": {
           "type": "행렬 방정식→성분합",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "167": {
           "type": "행렬 연립(합·차)→성분합",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "168": {
           "type": "행렬 성분 정의+연산→행렬 결정",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "169": {
           "type": "행렬 곱 정의 가능 개수",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "170": {
           "type": "행렬 연립→XY-YX",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "171": {
           "type": "행렬 곱(ABC) 성분 최솟값",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "172": {
           "type": "행렬 곱 성분 양수 조건→정수개수",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "173": {
           "type": "행렬 거듭제곱 A² 성분합 조건→k",
-          "cat": "matrix"
+          "cat": "mat_pow"
         },
         "174": {
           "type": "행렬 곱셈공식 변형→(A+B)²",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "175": {
           "type": "행렬 곱셈공식 인수분해→성분",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "176": {
           "type": "행렬 곱셈공식 성립 조건(교환)",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "177": {
           "type": "행렬 교환법칙 AB=BA→a+b",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "178": {
           "type": "행렬 곱 열벡터 조건→성분합",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "179": {
           "type": "행렬 곱 열벡터 연립→p+q",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "180": {
           "type": "행렬 거듭제곱+곱 열벡터 변형",
-          "cat": "matrix"
+          "cat": "mat_pow"
         },
         "181": {
           "type": "행렬 곱 열벡터 변형→x-y",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "182": {
           "type": "행렬 케일리-해밀턴 거듭제곱 성분",
-          "cat": "matrix"
+          "cat": "mat_pow"
         },
         "183": {
           "type": "행렬 다항식 관계 변형",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "184": {
           "type": "행렬 곱셈공식 변형(A-B=E)→성분합",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "185": {
           "type": "행렬 케일리-해밀턴→성분 최솟값",
-          "cat": "matrix"
+          "cat": "mat_pow"
         },
         "186": {
           "type": "행렬 거듭제곱 합(주기성)",
-          "cat": "matrix"
+          "cat": "mat_pow"
         },
         "187": {
           "type": "행렬 케일리-해밀턴→pq",
-          "cat": "matrix"
+          "cat": "mat_pow"
         },
         "188": {
           "type": "행렬 교환자 [A,B] 정의→성분합",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "189": {
           "type": "행렬 거듭제곱 규칙성→n",
-          "cat": "matrix"
+          "cat": "mat_pow"
         },
         "190": {
           "type": "행렬 거듭제곱 곱 성분합 조건→x",
-          "cat": "matrix"
+          "cat": "mat_pow"
         },
         "191": {
           "type": "행렬 거듭제곱 합 성분(주기성)",
-          "cat": "matrix"
+          "cat": "mat_pow"
         },
         "192": {
           "type": "행렬 그래프(연결) 표현",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "193": {
           "type": "행렬 활용(직선 표현+연산)",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "194": {
           "type": "행렬 곱 활용(금액 표현)",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "195": {
           "type": "행렬 곱 활용(자재비 표현)",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "196": {
           "type": "행렬 곱 활용(물통 변화)",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "197": {
           "type": "행렬 곱 활용(성적 가중합)",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "198": {
           "type": "행렬 성질 보기합답형(곱셈공식)",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "199": {
           "type": "행렬 성질 보기합답형(영행렬·교환)",
-          "cat": "matrix"
+          "cat": "mat_op"
         },
         "200": {
           "type": "행렬 케일리-해밀턴 성질 보기합답형",
-          "cat": "matrix"
+          "cat": "mat_pow"
         }
       },
       "uncertain": [],

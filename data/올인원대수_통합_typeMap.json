@@ -7,185 +7,181 @@
       "unitKey": "unit1_1",
       "totalCount": 43,
       "categories": {
-        "root": "거듭제곱근",
-        "expcal": "지수 계산",
-        "expapp": "지수 활용",
-        "logcal": "로그 계산",
-        "comlog": "상용로그",
-        "synth": "종합·합답형"
+        "exp_calc": "지수-거듭제곱근·지수 계산",
+        "log_calc": "로그-로그 계산·상용로그"
       },
       "typeMap": {
         "1": {
           "type": "거듭제곱근의 개수 판정",
-          "cat": "root"
+          "cat": "exp_calc"
         },
         "2": {
           "type": "거듭제곱근 개수 함수 (경우 분류)",
-          "cat": "root"
+          "cat": "exp_calc"
         },
         "3": {
           "type": "n제곱근 중 실수의 개수",
-          "cat": "root"
+          "cat": "exp_calc"
         },
         "4": {
           "type": "거듭제곱근 실수 개수 참거짓",
-          "cat": "root"
+          "cat": "exp_calc"
         },
         "5": {
           "type": "거듭제곱근 정의 활용 합답형",
-          "cat": "root"
+          "cat": "exp_calc"
         },
         "6": {
           "type": "거듭제곱근과 가우스 기호",
-          "cat": "root"
+          "cat": "exp_calc"
         },
         "7": {
           "type": "거듭제곱근 식의 계산 (분모유리화)",
-          "cat": "root"
+          "cat": "exp_calc"
         },
         "8": {
           "type": "지수 연립 (a^x=k 변형)",
-          "cat": "expcal"
+          "cat": "exp_calc"
         },
         "9": {
           "type": "지수 연립 (변끼리 곱)",
-          "cat": "expcal"
+          "cat": "exp_calc"
         },
         "10": {
           "type": "지수 연립 (밑·지수 교환)",
-          "cat": "expcal"
+          "cat": "exp_calc"
         },
         "11": {
           "type": "지수 분수식 (분모분자 곱)",
-          "cat": "expcal"
+          "cat": "exp_calc"
         },
         "12": {
           "type": "지수 대칭식 (세제곱 변형)",
-          "cat": "expcal"
+          "cat": "exp_calc"
         },
         "13": {
           "type": "지수 대칭식 + 산술기하평균",
-          "cat": "expcal"
+          "cat": "exp_calc"
         },
         "14": {
           "type": "지수 분수합 대칭 소거",
-          "cat": "expcal"
+          "cat": "exp_calc"
         },
         "15": {
           "type": "지수법칙 정리 후 대칭식",
-          "cat": "expcal"
+          "cat": "exp_calc"
         },
         "16": {
           "type": "지수 분수식 변형 (a^2x 치환)",
-          "cat": "expcal"
+          "cat": "exp_calc"
         },
         "17": {
           "type": "지수 자연수 조건 (최소공배수)",
-          "cat": "expapp"
+          "cat": "exp_calc"
         },
         "18": {
           "type": "거듭제곱근 자연수 조건 (최댓값)",
-          "cat": "expapp"
+          "cat": "exp_calc"
         },
         "19": {
           "type": "지수 실생활 응용 (대입 비교)",
-          "cat": "expapp"
+          "cat": "exp_calc"
         },
         "20": {
           "type": "로그 합 (망원합·진수 약분)",
-          "cat": "logcal"
+          "cat": "log_calc"
         },
         "21": {
           "type": "로그 법칙 + 밑변환",
-          "cat": "logcal"
+          "cat": "log_calc"
         },
         "22": {
           "type": "로그 연립 후 지수 계산",
-          "cat": "logcal"
+          "cat": "log_calc"
         },
         "23": {
           "type": "로그의 로그 (자연수 조건)",
-          "cat": "logcal"
+          "cat": "log_calc"
         },
         "24": {
           "type": "지수 등식 → 로그 밑변환",
-          "cat": "logcal"
+          "cat": "log_calc"
         },
         "25": {
           "type": "로그 연립 방정식 (대칭식)",
-          "cat": "logcal"
+          "cat": "log_calc"
         },
         "26": {
           "type": "로그 + 산술기하평균 최솟값",
-          "cat": "logcal"
+          "cat": "log_calc"
         },
         "27": {
           "type": "지수 등식 → 로그합 밑변환",
-          "cat": "logcal"
+          "cat": "log_calc"
         },
         "28": {
           "type": "근과 계수의 관계 + 로그",
-          "cat": "logcal"
+          "cat": "log_calc"
         },
         "29": {
           "type": "밑변환 후 자연수 조건 합",
-          "cat": "logcal"
+          "cat": "log_calc"
         },
         "30": {
           "type": "로그식 자연수 조건 개수",
-          "cat": "logcal"
+          "cat": "log_calc"
         },
         "31": {
           "type": "로그의 정수·소수부분 (지수 대입)",
-          "cat": "logcal"
+          "cat": "log_calc"
         },
         "32": {
           "type": "밑변환 연립 (a,b,c 결정)",
-          "cat": "logcal"
+          "cat": "log_calc"
         },
         "33": {
           "type": "로그 진수 방정식 (최댓값)",
-          "cat": "logcal"
+          "cat": "log_calc"
         },
         "34": {
           "type": "로그 조건식 추론 (밑변환 활용)",
-          "cat": "logcal"
+          "cat": "log_calc"
         },
         "35": {
           "type": "근과 계수의 관계 + 로그 (지수 복원)",
-          "cat": "logcal"
+          "cat": "log_calc"
         },
         "36": {
           "type": "10^a 나머지 조건 + 상용로그",
-          "cat": "comlog"
+          "cat": "log_calc"
         },
         "37": {
           "type": "상용로그 음수값 (정수·소수부분 분해)",
-          "cat": "comlog"
+          "cat": "log_calc"
         },
         "38": {
           "type": "자릿수 + 최고자리 숫자",
-          "cat": "comlog"
+          "cat": "log_calc"
         },
         "39": {
           "type": "상용로그 연립 (조건 대입)",
-          "cat": "comlog"
+          "cat": "log_calc"
         },
         "40": {
           "type": "상용로그 + 가우스 (정수 조건)",
-          "cat": "comlog"
+          "cat": "log_calc"
         },
         "41": {
           "type": "상용로그 정수·소수부분 + 가우스",
-          "cat": "comlog"
+          "cat": "log_calc"
         },
         "42": {
           "type": "상용로그 정수·소수부분 합답형",
-          "cat": "synth"
+          "cat": "log_calc"
         },
         "43": {
           "type": "상용로그 정수·소수부분 일반화 합답형",
-          "cat": "synth"
+          "cat": "log_calc"
         }
       },
       "uncertain": [
@@ -244,87 +240,81 @@
       "unitKey": "unit1_2",
       "totalCount": 78,
       "categories": {
-        "exp_graph": "지수함수 그래프·이동",
-        "exp_point": "지수함수 점·도형",
-        "exp_maxmin": "지수함수 최대최소·합성",
-        "exp_eq": "지수방정식",
-        "exp_ineq": "지수부등식",
-        "exp_compare": "지수 대소비교·활용",
-        "log_graph": "로그함수 그래프·이동",
-        "log_point": "로그함수 점·도형",
-        "log_compare": "로그 대소비교",
-        "log_maxmin": "로그함수 최대최소·합성",
-        "log_eq": "로그방정식·부등식",
-        "log_app": "로그 활용"
+        "exp_fn": "지수함수-그래프·점·최대최소",
+        "exp_eq": "지수-방정식·부등식",
+        "log_fn": "로그함수-그래프·점·최대최소",
+        "log_eq": "로그-방정식·부등식",
+        "explog_compare": "지수로그-대소비교",
+        "explog_app": "지수로그-실생활 활용"
       },
       "typeMap": {
         "1": {
           "type": "지수함수 판정·증가감소 조건",
-          "cat": "exp_graph"
+          "cat": "exp_fn"
         },
         "2": {
           "type": "지수 곱셈공식 변형(대칭식)",
-          "cat": "exp_graph"
+          "cat": "exp_fn"
         },
         "3": {
           "type": "그래프 대칭이동(y=x)·조건식",
-          "cat": "exp_graph"
+          "cat": "exp_fn"
         },
         "4": {
           "type": "그래프 평행·대칭이동 판별(보기)",
-          "cat": "exp_graph"
+          "cat": "exp_fn"
         },
         "5": {
           "type": "직선과 교점·선분 길이",
-          "cat": "exp_graph"
+          "cat": "exp_fn"
         },
         "6": {
           "type": "대칭+평행이동 후 조건 연립",
-          "cat": "exp_graph"
+          "cat": "exp_fn"
         },
         "7": {
           "type": "그래프와 도형 넓이(평행이동)",
-          "cat": "exp_graph"
+          "cat": "exp_fn"
         },
         "8": {
           "type": "두 그래프 점 좌표(평행이동)",
-          "cat": "exp_point"
+          "cat": "exp_fn"
         },
         "9": {
           "type": "곡선·직선 교점과 삼각형 넓이",
-          "cat": "exp_point"
+          "cat": "exp_fn"
         },
         "10": {
           "type": "사분면 안 지나는 조건(이동)",
-          "cat": "exp_graph"
+          "cat": "exp_fn"
         },
         "11": {
           "type": "두 그래프 교점·중점·선분 길이",
-          "cat": "exp_point"
+          "cat": "exp_fn"
         },
         "12": {
           "type": "중점 대칭 두 점·직선 기울기",
-          "cat": "exp_point"
+          "cat": "exp_fn"
         },
         "13": {
           "type": "외분점·중점 조건·선분 길이",
-          "cat": "exp_point"
+          "cat": "exp_fn"
         },
         "14": {
           "type": "수평직선과 두 그래프 교점 길이",
-          "cat": "exp_point"
+          "cat": "exp_fn"
         },
         "15": {
           "type": "치환 이차식 최대최소",
-          "cat": "exp_maxmin"
+          "cat": "exp_fn"
         },
         "16": {
           "type": "합성함수 최대최소(밑 조건)",
-          "cat": "exp_maxmin"
+          "cat": "exp_fn"
         },
         "17": {
           "type": "지수 합성함수 자연수 조건",
-          "cat": "exp_maxmin"
+          "cat": "exp_fn"
         },
         "18": {
           "type": "밑·지수 방정식(밑변수)",
@@ -344,39 +334,39 @@
         },
         "22": {
           "type": "그래프 이용 지수부등식",
-          "cat": "exp_ineq"
+          "cat": "exp_eq"
         },
         "23": {
           "type": "지수부등식 성립 조건(범위)",
-          "cat": "exp_ineq"
+          "cat": "exp_eq"
         },
         "24": {
           "type": "로그조건+치환 지수부등식",
-          "cat": "exp_ineq"
+          "cat": "exp_eq"
         },
         "25": {
           "type": "절댓값 지수방정식 실근 조건",
-          "cat": "exp_ineq"
+          "cat": "exp_eq"
         },
         "26": {
           "type": "절댓값 곡선·교점 위치 조건",
-          "cat": "exp_ineq"
+          "cat": "exp_eq"
         },
         "27": {
           "type": "치환 이차부등식 항상성립",
-          "cat": "exp_ineq"
+          "cat": "exp_eq"
         },
         "28": {
           "type": "지수 대소비교(밑·지수)",
-          "cat": "exp_compare"
+          "cat": "explog_compare"
         },
         "29": {
           "type": "지수 실생활 활용(저항·속도)",
-          "cat": "exp_compare"
+          "cat": "explog_compare"
         },
         "30": {
           "type": "로그 정의·연산(밑변환)",
-          "cat": "log_graph"
+          "cat": "log_fn"
         },
         "31": {
           "type": "역함수 치환 부등식",
@@ -384,131 +374,131 @@
         },
         "32": {
           "type": "무게중심·로그합 좌표곱",
-          "cat": "log_point"
+          "cat": "log_fn"
         },
         "33": {
           "type": "주기·대칭함수와 교점 개수",
-          "cat": "log_graph"
+          "cat": "log_fn"
         },
         "34": {
           "type": "세 로그그래프 교점 좌표차",
-          "cat": "log_point"
+          "cat": "log_fn"
         },
         "35": {
           "type": "점근선 위치 조건(직선 교점)",
-          "cat": "log_graph"
+          "cat": "log_fn"
         },
         "36": {
           "type": "고정점 통과·직사각형 교점",
-          "cat": "log_graph"
+          "cat": "log_fn"
         },
         "37": {
           "type": "두 로그그래프 사분면 교점 조건",
-          "cat": "log_graph"
+          "cat": "log_fn"
         },
         "38": {
           "type": "점근선·통과점 상수 결정",
-          "cat": "log_graph"
+          "cat": "log_fn"
         },
         "39": {
           "type": "그래프와 직사각형 넓이 합",
-          "cat": "log_point"
+          "cat": "log_fn"
         },
         "40": {
           "type": "그래프 위 점·수선·최솟값",
-          "cat": "log_point"
+          "cat": "log_fn"
         },
         "41": {
           "type": "직각조건 삼각형 넓이",
-          "cat": "log_point"
+          "cat": "log_fn"
         },
         "42": {
           "type": "기울기 직선·교점 좌표",
-          "cat": "log_point"
+          "cat": "log_fn"
         },
         "43": {
           "type": "수평수직선 교점·삼각형 넓이",
-          "cat": "log_point"
+          "cat": "log_fn"
         },
         "44": {
           "type": "직선과 세 그래프 교점 비",
-          "cat": "log_point"
+          "cat": "log_fn"
         },
         "45": {
           "type": "세 그래프 교점·직선 기울기",
-          "cat": "log_point"
+          "cat": "log_fn"
         },
         "46": {
           "type": "교점·내분점·삼각형 넓이",
-          "cat": "log_point"
+          "cat": "log_fn"
         },
         "47": {
           "type": "직선과 두 곡선 교점 비·좌표",
-          "cat": "log_point"
+          "cat": "log_fn"
         },
         "48": {
           "type": "수선의 발·이등변 삼각형 넓이",
-          "cat": "log_point"
+          "cat": "log_fn"
         },
         "49": {
           "type": "지수·로그 대소비교(보기)",
-          "cat": "log_compare"
+          "cat": "explog_compare"
         },
         "50": {
           "type": "로그식 대소비교(범위 조건)",
-          "cat": "log_compare"
+          "cat": "explog_compare"
         },
         "51": {
           "type": "로그 증가감소 부등식 판별(보기)",
-          "cat": "log_compare"
+          "cat": "explog_compare"
         },
         "52": {
           "type": "밑·진수 로그 대소비교",
-          "cat": "log_compare"
+          "cat": "explog_compare"
         },
         "53": {
           "type": "구간별 함수 최댓값 존재 조건",
-          "cat": "log_maxmin"
+          "cat": "log_fn"
         },
         "54": {
           "type": "합성함수 최대최소(상수 결정)",
-          "cat": "log_maxmin"
+          "cat": "log_fn"
         },
         "55": {
           "type": "로그합 진수 최대최소",
-          "cat": "log_maxmin"
+          "cat": "log_fn"
         },
         "56": {
           "type": "분수꼴 진수 치역",
-          "cat": "log_maxmin"
+          "cat": "log_fn"
         },
         "57": {
           "type": "이차진수 최대최소 차",
-          "cat": "log_maxmin"
+          "cat": "log_fn"
         },
         "58": {
           "type": "로그곱 최솟값(근과계수)",
-          "cat": "log_maxmin"
+          "cat": "log_fn"
         },
         "59": {
           "type": "로그합 최댓값(산술기하)",
-          "cat": "log_maxmin"
+          "cat": "log_fn"
         },
         "60": {
           "type": "로그합 최솟값(산술기하)",
-          "cat": "log_maxmin"
+          "cat": "log_fn"
         },
         "61": {
           "type": "역함수 통과점·상수 결정",
-          "cat": "log_graph"
+          "cat": "log_fn"
         },
         "62": {
           "type": "역함수 대칭·교점 좌표",
-          "cat": "log_point"
+          "cat": "log_fn"
         },
         "63": {
           "type": "역함수 대칭 영역 넓이 합",
-          "cat": "log_point"
+          "cat": "log_fn"
         },
         "64": {
           "type": "역함수 교점(y=x)·상수",
@@ -560,15 +550,15 @@
         },
         "76": {
           "type": "로그 실생활 활용(지진)",
-          "cat": "log_app"
+          "cat": "explog_app"
         },
         "77": {
           "type": "로그 실생활 활용(실질연봉)",
-          "cat": "log_app"
+          "cat": "explog_app"
         },
         "78": {
           "type": "로그 실생활 활용(부채자본)",
-          "cat": "log_app"
+          "cat": "explog_app"
         }
       },
       "uncertain": [
@@ -663,328 +653,327 @@
       "unitKey": "unit2_1",
       "totalCount": 79,
       "categories": {
-        "angle": "일반각·동경",
-        "sector": "호도법·부채꼴",
-        "identity": "삼각함수 정의·성질",
-        "graph": "삼각함수 그래프",
-        "equation": "삼각방정식·부등식"
+        "trig_basic": "삼각함수-각·동경·부채꼴",
+        "trig_id": "삼각함수-삼각비·항등식",
+        "trig_graph": "삼각함수-그래프·주기·최대최소",
+        "trig_eq": "삼각함수-방정식·부등식"
       },
       "typeMap": {
         "1": {
           "type": "동경 위치(θ/n 사분면 판별)",
-          "cat": "angle"
+          "cat": "trig_basic"
         },
         "2": {
           "type": "동경의 서로 다른 위치 개수",
-          "cat": "angle"
+          "cat": "trig_basic"
         },
         "3": {
           "type": "두 동경 일치(nθ=θ+2nπ)",
-          "cat": "angle"
+          "cat": "trig_basic"
         },
         "4": {
           "type": "두 동경 같은 직선 위(같음·반대 방향)",
-          "cat": "angle"
+          "cat": "trig_basic"
         },
         "5": {
           "type": "동경 대칭(y=x 대칭)",
-          "cat": "angle"
+          "cat": "trig_basic"
         },
         "6": {
           "type": "동경 대칭(y=-x 대칭)",
-          "cat": "angle"
+          "cat": "trig_basic"
         },
         "7": {
           "type": "θ/2 동경 위치+부호조건",
-          "cat": "angle"
+          "cat": "trig_basic"
         },
         "8": {
           "type": "부채꼴 넓이 같음·호의 길이",
-          "cat": "sector"
+          "cat": "trig_basic"
         },
         "9": {
           "type": "부채꼴 넓이 활용(와이퍼)",
-          "cat": "sector"
+          "cat": "trig_basic"
         },
         "10": {
           "type": "두 부채꼴 넓이차·반지름",
-          "cat": "sector"
+          "cat": "trig_basic"
         },
         "11": {
           "type": "호의 길이·현의 길이(sin 활용)",
-          "cat": "sector"
+          "cat": "trig_basic"
         },
         "12": {
           "type": "접선·중심각으로 호의 길이",
-          "cat": "sector"
+          "cat": "trig_basic"
         },
         "13": {
           "type": "부채꼴 넓이 최댓값(둘레 고정)",
-          "cat": "sector"
+          "cat": "trig_basic"
         },
         "14": {
           "type": "부채꼴 둘레 최솟값(산술기하)",
-          "cat": "sector"
+          "cat": "trig_basic"
         },
         "15": {
           "type": "부채꼴 넓이 최대+도형 넓이",
-          "cat": "sector"
+          "cat": "trig_basic"
         },
         "16": {
           "type": "특수각·삼각함수값 계산(변환공식)",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "17": {
           "type": "sin⁴+cos⁴ 곱 변형",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "18": {
           "type": "sinθ±cosθ·sinθcosθ 관계(부호)",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "19": {
           "type": "두 식 제곱 연립(상수 결정)",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "20": {
           "type": "삼각함수 변환공식 식 간단히",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "21": {
           "type": "삼각함수 변환공식 식 간단히",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "22": {
           "type": "삼각함수 정의(점 P 좌표)",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "23": {
           "type": "sinθ±cosθ·변환공식",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "24": {
           "type": "단위원 호의 길이 조건+정의",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "25": {
           "type": "부채꼴 넓이 조건+삼각함수 부호",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "26": {
           "type": "부채꼴 점 수선·sin²+cos²=1 합",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "27": {
           "type": "cosθ+cos(π-θ)=0 합",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "28": {
           "type": "sinθ+sin(2π-θ)=0 합",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "29": {
           "type": "삼각비·tan 활용(삼각형)",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "30": {
           "type": "도형 넓이비·tan/cos",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "31": {
           "type": "이차방정식 근=sin,cos(근과계수)",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "32": {
           "type": "로그+삼각함수 대소비교",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "33": {
           "type": "삼각함수 정의(접선·좌표)",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "34": {
           "type": "tanA·tanB=1 대칭(보기 합답형)",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "35": {
           "type": "호의 길이·부채꼴 넓이 연립",
-          "cat": "sector"
+          "cat": "trig_basic"
         },
         "36": {
           "type": "삼각함수 정의(원·교점 좌표)",
-          "cat": "identity"
+          "cat": "trig_id"
         },
         "37": {
           "type": "그래프 최대최소·교점 개수",
-          "cat": "graph"
+          "cat": "trig_graph"
         },
         "38": {
           "type": "주기 계산(곱)",
-          "cat": "graph"
+          "cat": "trig_graph"
         },
         "39": {
           "type": "삼각함수 그래프 성질(보기 합답형)",
-          "cat": "graph"
+          "cat": "trig_graph"
         },
         "40": {
           "type": "주기·최솟값으로 a,b 결정",
-          "cat": "graph"
+          "cat": "trig_graph"
         },
         "41": {
           "type": "최댓값·주기·함숫값으로 미정계수",
-          "cat": "graph"
+          "cat": "trig_graph"
         },
         "42": {
           "type": "그래프 보고 미정계수(곱)",
-          "cat": "graph"
+          "cat": "trig_graph"
         },
         "43": {
           "type": "tan 그래프 보고 미정계수",
-          "cat": "graph"
+          "cat": "trig_graph"
         },
         "44": {
           "type": "cos 그래프 보고 함숫값",
-          "cat": "graph"
+          "cat": "trig_graph"
         },
         "45": {
           "type": "두 그래프 교점으로 미정계수(곱)",
-          "cat": "graph"
+          "cat": "trig_graph"
         },
         "46": {
           "type": "그래프 조건(넓이)으로 미정계수",
-          "cat": "graph"
+          "cat": "trig_graph"
         },
         "47": {
           "type": "그래프 성질(범위·주기·대칭) 보기",
-          "cat": "graph"
+          "cat": "trig_graph"
         },
         "48": {
           "type": "구간별 sin·cos·tan 대소 보기",
-          "cat": "graph"
+          "cat": "trig_graph"
         },
         "49": {
           "type": "sin²+cos 최대최소(치환)",
-          "cat": "graph"
+          "cat": "trig_graph"
         },
         "50": {
           "type": "cos 변환 최대최소(치환)",
-          "cat": "graph"
+          "cat": "trig_graph"
         },
         "51": {
           "type": "절댓값 cos 최대최소 합",
-          "cat": "graph"
+          "cat": "trig_graph"
         },
         "52": {
           "type": "분수꼴 삼각함수 최대최소",
-          "cat": "graph"
+          "cat": "trig_graph"
         },
         "53": {
           "type": "변환공식 후 최댓값(치환)",
-          "cat": "graph"
+          "cat": "trig_graph"
         },
         "54": {
           "type": "cosx=k 실근의 합(그래프)",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "55": {
           "type": "인수분해형 삼각방정식 합",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "56": {
           "type": "연립 삼각방정식(tan·sin)",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "57": {
           "type": "방정식+부등식 동시(사분면)",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "58": {
           "type": "방정식+부등식 동시(사분면)",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "59": {
           "type": "주기함수 f(x)=k 실근 개수·합",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "60": {
           "type": "직선과 sin 그래프 교점 대칭",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "61": {
           "type": "3sinx=2 해의 대칭·cos값",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "62": {
           "type": "곱=0 절댓값 삼각방정식 합",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "63": {
           "type": "sinkx=상수 교점 대칭(α+β-γ)",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "64": {
           "type": "교점 대칭으로 k 최댓값",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "65": {
           "type": "sin 그래프와 직선 교점 합·개수",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "66": {
           "type": "두 곡선 교점 개수·좌표합",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "67": {
           "type": "합성함수 삼각방정식 실근 합",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "68": {
           "type": "변환형 방정식 실근 합 f(k)",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "69": {
           "type": "주기함수 그래프와 직선 교점 개수",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "70": {
           "type": "주기함수 (2n-1)f(x)=3x 실근 개수",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "71": {
           "type": "x+5sinx=0 실근 개수(그래프)",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "72": {
           "type": "tan(π/6 x)=a 정수해 합",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "73": {
           "type": "절댓값 방정식 실근 3개 조건 k",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "74": {
           "type": "sinx-cosx≥0 부등식 해·tan값",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "75": {
           "type": "cosx>k 부등식 해·sin값",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "76": {
           "type": "연립 삼각부등식 해",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "77": {
           "type": "이차함수 꼭짓점 조건(cosθ)·곱",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "78": {
           "type": "이차부등식 항상 성립(판별식)·cosθ 최대",
-          "cat": "equation"
+          "cat": "trig_eq"
         },
         "79": {
           "type": "asinθ+bcosθ=k 실근 조건(직선·원)",
-          "cat": "equation"
+          "cat": "trig_eq"
         }
       },
       "uncertain": [

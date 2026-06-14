@@ -1,0 +1,173 @@
+{
+  "subject": "대수",
+  "categories": {
+    "trig_id": "삼각함수-삼각비·항등식",
+    "trig_graph": "삼각함수-그래프·주기·최대최소",
+    "trig_eq": "삼각함수-방정식·부등식",
+    "trig_law": "삼각함수-사인·코사인법칙·삼각형",
+    "seq_basic": "수열-등차·등비 기본",
+    "seq_sum": "수열-수열의 합(Σ)",
+    "seq_gen": "수열-귀납적 정의·일반항",
+    "seq_app": "수열-활용·종합"
+  },
+  "exams": {
+    "gicul||2025||남산고||대수||1학기||기말": {
+      "school": "남산고",
+      "year": "2025",
+      "term": "기말",
+      "totalCount": 30,
+      "typeMap": {
+        "1": {
+          "type": "사인법칙→외접원 반지름",
+          "cat": "trig_law",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "등차수열 일반항",
+          "cat": "seq_basic",
+          "grade": "mc"
+        },
+        "3": {
+          "type": "Σk 계산",
+          "cat": "seq_sum",
+          "grade": "mc"
+        },
+        "4": {
+          "type": "등비수열 항 구하기",
+          "cat": "seq_basic",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "삼각형 넓이(SAS)",
+          "cat": "trig_law",
+          "grade": "mc"
+        },
+        "6": {
+          "type": "부분분수 Σ",
+          "cat": "seq_sum",
+          "grade": "mc"
+        },
+        "7": {
+          "type": "절댓값 사인 그래프 교점 개수",
+          "cat": "trig_eq",
+          "grade": "mc"
+        },
+        "8": {
+          "type": "등비수열 합 조건",
+          "cat": "seq_basic",
+          "grade": "mc"
+        },
+        "9": {
+          "type": "귀납적 정의(주기성)→합",
+          "cat": "seq_gen",
+          "grade": "mc"
+        },
+        "10": {
+          "type": "삼각부등식 해 존재 조건",
+          "cat": "trig_eq",
+          "grade": "mc"
+        },
+        "11": {
+          "type": "사인함수 그래프+삼각형 넓이",
+          "cat": "trig_graph",
+          "grade": "mc"
+        },
+        "12": {
+          "type": "삼각방정식 실근 개수·최대근",
+          "cat": "trig_eq",
+          "grade": "mc"
+        },
+        "13": {
+          "type": "점·직선 도형 넓이 수열의 합",
+          "cat": "seq_app",
+          "grade": "mc"
+        },
+        "14": {
+          "type": "삼각형 내부 점 사인법칙 넓이",
+          "cat": "trig_law",
+          "grade": "mc"
+        },
+        "15": {
+          "type": "내접원 반지름→삼각형 넓이",
+          "cat": "trig_law",
+          "grade": "mc"
+        },
+        "16": {
+          "type": "수열의 합과 등차 결합",
+          "cat": "seq_sum",
+          "grade": "mc"
+        },
+        "17": {
+          "type": "부등식 만족 자연수 개수 수열",
+          "cat": "seq_gen",
+          "grade": "mc"
+        },
+        "18": {
+          "type": "코사인 함수 부등식 자연수 합",
+          "cat": "trig_graph",
+          "grade": "mc"
+        },
+        "19": {
+          "type": "조각 삼각함수 그래프 교점",
+          "cat": "trig_eq",
+          "grade": "mc"
+        },
+        "20": {
+          "type": "좌표 경로 점 수열",
+          "cat": "seq_app",
+          "grade": "mc"
+        },
+        "21": {
+          "type": "코사인 최대최소·주기",
+          "cat": "trig_graph",
+          "grade": "self"
+        },
+        "22": {
+          "type": "분모 유리화 Σ",
+          "cat": "seq_sum",
+          "grade": "self"
+        },
+        "23": {
+          "type": "각이등분선+사인법칙",
+          "cat": "trig_law",
+          "grade": "self"
+        },
+        "24": {
+          "type": "지수함수 그래프+수열",
+          "cat": "seq_app",
+          "grade": "self"
+        },
+        "25": {
+          "type": "코사인 최대최소→상수",
+          "cat": "trig_graph",
+          "grade": "self"
+        },
+        "26": {
+          "type": "등차수열 합 최솟값 조건",
+          "cat": "seq_sum",
+          "grade": "self"
+        },
+        "27": {
+          "type": "근과 조건 만족 수열 최댓값",
+          "cat": "seq_gen",
+          "grade": "self"
+        },
+        "28": {
+          "type": "나머지 조건 자연수 합",
+          "cat": "seq_sum",
+          "grade": "self"
+        },
+        "29": {
+          "type": "cos²+sin 최대최소(치환)",
+          "cat": "trig_id",
+          "grade": "self"
+        },
+        "30": {
+          "type": "등차수열 합·배수 조건",
+          "cat": "seq_basic",
+          "grade": "self"
+        }
+      }
+    }
+  }
+}

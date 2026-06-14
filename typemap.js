@@ -23,6 +23,7 @@ const TYPEMAP_PATH = {
 
 // 대분류 코드 → 한글 이름 (단원 categories에 없을 때의 기본값)
 const CAT_NAMES = {
+  // (구) 대분류 — 옛 데이터 호환용 유지
   calc: '다항식·계산',
   factor: '인수분해',
   complex: '복소수',
@@ -30,6 +31,55 @@ const CAT_NAMES = {
   function: '이차함수',
   application: '활용·종합',
   inequality: '부등식',
+  // 공통수학1 중단원 (교재·기출 공통)
+  calc_mul: '다항식-곱셈공식·변형',
+  calc_div: '다항식-나눗셈·조립제법',
+  calc_rem: '다항식-나머지·인수정리',
+  calc_id: '다항식-항등식·미정계수',
+  calc_etc: '다항식-수의 계산·이항',
+  complex_op: '복소수-연산·켤레·i',
+  complex_root: '복소수-방정식 허근',
+  eq_quad: '방정식-이차(근과계수·판별식)',
+  eq_cubic: '방정식-삼차',
+  eq_quartic: '방정식-사차',
+  eq_sys: '방정식-연립',
+  fn_graph: '이차함수-그래프·최대최소·접선',
+  fn_ineq: '이차함수-부등식',
+  fn_abs: '이차함수-절댓값',
+  mat_op: '행렬-연산·상등·성분',
+  mat_pow: '행렬-거듭제곱·케일리해밀턴',
+  cnt_perm: '경우의수-순열',
+  cnt_comb: '경우의수-조합',
+  cnt_dist: '경우의수-분배·중복',
+  cnt_case: '경우의수-경우의 수 종합',
+  // 미적분Ⅰ 중단원
+  diff_tan: '미분-접선',
+  diff_ext: '미분-극값·그래프',
+  diff_app: '미분-방정식·부등식·실근',
+  diff_rate: '미분-속도·가속도',
+  integ_calc: '적분-부정·정적분 계산',
+  integ_def: '적분-정적분으로 정의된 함수',
+  integ_area: '적분-넓이',
+  integ_dist: '적분-속도와 거리',
+  integ_app: '적분-종합·함수결정',
+  // 대수 중단원 (교재·기출 통합: 지수로그·삼각함수·수열)
+  exp_calc: '지수-거듭제곱근·지수 계산',
+  exp_fn: '지수함수-그래프·점·최대최소',
+  exp_eq: '지수-방정식·부등식',
+  log_calc: '로그-로그 계산·상용로그',
+  log_fn: '로그함수-그래프·점·최대최소',
+  log_eq: '로그-방정식·부등식',
+  explog_compare: '지수로그-대소비교',
+  explog_app: '지수로그-실생활 활용',
+  trig_basic: '삼각함수-각·동경·부채꼴',
+  trig_id: '삼각함수-삼각비·항등식',
+  trig_graph: '삼각함수-그래프·주기·최대최소',
+  trig_eq: '삼각함수-방정식·부등식',
+  trig_law: '삼각함수-사인·코사인법칙·삼각형',
+  seq_basic: '수열-등차·등비 기본',
+  seq_sum: '수열-수열의 합(Σ)',
+  seq_gen: '수열-귀납적 정의·일반항',
+  seq_app: '수열-활용·종합',
 };
 
 // 교재 JSON을 한 번 읽어 캐시
