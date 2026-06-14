@@ -1095,6 +1095,7 @@ body.role-assistant .teacher-only{ display:none !important; }
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="./typemap.js"></script>
 <script src="./grader.js"></script>
 <script>
@@ -1108,6 +1109,10 @@ window._fbReady = false;
     var FBCONFIG={apiKey:"AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",databaseURL:"https://kimbjmath-default-rtdb.firebaseio.com",projectId:"kimbjmath",appId:"1:664889936709:web:2df1494b0cd978c64e4c2c"};
     if(!firebase.apps.length)firebase.initializeApp(FBCONFIG);
     var db=firebase.database();window._fbDb=db;
+    // 익명 로그인 (wronganswers 등 auth!=null 규칙이 걸린 노드 접근용)
+    window._authReady = (firebase.auth ? firebase.auth().signInAnonymously()
+      .catch(function(e){ console.error('익명 로그인 실패:', e&&e.code, e&&e.message); })
+      : Promise.resolve());
     var PREFIX=window._FB_PREFIX;
     // 동기화 대상 키
     var SYNC_KEYS=["students","attendance","homework","tests","progress","groups","schedules","exams","memo","memo_todo","examscores"].map(function(k){return PREFIX+k;});
@@ -1134,8 +1139,11 @@ window._fbReady = false;
     };
 
     // 켤 때: 서버에서 받아와 이 기기에 채움 → 그 다음 화면 그림
+    // (익명 로그인 완료 후에 읽어야 auth!=null 규칙을 통과)
     window._fbPull=function(cb){
-      db.ref().once("value").then(function(snap){
+      Promise.resolve(window._authReady).then(function(){
+        return db.ref().once("value");
+      }).then(function(snap){
         var all=snap.val()||{};
         SYNC_KEYS.forEach(function(k){
           if(all[k]!==undefined && all[k]!==null){
@@ -1565,6 +1573,10 @@ window.addEventListener('DOMContentLoaded', function() {
     if(memo && document.getElementById('memo-area')) document.getElementById('memo-area').value = memo;
     updateTestFilter();
     renderDashboard();
+    // 제출 기록(클래스룸 완료체크 + 채점받기 제출) 로드 후 미제출 통계 다시 계산
+    if(typeof loadClassHwDone==='function'){
+      loadClassHwDone(function(){ if(typeof loadWaSubs==='function'){ loadWaSubs(function(){ renderDashboard(); }); } else { renderDashboard(); } });
+    }
     // URL에 ?view=xxx 가 있으면 해당 화면을 바로 연다
     try {
       var params = new URLSearchParams(location.search);
@@ -1756,7 +1768,7 @@ function showView(id, el) {
     var afterLoad=function(){ if(classUsersLoaded) renderStudyLog(); else loadClassUsers(function(){ renderStudyLog(); }); };
     loadClassPlanners(afterLoad);
   }
-  if(id==='homework')   { renderHw(); hwCalYear=new Date().getFullYear(); hwCalMonth=new Date().getMonth(); renderHwCalendar(); loadClassHwDone(function(){ renderHw(); }); }
+  if(id==='homework')   { renderHw(); hwCalYear=new Date().getFullYear(); hwCalMonth=new Date().getMonth(); renderHwCalendar(); loadClassHwDone(function(){ loadWaSubs(function(){ renderHw(); renderDashboard(); }); }); }
   if(id==='wronganalysis') renderWrongAnalysisHome();
   if(id==='schedule')   { renderSchedule(); }
   if(id==='memo')       activateMemo();
@@ -3527,8 +3539,8 @@ function renderHw() {
               + '<button class="icon-btn" title="오답 현황" onclick="openWrongView(\''+r.id+'\')">📊</button>';
     }
     // 제출 여부: 선생님이 직접 done/half로 바꿨으면 그 값 우선,
-    // pending이어도 학생이 클래스룸에서 완료 체크했으면 자동으로 '제출됨'으로 본다
-    var autoDone = (r.status!=='done' && r.status!=='half') && (sdone && sdone.done);
+    // 아니어도 학생이 클래스룸 완료체크 OR '채점받기'로 제출했으면 자동으로 '제출됨'으로 본다
+    var autoDone = (r.status!=='done' && r.status!=='half') && isHwSubmitted(r);
     if(autoDone) overdue = false;
     var statusCell;
     if(autoDone){
@@ -3567,7 +3579,9 @@ function renderWrongAnalysisHome(){
     +'</div>';
 
   // 전체 wronganswers 로드해서 제출/오답 수 계산
-  firebase.database().ref('wronganswers').once('value').then(function(snap){
+  Promise.resolve(window._authReady).then(function(){
+    return firebase.database().ref('wronganswers').once('value');
+  }).then(function(snap){
     var all=snap.val()||{};
     var subCnt=0, wrongCnt=0;
     aioHw.forEach(function(h){
@@ -3635,11 +3649,13 @@ function openBookAnalysis(book){
   _waCurBook=book; _waCurUnit='all';
   var box=document.getElementById('wa-content');
   box.innerHTML='<div style="text-align:center;color:var(--muted);padding:40px;">분석 데이터를 불러오는 중…</div>';
-  Promise.all([
-    TypeMap.loadTypeMap(book),
-    Grader.loadAnswerKey(book),
-    firebase.database().ref('wronganswers').once('value')
-  ]).then(function(arr){
+  Promise.resolve(window._authReady).then(function(){
+    return Promise.all([
+      TypeMap.loadTypeMap(book),
+      Grader.loadAnswerKey(book),
+      firebase.database().ref('wronganswers').once('value')
+    ]);
+  }).then(function(arr){
     _waData={ tm:arr[0], ak:arr[1], all:arr[2].val()||{} };
     renderBookAnalysis();
   }).catch(function(e){
@@ -3811,11 +3827,13 @@ function openWrongView(hwId){
 
   // typemap, 정답표, 제출 데이터 동시 로드 (그 숙제 교재 기준)
   var tmKey = aioTmKeyOf(r.book) || '올인원';
-  Promise.all([
-    (window.TypeMap ? TypeMap.loadTypeMap(tmKey) : Promise.reject(new Error('typemap.js 미로드'))),
-    (window.Grader ? Grader.loadAnswerKey(tmKey) : Promise.reject(new Error('grader.js 미로드'))),
-    firebase.database().ref('wronganswers/'+hwId).once('value')
-  ]).then(function(arr){
+  Promise.resolve(window._authReady).then(function(){
+    return Promise.all([
+      (window.TypeMap ? TypeMap.loadTypeMap(tmKey) : Promise.reject(new Error('typemap.js 미로드'))),
+      (window.Grader ? Grader.loadAnswerKey(tmKey) : Promise.reject(new Error('grader.js 미로드'))),
+      firebase.database().ref('wronganswers/'+hwId).once('value')
+    ]);
+  }).then(function(arr){
     var tm=arr[0], ak=arr[1], snap=arr[2];
     var subs=snap.val()||{};
     _wrongCtx={ hwId:hwId, hwRec:r, ak:ak, tm:tm, subs:subs };
@@ -6342,8 +6360,24 @@ var CLASS_PLANNERS = {}; // 학생 플래너 (class_planner) {classKey:{date:pla
 function loadClassHwDone(cb){
   try{
     if(typeof firebase==='undefined' || !firebase.apps || !firebase.apps.length){ if(cb) cb(); return; }
-    firebase.database().ref((window._CLS_PREFIX||'')+'class_hw_done').once('value').then(function(snap){
+    Promise.resolve(window._authReady).then(function(){
+      return firebase.database().ref((window._CLS_PREFIX||'')+'class_hw_done').once('value');
+    }).then(function(snap){
       HW_DONE = snap.val() || {};
+      if(cb) cb();
+    }).catch(function(){ if(cb) cb(); });
+  }catch(e){ if(cb) cb(); }
+}
+
+// 학생이 '채점받기'로 제출한 기록(wronganswers) 전역 캐시 — 제출 여부 판정용
+var WA_SUBS = {};   // { hwId: { sid: {submittedFull, wrong, ...} } }
+function loadWaSubs(cb){
+  try{
+    if(typeof firebase==='undefined' || !firebase.apps || !firebase.apps.length){ if(cb) cb(); return; }
+    Promise.resolve(window._authReady).then(function(){
+      return firebase.database().ref('wronganswers').once('value');
+    }).then(function(snap){
+      WA_SUBS = snap.val() || {};
       if(cb) cb();
     }).catch(function(){ if(cb) cb(); });
   }catch(e){ if(cb) cb(); }
@@ -6366,12 +6400,16 @@ function hwDoneBySid(hwId, sid){
   var rec = HW_DONE[hwId] && HW_DONE[hwId][s.classKey];
   return rec || null;
 }
-// 이 숙제가 실질적으로 제출된 상태인지 (선생님 status done/half OR 학생 클래스룸 완료체크)
+// 이 숙제가 실질적으로 제출된 상태인지
+// (선생님 status done/half  OR  학생 클래스룸 완료체크  OR  학생이 '채점받기'로 제출)
 function isHwSubmitted(r){
   if(!r) return false;
   if(r.status==='done' || r.status==='half') return true;
   var sd = hwDoneBySid(r.id, r.sid);
-  return !!(sd && sd.done);
+  if(sd && sd.done) return true;
+  var wa = WA_SUBS[r.id] && WA_SUBS[r.id][r.sid];
+  if(wa && wa.submittedFull) return true;
+  return false;
 }
 
 // 학생 학습기록 (클래스룸 플래너) 렌더
