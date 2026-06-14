@@ -2658,6 +2658,351 @@
           "grade": "self"
         }
       }
+    },
+    "mini||2026||공통수학1||21주차": {
+      "kind": "mini",
+      "year": "2026",
+      "target": "공통수학1",
+      "week": "21주차",
+      "totalCount": 12,
+      "typeMap": {
+        "1": {
+          "type": "행렬 성분 조건(곱·합)",
+          "cat": "matrix",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "삼차방정식 근과계수·식의 값",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "3": {
+          "type": "삼차방정식 허근(켤레근)·근의 곱",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "4": {
+          "type": "이차부등식 단일경계→일차화",
+          "cat": "function",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "서로 다른 책 분배(묶음)",
+          "cat": "count",
+          "grade": "self"
+        },
+        "6": {
+          "type": "행렬 연산·미정계수",
+          "cat": "matrix",
+          "grade": "self"
+        },
+        "7": {
+          "type": "삼차방정식 인수분해·세 실근 곱",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "8": {
+          "type": "새 방정식(근 변환)·계수 합",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "9": {
+          "type": "삼차방정식 허근 조건·식의 값",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "10": {
+          "type": "조건부 분배(포함배제)",
+          "cat": "count",
+          "grade": "self"
+        },
+        "11": {
+          "type": "케일리-해밀턴·부정방정식 최대최소",
+          "cat": "matrix",
+          "grade": "self"
+        },
+        "12": {
+          "type": "연립부등식 좌측무한구간·보기합답형",
+          "cat": "function",
+          "grade": "mc"
+        }
+      }
+    },
+    "mini||2026||공통수학1||22주차": {
+      "kind": "mini",
+      "year": "2026",
+      "target": "공통수학1",
+      "week": "22주차",
+      "totalCount": 12,
+      "typeMap": {
+        "1": {
+          "type": "행렬 합·차 성분합",
+          "cat": "matrix",
+          "grade": "self"
+        },
+        "2": {
+          "type": "이차·일차함수 부등식 정수 개수",
+          "cat": "function",
+          "grade": "self"
+        },
+        "3": {
+          "type": "행렬방정식·케일리-해밀턴",
+          "cat": "matrix",
+          "grade": "self"
+        },
+        "4": {
+          "type": "곱 형태 방정식·근의 거듭제곱 합",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "영역 색칠(인접·중복색)",
+          "cat": "count",
+          "grade": "self"
+        },
+        "6": {
+          "type": "연립부등식 단일구간 조건·최솟값",
+          "cat": "function",
+          "grade": "mc"
+        },
+        "7": {
+          "type": "좌석 배치 조건부 경우의 수",
+          "cat": "count",
+          "grade": "self"
+        },
+        "8": {
+          "type": "행렬 성분 조건·제곱",
+          "cat": "matrix",
+          "grade": "mc"
+        },
+        "9": {
+          "type": "일직선 제외 선택(직사각배열)",
+          "cat": "count",
+          "grade": "self"
+        },
+        "10": {
+          "type": "삼차방정식 허근 조건·식의 값",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "11": {
+          "type": "행렬 거듭제곱 조건·개수",
+          "cat": "matrix",
+          "grade": "self"
+        },
+        "12": {
+          "type": "조건부 분배(동화책·시집)",
+          "cat": "count",
+          "grade": "mc"
+        }
+      }
+    },
+    "mini||2026||공통수학1||23주차": {
+      "kind": "mini",
+      "year": "2026",
+      "target": "공통수학1",
+      "week": "23주차",
+      "totalCount": 12,
+      "typeMap": {
+        "1": {
+          "type": "삼차방정식 한 근 조건·근과계수",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "연립부등식 정수해 합",
+          "cat": "function",
+          "grade": "self"
+        },
+        "3": {
+          "type": "같은 것 포함 순열(일정 배정)",
+          "cat": "count",
+          "grade": "self"
+        },
+        "4": {
+          "type": "사차방정식 네 근·인수정리 대입",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "5": {
+          "type": "자연수 개수(자릿수 조건)",
+          "cat": "count",
+          "grade": "self"
+        },
+        "6": {
+          "type": "순서쌍 합 배수 조건 개수",
+          "cat": "count",
+          "grade": "self"
+        },
+        "7": {
+          "type": "행렬 조건·성분합",
+          "cat": "matrix",
+          "grade": "self"
+        },
+        "8": {
+          "type": "조건부 분배(동화책·시집)",
+          "cat": "count",
+          "grade": "self"
+        },
+        "9": {
+          "type": "삼차방정식 실근·허근 조건",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "10": {
+          "type": "새 방정식(근 변환)·계수",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "11": {
+          "type": "행렬 성분 조건·정수해 최대최소",
+          "cat": "matrix",
+          "grade": "self"
+        },
+        "12": {
+          "type": "사차방정식 켤레근 조건·식의 값",
+          "cat": "equation",
+          "grade": "self"
+        }
+      }
+    },
+    "mini||2026||공통수학1||24주차": {
+      "kind": "mini",
+      "year": "2026",
+      "target": "공통수학1",
+      "week": "24주차",
+      "totalCount": 12,
+      "typeMap": {
+        "1": {
+          "type": "새 방정식(근 변환)·계수",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "연립방정식 해·식의 값",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "3": {
+          "type": "직각삼각형 조건·식의 값(활용)",
+          "cat": "application",
+          "grade": "self"
+        },
+        "4": {
+          "type": "연립부등식 해 존재 조건",
+          "cat": "function",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "절댓값 부등식·이차부등식 해 일치",
+          "cat": "function",
+          "grade": "self"
+        },
+        "6": {
+          "type": "삼차방정식 허근 조건·식의 값",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "7": {
+          "type": "절댓값 부등식 해→복소수 식의 값",
+          "cat": "complex",
+          "grade": "self"
+        },
+        "8": {
+          "type": "같은 구슬 분배(부정방정식)",
+          "cat": "count",
+          "grade": "self"
+        },
+        "9": {
+          "type": "배수 조건 두 수 선택(나머지)",
+          "cat": "count",
+          "grade": "self"
+        },
+        "10": {
+          "type": "소수 조건 네 자리 수 개수",
+          "cat": "count",
+          "grade": "self"
+        },
+        "11": {
+          "type": "양 끝 조건 나열(여사건)",
+          "cat": "count",
+          "grade": "self"
+        },
+        "12": {
+          "type": "조합 방정식(nCr 성질)",
+          "cat": "count",
+          "grade": "self"
+        }
+      }
+    },
+    "mini||2026||공통수학1||25주차": {
+      "kind": "mini",
+      "year": "2026",
+      "target": "공통수학1",
+      "week": "25주차",
+      "totalCount": 12,
+      "typeMap": {
+        "1": {
+          "type": "삼차방정식 실근·허근 조건",
+          "cat": "equation",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "실수계수 사차다항식·나머지정리",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "3": {
+          "type": "사차방정식 네 실근·등차 조건",
+          "cat": "equation",
+          "grade": "self"
+        },
+        "4": {
+          "type": "연립부등식 해 일치·상수 곱",
+          "cat": "function",
+          "grade": "self"
+        },
+        "5": {
+          "type": "행렬 연립·성분 값",
+          "cat": "matrix",
+          "grade": "self"
+        },
+        "6": {
+          "type": "판별식 조건 순서쌍 개수(주사위)",
+          "cat": "count",
+          "grade": "self"
+        },
+        "7": {
+          "type": "곱 짝수 조건 순서쌍 개수",
+          "cat": "count",
+          "grade": "self"
+        },
+        "8": {
+          "type": "행렬 거듭제곱 규칙·성분합",
+          "cat": "matrix",
+          "grade": "self"
+        },
+        "9": {
+          "type": "조건부 나열(사이 끼우기)",
+          "cat": "count",
+          "grade": "self"
+        },
+        "10": {
+          "type": "행렬방정식·미정계수",
+          "cat": "matrix",
+          "grade": "self"
+        },
+        "11": {
+          "type": "연립이차부등식 해 조건·상수",
+          "cat": "function",
+          "grade": "mc"
+        },
+        "12": {
+          "type": "배수 조건 순서쌍 개수(나머지)",
+          "cat": "count",
+          "grade": "self"
+        }
+      }
     }
   }
 }
