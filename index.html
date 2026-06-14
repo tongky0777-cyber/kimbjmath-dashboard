@@ -703,6 +703,7 @@ body.role-assistant .teacher-only{ display:none !important; }
 
       <!-- 미니모의고사: 대상 + 주차 -->
       <div class="form-row" id="test-week-row" style="display:none;">
+        <div class="form-group"><label>버전(연도)</label><select id="test-mini-year" onchange="syncWeekLabel()"></select></div>
         <div class="form-group"><label>대상</label><select id="test-mini-target" onchange="syncWeekLabel()"></select></div>
         <div class="form-group"><label>주차 (숫자만)</label><input type="number" id="test-week-num" min="1" placeholder="예) 3" oninput="syncWeekLabel()"></div>
       </div>
@@ -932,6 +933,7 @@ body.role-assistant .teacher-only{ display:none !important; }
 
       <!-- 미니모의고사: 대상 + 주차 -->
       <div class="form-row" id="gt-week-row" style="display:none;">
+        <div class="form-group"><label>버전(연도)</label><select id="gt-mini-year" onchange="syncGtWeekLabel()"></select></div>
         <div class="form-group"><label>대상</label><select id="gt-mini-target" onchange="syncGtWeekLabel()"></select></div>
         <div class="form-group"><label>주차 (숫자만)</label><input type="number" id="gt-week-num" min="1" placeholder="예) 3" oninput="syncGtWeekLabel()"></div>
       </div>
@@ -1516,7 +1518,7 @@ function examScoreKeyOfRecord(t){
   // 2025 혜화여고 공통수학1 1학기 기말 (20문항, 만점 100점) (배점 없는 시험지 → 균등분배)
   var KEY11='gicul||2025||혜화여고||공통수학1||1학기||기말';
   if(!tables[KEY11]){
-    tables[KEY11]={ points:{ 1:3.0, 2:3.0, 3:3.5, 4:3.5, 5:3.5, 6:4.0, 7:4.0, 8:4.0, 9:4.0, 10:4.0, 11:4.5, 12:4.5, 13:4.5, 14:4.5, 15:5.0, 16:5.5, 17:7.0, 18:8.0, 19:9.0, 20:11.0 }, total:20, full:100 };
+    tables[KEY11]={ points:{ 1:5.0, 2:5.0, 3:5.0, 4:5.0, 5:5.0, 6:5.0, 7:5.0, 8:5.0, 9:5.0, 10:5.0, 11:5.0, 12:5.0, 13:5.0, 14:5.0, 15:5.0, 16:5.0, 17:5.0, 18:5.0, 19:5.0, 20:5.0 }, total:20, full:100 };
     changed=true;
   }
   // 2025 남산고 공통수학1 1학기 기말 (25문항, 만점 100점)
@@ -1528,13 +1530,7 @@ function examScoreKeyOfRecord(t){
   // 2025 덕원고 공통수학1 1학기 기말 (22문항, 만점 100점 / 서술형은 난이도 가중 추정)
   var KEY13='gicul||2025||덕원고||공통수학1||1학기||기말';
   if(!tables[KEY13]){
-    tables[KEY13]={ points:{ 1:3, 2:3, 3:3, 4:3, 5:4, 6:4, 7:4, 8:4, 9:4, 10:4, 11:4, 12:5, 13:5, 14:5, 15:4, 16:6, 17:5, 18:5, 19:6, 20:6, 21:6, 22:7 }, total:22, full:100 };
-    changed=true;
-  }
-  // 2025 청구고 공통수학1 1학기 기말 (20문항, 만점 100점)
-  var KEY14='gicul||2025||청구고||공통수학1||1학기||기말';
-  if(!tables[KEY14]){
-    tables[KEY14]={ points:{ 1:3.5, 2:3.7, 3:3.9, 4:4.1, 5:4.3, 6:4.5, 7:4.7, 8:4.8, 9:4.9, 10:5.0, 11:5.1, 12:5.2, 13:5.3, 14:6.0, 15:5.0, 16:5.0, 17:6.0, 18:6.0, 19:6.0, 20:7.0 }, total:20, full:100 };
+    tables[KEY13]={ points:{ 1:3, 2:3, 3:3, 4:3, 5:4, 6:4, 7:4, 8:4, 9:4, 10:4, 11:4, 12:5, 13:5, 14:5, 15:5, 16:5, 17:5, 18:5, 19:6, 20:6, 21:6, 22:7 }, total:22, full:100 };
     changed=true;
   }
   if(changed) setExamScoreTables(tables);
@@ -1962,6 +1958,7 @@ var EXAM_TERMS = ["중간","기말"]; // 중간/기말
 
 // 미니모의고사 대상: 중등은 학년, 고등은 과목
 var MINI_TARGETS = ["중1","중2","중3","공수1","공수2","대수","미적분Ⅰ","기하","확률과 통계","미적분Ⅱ"];
+  var MINI_YEARS = ["2026","2027"]; // 미니모의 버전(연도). 새 연도는 여기 한 줄만 추가.
 
 // 데일리 계열 테스트명인지 (단원으로 묶음)
 function isDailyTest(name){ return /Daily Test/.test(name||''); }
@@ -1973,7 +1970,8 @@ function getPaperKey(t){
   if(name==='미니모의고사'){
     var wk = t.week||'';
     var tg = t.miniTarget||'';
-    return { key:'mini||'+tg+'||'+wk, label:(tg?tg+' ':'')+'미니모의고사 '+wk };
+    var yr = t.miniYear||'2026'; // 연도 없는 기존 데이터는 2026으로 간주
+    return { key:'mini||'+yr+'||'+tg+'||'+wk, label:'['+yr+'] '+(tg?tg+' ':'')+'미니모의고사 '+wk };
   }
   if(name==='기출 Test'){
     var parts=[t.examYear||'',t.examSchool||'',t.examSubject||'',t.examTerm2||'',t.examTerm||''];
@@ -2490,6 +2488,7 @@ function collectTestData(){
     var wn=document.getElementById('test-week-num').value;
     data.week = wn? (wn+'주차') : '';
     data.miniTarget = document.getElementById('test-mini-target').value;
+    data.miniYear = document.getElementById('test-mini-year') ? document.getElementById('test-mini-year').value : '2026';
     data.subject=''; data.unit='';
   } else if(name==='기출 Test'){
     data.examYear=document.getElementById('test-exam-year').value;
@@ -2652,6 +2651,7 @@ function editTest(id) {
   if(t.name==='미니모의고사'){
     fillMiniTargets();
     if(t.miniTarget) document.getElementById('test-mini-target').value=t.miniTarget;
+    var _ty=document.getElementById('test-mini-year'); if(_ty) _ty.value=(t.miniYear||'2026');
     document.getElementById('test-week-num').value = (t.week||'').replace('주차',''); syncWeekLabel();
   } else if(t.name==='기출 Test'){
     fillExamYears(); fillExamLevels();
@@ -2987,14 +2987,14 @@ function paperBarChartHtml(arr){
 // 그래프 x축에 쓸 짧은 라벨
 function trendShortLabel(p){
   var r=p.records[0]||{};
-  if(r.name==='미니모의고사'){ var m=(r.week||'').match(/(\d+)/); return m?m[1]+'주':(r.week||''); }
+  if(r.name==='미니모의고사'){ var m=(r.week||'').match(/(\d+)/); var y2=(r.miniYear||'2026').slice(2); return m?("'"+y2+' '+m[1]+'주'):(r.week||''); }
   if(r.name==='기출 Test'){ return (r.examTerm2||'')+(r.examTerm||''); }
   return (r.unit||p.label).slice(0,6);
 }
 // 막대 차트용 전체 라벨 (자르지 않음)
 function paperFullLabel(p){
   var r=p.records[0]||{};
-  if(r.name==='미니모의고사'){ var m=(r.week||'').match(/(\d+)/); return m?(m[1]+'주차'):(r.week||p.label); }
+  if(r.name==='미니모의고사'){ var m=(r.week||'').match(/(\d+)/); var yr=(r.miniYear||'2026'); return m?('['+yr+'] '+(r.miniTarget?r.miniTarget+' ':'')+m[1]+'주차'):(r.week||p.label); }
   if(r.name==='기출 Test'){ return [r.examSchool,r.examTerm2,(r.examTerm?r.examTerm+'고사':'')].filter(Boolean).join(' ')||p.label; }
   // 데일리 등 그 외: 테스트명 · 단원 으로 함께 표시 (단원 없으면 테스트명만)
   return (r.name||p.label) + (r.unit ? ' · ' + r.unit : '');
@@ -5096,11 +5096,16 @@ function fillMiniTargets(){
   if(sel && !sel.options.length){
     sel.innerHTML=MINI_TARGETS.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('');
   }
+  var ys=document.getElementById('test-mini-year');
+  if(ys && !ys.options.length){
+    ys.innerHTML=MINI_YEARS.map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join('');
+  }
 }
 function syncWeekLabel(){
   var n=document.getElementById('test-week-num').value;
   var tg=document.getElementById('test-mini-target') ? document.getElementById('test-mini-target').value : '';
-  document.getElementById('test-week-label').textContent = n? ((tg?tg+' ':'')+'미니모의고사 '+n+'주차') : '—';
+  var yr=document.getElementById('test-mini-year') ? document.getElementById('test-mini-year').value : '';
+  document.getElementById('test-week-label').textContent = n? ((yr?'['+yr+'] ':'')+(tg?tg+' ':'')+'미니모의고사 '+n+'주차') : '—';
 }
 function examYearOptions(){
   var y=new Date().getFullYear(); var arr=[];
@@ -5165,8 +5170,8 @@ function onGroupTestNameChange(){
   else { if(bookCell) bookCell.style.display=''; unitRow.style.display='flex'; }
   updateGroupTestList();
 }
-function fillGtMiniTargets(){ var sel=document.getElementById('gt-mini-target'); if(sel && !sel.options.length){ sel.innerHTML=MINI_TARGETS.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join(''); } }
-function syncGtWeekLabel(){ var n=document.getElementById('gt-week-num').value; var tg=document.getElementById('gt-mini-target')?document.getElementById('gt-mini-target').value:''; document.getElementById('gt-week-label').textContent = n? ((tg?tg+' ':'')+'미니모의고사 '+n+'주차') : '—'; }
+function fillGtMiniTargets(){ var sel=document.getElementById('gt-mini-target'); if(sel && !sel.options.length){ sel.innerHTML=MINI_TARGETS.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join(''); } var ys=document.getElementById('gt-mini-year'); if(ys && !ys.options.length){ ys.innerHTML=MINI_YEARS.map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join(''); } }
+function syncGtWeekLabel(){ var n=document.getElementById('gt-week-num').value; var tg=document.getElementById('gt-mini-target')?document.getElementById('gt-mini-target').value:''; var yr=document.getElementById('gt-mini-year')?document.getElementById('gt-mini-year').value:''; document.getElementById('gt-week-label').textContent = n? ((yr?'['+yr+'] ':'')+(tg?tg+' ':'')+'미니모의고사 '+n+'주차') : '—'; }
 function fillGtExamYears(){ var sel=document.getElementById('gt-exam-year'); if(sel.options.length) return; sel.innerHTML=examYearOptions().map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join(''); }
 function fillGtMockYears(){ var sel=document.getElementById('gt-mock-year'); if(sel.options.length) return; sel.innerHTML=examYearOptions().map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join(''); }
 function fillGtExamLevels(){ var sel=document.getElementById('gt-exam-level'); if(!sel.options.length){ sel.innerHTML=Object.keys(SCHOOLS).map(function(l){return '<option value="'+l+'">'+l+'</option>';}).join(''); } fillGtExamSchools(); var subjSel=document.getElementById('gt-exam-subject'); if(!subjSel.options.length){ subjSel.innerHTML=Object.keys(EXAM_SUBJECTS).map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join(''); } fillGtExamTerms(); var termSel=document.getElementById('gt-exam-term'); if(!termSel.options.length){ termSel.innerHTML=EXAM_TERMS.map(function(t){return '<option value="'+t+'">'+t+'고사</option>';}).join(''); } }
@@ -5175,7 +5180,7 @@ function fillGtExamTerms(){ var subj=document.getElementById('gt-exam-subject').
 function collectGtMeta(){
   var name=document.getElementById('gt-name').value;
   var m={ name:name, date:document.getElementById('gt-date').value, total:parseInt(document.getElementById('gt-total').value) };
-  if(name==='미니모의고사'){ var wn=document.getElementById('gt-week-num').value; m.week=wn?(wn+'주차'):''; m.miniTarget=document.getElementById('gt-mini-target').value; m.subject=''; m.unit=''; }
+  if(name==='미니모의고사'){ var wn=document.getElementById('gt-week-num').value; m.week=wn?(wn+'주차'):''; m.miniTarget=document.getElementById('gt-mini-target').value; m.miniYear=document.getElementById('gt-mini-year')?document.getElementById('gt-mini-year').value:'2026'; m.subject=''; m.unit=''; }
   else if(name==='기출 Test'){ m.examYear=document.getElementById('gt-exam-year').value; m.examLevel=document.getElementById('gt-exam-level').value; m.examSchool=document.getElementById('gt-exam-school').value; m.examSubject=document.getElementById('gt-exam-subject').value; m.examTerm2=document.getElementById('gt-exam-term2').value; m.examTerm=document.getElementById('gt-exam-term').value; m.subject=m.examSubject; m.unit=''; }
   else if(name==='모의고사 기출'){ m.examYear=document.getElementById('gt-mock-year').value; m.mockRound=document.getElementById('gt-mock-round').value; m.subject=''; m.unit=''; }
   else { m.book=document.getElementById('gt-book').value; m.subject=document.getElementById('gt-subject').value; m.unit=document.getElementById('gt-unit').value; }
