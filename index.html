@@ -1561,6 +1561,15 @@ function examScoreKeyOfRecord(t){
     }, total:30, full:100 };
     changed=true;
   }
+  // 2025 경북여고 대수 1학기 기말고사 (20문항, 만점 100점 / 17~20번 서술형)
+  var KEY16='gicul||2025||경북여고||대수||1학기||기말';
+  if(!tables[KEY16]){
+    tables[KEY16]={ points:{
+      1:3.6, 2:3.6, 3:3.8, 4:3.8, 5:3.8, 6:3.8, 7:4.0, 8:4.0, 9:4.0, 10:4.2,
+      11:4.2, 12:4.2, 13:4.4, 14:4.4, 15:4.6, 16:4.6, 17:5.0, 18:9.0, 19:10.0, 20:11.0
+    }, total:20, full:100 };
+    changed=true;
+  }
   if(changed) setExamScoreTables(tables);
 })();
 
@@ -3593,7 +3602,8 @@ function renderWrongAnalysisHome(){
   if(!box) return;
   // 올인원 숙제 + 제출 집계 (카드 숫자용)
   var aioHw=DB.get('homework').filter(_isAioHw);
-  box.innerHTML='<div style="margin-bottom:18px;"><p style="color:var(--muted);font-size:13px;margin:0;">분석할 교재를 선택하세요. 학생들이 제출한 숙제에서 자동으로 모인 데이터입니다.</p></div>'
+  box.innerHTML='<div style="margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;"><p style="color:var(--muted);font-size:13px;margin:0;">분석할 교재를 선택하세요. 학생들이 제출한 숙제에서 자동으로 모인 데이터입니다.</p>'
+    +'<button onclick="openQuestionSearch()" style="font-size:13px;padding:7px 14px;border:1px solid var(--line);border-radius:8px;background:none;color:var(--ink);cursor:pointer;white-space:nowrap;">🔍 유형별 문항 찾기</button></div>'
     +'<div id="wa-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;">'
     +'<div style="background:var(--white);border:1px solid var(--line);border-radius:12px;padding:18px 20px;text-align:center;color:var(--muted);">집계 중…</div>'
     +'</div>';
@@ -6588,6 +6598,166 @@ function renderCompareBody(sid, bookCat, examCat){
   }
   body.innerHTML=html;
 }
+
+/* ===== 유형별 문항 검색 (어느 시험지/교재 몇 번인지 자동 추출) ===== */
+var _Q_INDEX = null;   // { cat: [ {src, srcType, no, type, paperKey, unitKey} ] }
+// 기출(exams) + 교재(올인원 units) typeMap을 모두 훑어 cat별 문항 인덱스 생성
+function buildQuestionIndex(cb){
+  if(_Q_INDEX){ if(cb)cb(_Q_INDEX); return; }
+  Promise.resolve(window._authReady).then(function(){
+    // 기출 통합 typeMap 3개
+    var giculFiles=['./data/기출_공수1_통합_typeMap.json','./data/기출_대수_통합_typeMap.json','./data/기출_미적분1_통합_typeMap.json'];
+    // 교재 typeMap (TmPaths에 등록된 것)
+    var bookProm = (window.TypeMap) ? Object.keys(TmPaths()).map(function(bk){
+      return TypeMap.loadTypeMap(bk).then(function(d){ return {book:bk, data:d}; }).catch(function(){ return null; });
+    }) : [];
+    var giculProm = giculFiles.map(function(f){ return fetch(f).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}); });
+    Promise.all([Promise.all(giculProm), Promise.all(bookProm)]).then(function(res){
+      var idx={};
+      function add(cat, item){ if(!cat)return; (idx[cat]=idx[cat]||[]).push(item); }
+      // 기출: exams 구조
+      res[0].forEach(function(d){
+        if(!d||!d.exams) return;
+        Object.keys(d.exams).forEach(function(pk){
+          var e=d.exams[pk];
+          var label=(e.school?e.school+' ':'')+(d.subject||'')+(e.term?' '+e.term:'')||pk;
+          if(pk.indexOf('mini')===0) label=(e.target||'')+' '+(e.week||'')+' 미니모의';
+          Object.keys(e.typeMap||{}).forEach(function(no){
+            var t=e.typeMap[no];
+            add(t.cat, {src:label, srcType:'시험', no:no, type:t.type, paperKey:pk});
+          });
+        });
+      });
+      // 교재: units 구조
+      res[1].forEach(function(o){
+        if(!o||!o.data||!o.data.units) return;
+        var book=o.book;
+        Object.keys(o.data.units).forEach(function(uk){
+          var u=o.data.units[uk];
+          Object.keys(u.typeMap||{}).forEach(function(no){
+            var t=u.typeMap[no];
+            add(t.cat, {src:book+' '+(u.unit||uk), srcType:'교재', no:no, type:t.type, unitKey:uk, book:book});
+          });
+        });
+      });
+      _Q_INDEX=idx;
+      if(cb)cb(idx);
+    });
+  });
+}
+// TYPEMAP_PATH 접근 헬퍼 (typemap.js 내부 상수라 window 노출 안 될 수 있음 → 알려진 교재키 직접)
+function TmPaths(){
+  // 등록된 교재 (typemap.js TYPEMAP_PATH와 일치)
+  return { '올인원':1, '올인원 대수':1 };
+}
+
+// 유형 검색 화면 열기
+function openQuestionSearch(){
+  var modal=document.getElementById('qsearch-modal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='qsearch-modal';
+    modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    modal.onclick=function(e){ if(e.target===modal) modal.remove(); };
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML='<div style="background:var(--white);border-radius:14px;max-width:680px;width:100%;max-height:85vh;overflow:auto;padding:20px;box-shadow:0 24px 60px rgba(0,0,0,.18);"><div id="qsearch-body">불러오는 중…</div></div>';
+  buildQuestionIndex(function(idx){
+    renderQuestionSearch(idx, '', '');
+  });
+}
+
+// idx, 선택된 cat, 선택된 학생sid
+function renderQuestionSearch(idx, selCat, selSid){
+  var body=document.getElementById('qsearch-body'); if(!body) return;
+  var catNames=(window.TypeMap&&TypeMap.CAT_NAMES)||{};
+  // cat 목록 (문항 많은 순)
+  var cats=Object.keys(idx).sort(function(a,b){ return idx[b].length-idx[a].length; });
+  var students=DB.get('students')||[];
+
+  var html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">'
+    +'<div style="font-size:16px;font-weight:700;">🔍 유형별 문항 찾기</div>'
+    +'<button onclick="document.getElementById(\'qsearch-modal\').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);">×</button></div>';
+
+  // 유형 드롭다운
+  html+='<div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">';
+  html+='<select onchange="_qsCat=this.value; renderQuestionSearch(_Q_INDEX,_qsCat,_qsSid);" style="font-size:13px;padding:7px 10px;border:1px solid var(--line);border-radius:6px;min-width:240px;">';
+  html+='<option value="">유형 선택…</option>';
+  cats.forEach(function(c){
+    var nm=catNames[c]||c;
+    html+='<option value="'+c+'"'+(c===selCat?' selected':'')+'>'+esc2(nm)+' ('+idx[c].length+')</option>';
+  });
+  html+='</select>';
+  // 학생 필터 (그 학생이 틀린 것만)
+  html+='<select onchange="_qsSid=this.value; renderQuestionSearch(_Q_INDEX,_qsCat,_qsSid);" style="font-size:13px;padding:7px 10px;border:1px solid var(--line);border-radius:6px;">';
+  html+='<option value="">전체 문항</option>';
+  students.filter(function(s){return s.active!==false;}).forEach(function(s){
+    html+='<option value="'+s.id+'"'+(s.id===selSid?' selected':'')+'>'+esc2(s.name)+'(이) 틀린 것만</option>';
+  });
+  html+='</select></div>';
+
+  if(!selCat){
+    html+='<div style="color:var(--muted);text-align:center;padding:30px;font-size:13px;">유형을 선택하면 해당 문항이 어느 시험지·교재 몇 번인지 모아서 보여줍니다.</div>';
+    body.innerHTML=html; return;
+  }
+
+  var list=idx[selCat]||[];
+  // 학생 필터: 그 학생이 틀린 문항만 (시험=bjm_tests t.wrong, 교재=wronganswers)
+  if(selSid){
+    var wrongSet=studentWrongSet(selSid);
+    list=list.filter(function(it){
+      var key=(it.paperKey||(it.book+'|'+it.unitKey))+'#'+it.no;
+      return wrongSet[key];
+    });
+  }
+  // 출처별 묶기
+  var bySrc={};
+  list.forEach(function(it){ (bySrc[it.src]=bySrc[it.src]||[]).push(it); });
+  var srcs=Object.keys(bySrc);
+  html+='<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">'+(catNames[selCat]||selCat)+' · 총 '+list.length+'문항'+(selSid?' (선택 학생 오답)':'')+'</div>';
+  if(!list.length){
+    html+='<div style="color:var(--muted);text-align:center;padding:24px;">해당 문항이 없습니다.</div>';
+  } else {
+    html+='<div style="border:1px solid var(--line);border-radius:10px;padding:4px 12px;">';
+    srcs.forEach(function(src,si){
+      var items=bySrc[src].sort(function(a,b){return Number(a.no)-Number(b.no);});
+      var tag=items[0].srcType;
+      html+='<div style="padding:9px 0;'+(si<srcs.length-1?'border-bottom:0.5px solid var(--line);':'')+'">'
+        +'<div style="font-size:12px;color:var(--muted);margin-bottom:5px;"><span style="background:'+(tag==='시험'?'#F7C1C1;color:#791F1F':'#B5D4F4;color:#0C447C')+';padding:1px 7px;border-radius:5px;font-size:11px;margin-right:6px;">'+tag+'</span>'+esc2(src)+'</div>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:5px;">';
+      items.forEach(function(it){
+        html+='<span style="background:var(--bg2);border-radius:6px;padding:3px 9px;font-size:12px;" title="'+esc2(it.type)+'"><b>'+it.no+'번</b> · '+esc2(it.type)+'</span>';
+      });
+      html+='</div></div>';
+    });
+    html+='</div>';
+    html+='<div style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.6;">이 목록으로 원본 시험지에서 해당 번호를 찾으면 됩니다. (발췌 PDF 자동 생성은 다음 단계)</div>';
+  }
+  body.innerHTML=html;
+}
+var _qsCat='', _qsSid='';
+
+// 학생이 틀린 문항 집합: {paperKey#no:true, book|unitKey#no:true}
+function studentWrongSet(sid){
+  var set={};
+  // 시험: bjm_tests
+  (DB.get('tests')||[]).forEach(function(t){
+    if(t.sid!==sid || !Array.isArray(t.wrong)) return;
+    var pk=getPaperKey(t).key;
+    t.wrong.forEach(function(no){ set[pk+'#'+no]=true; });
+  });
+  // 교재: wronganswers (WA_SUBS) — 숙제의 book/unitKey 기준
+  var homework=DB.get('homework')||[];
+  var hwById={}; homework.forEach(function(h){ hwById[h.id]=h; });
+  Object.keys(WA_SUBS||{}).forEach(function(hwId){
+    var rec=hwById[hwId]; if(!rec) return;
+    var sub=WA_SUBS[hwId] && WA_SUBS[hwId][sid]; if(!sub) return;
+    (sub.wrong||[]).forEach(function(no){ set[rec.book+'|'+rec.unitKey+'#'+no]=true; });
+  });
+  return set;
+}
+
+
 
 
 

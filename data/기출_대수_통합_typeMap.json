@@ -1,6 +1,7 @@
 {
   "subject": "대수",
   "categories": {
+    "trig_basic": "삼각함수-각·동경·부채꼴",
     "trig_id": "삼각함수-삼각비·항등식",
     "trig_graph": "삼각함수-그래프·주기·최대최소",
     "trig_eq": "삼각함수-방정식·부등식",
@@ -165,6 +166,114 @@
         "30": {
           "type": "등차수열 합·배수 조건",
           "cat": "seq_basic",
+          "grade": "self"
+        }
+      }
+    },
+    "gicul||2025||경북여고||대수||1학기||기말": {
+      "school": "경북여고",
+      "year": "2025",
+      "term": "기말",
+      "totalCount": 20,
+      "typeMap": {
+        "1": {
+          "type": "등비수열 공비",
+          "cat": "seq_basic",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "사인법칙→삼각형 판정",
+          "cat": "trig_law",
+          "grade": "mc"
+        },
+        "3": {
+          "type": "사인함수 그래프 성질",
+          "cat": "trig_graph",
+          "grade": "mc"
+        },
+        "4": {
+          "type": "Σk²형 합 계산",
+          "cat": "seq_sum",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "삼각형 넓이(SAS)",
+          "cat": "trig_law",
+          "grade": "mc"
+        },
+        "6": {
+          "type": "등차수열 합 최댓값",
+          "cat": "seq_basic",
+          "grade": "mc"
+        },
+        "7": {
+          "type": "코사인법칙·내분점 길이",
+          "cat": "trig_law",
+          "grade": "mc"
+        },
+        "8": {
+          "type": "Sn↔an 관계",
+          "cat": "seq_sum",
+          "grade": "mc"
+        },
+        "9": {
+          "type": "부분분수 Σ→자연수 결정",
+          "cat": "seq_sum",
+          "grade": "mc"
+        },
+        "10": {
+          "type": "삼각부등식 해 범위→sin값",
+          "cat": "trig_eq",
+          "grade": "mc"
+        },
+        "11": {
+          "type": "등비수열 활용(원리합계)",
+          "cat": "seq_app",
+          "grade": "mc"
+        },
+        "12": {
+          "type": "규칙·주기 수열의 합",
+          "cat": "seq_gen",
+          "grade": "mc"
+        },
+        "13": {
+          "type": "삼각함수 최대최소+로그방정식 결합",
+          "cat": "trig_graph",
+          "grade": "mc"
+        },
+        "14": {
+          "type": "규칙 수열 일반항(자릿수)",
+          "cat": "seq_gen",
+          "grade": "mc"
+        },
+        "15": {
+          "type": "외접원 넓이·사인법칙 종합",
+          "cat": "trig_law",
+          "grade": "mc"
+        },
+        "16": {
+          "type": "동경·삼각함수 정의(좌표)",
+          "cat": "trig_basic",
+          "grade": "mc"
+        },
+        "17": {
+          "type": "Σ 선형성 계산",
+          "cat": "seq_sum",
+          "grade": "self"
+        },
+        "18": {
+          "type": "외접원·사인법칙+넓이(서술)",
+          "cat": "trig_law",
+          "grade": "self"
+        },
+        "19": {
+          "type": "수학적 귀납법(부등식 증명)",
+          "cat": "seq_gen",
+          "grade": "self"
+        },
+        "20": {
+          "type": "삼각함수 주기+절댓값 합(서술)",
+          "cat": "trig_graph",
           "grade": "self"
         }
       }
