@@ -3017,6 +3017,124 @@
           "grade": "self"
         }
       }
+    },
+    "gicul||2025||다사고||공통수학1||1학기||기말": {
+      "school": "다사고",
+      "year": "2025",
+      "term": "기말",
+      "totalCount": 22,
+      "typeMap": {
+        "1": {
+          "type": "순열·조합 계산(P,C)",
+          "cat": "cnt_case",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "주사위 경우의 수(곱의 법칙)",
+          "cat": "cnt_case",
+          "grade": "mc"
+        },
+        "3": {
+          "type": "카드 두 자리 수·홀수 개수",
+          "cat": "cnt_perm",
+          "grade": "mc"
+        },
+        "4": {
+          "type": "행렬 상등→성분",
+          "cat": "mat_op",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "행렬 곱=영행렬→성분",
+          "cat": "mat_op",
+          "grade": "mc"
+        },
+        "6": {
+          "type": "이차부등식 해→계수",
+          "cat": "fn_ineq",
+          "grade": "mc"
+        },
+        "7": {
+          "type": "절댓값 부등식 정수 개수",
+          "cat": "fn_abs",
+          "grade": "mc"
+        },
+        "8": {
+          "type": "약수의 개수",
+          "cat": "cnt_case",
+          "grade": "mc"
+        },
+        "9": {
+          "type": "행렬 제곱=pB+qE(케일리해밀턴)",
+          "cat": "mat_pow",
+          "grade": "mc"
+        },
+        "10": {
+          "type": "행렬 일차변환·성분",
+          "cat": "mat_op",
+          "grade": "mc"
+        },
+        "11": {
+          "type": "연립부등식 정수해 개수→정수 합",
+          "cat": "fn_ineq",
+          "grade": "mc"
+        },
+        "12": {
+          "type": "연립이차부등식 해 조건→정수 개수",
+          "cat": "fn_ineq",
+          "grade": "mc"
+        },
+        "13": {
+          "type": "이웃하지 않는 배열(순열)",
+          "cat": "cnt_perm",
+          "grade": "mc"
+        },
+        "14": {
+          "type": "연립방정식 해→값",
+          "cat": "eq_sys",
+          "grade": "mc"
+        },
+        "15": {
+          "type": "항상 성립 연립부등식→최대최소",
+          "cat": "fn_ineq",
+          "grade": "mc"
+        },
+        "16": {
+          "type": "타일 색칠 경우의 수(조건부)",
+          "cat": "cnt_case",
+          "grade": "mc"
+        },
+        "17": {
+          "type": "연립부등식 자연수 순서쌍 개수",
+          "cat": "fn_ineq",
+          "grade": "self"
+        },
+        "18": {
+          "type": "절댓값 부등식 해→계수",
+          "cat": "fn_abs",
+          "grade": "self"
+        },
+        "19": {
+          "type": "행렬 성분 정의→합 조건",
+          "cat": "mat_op",
+          "grade": "self"
+        },
+        "20": {
+          "type": "이차부등식 해↔계수 관계",
+          "cat": "fn_ineq",
+          "grade": "self"
+        },
+        "21": {
+          "type": "직사각형 넓이(피타고라스+이차)",
+          "cat": "application",
+          "grade": "self"
+        },
+        "22": {
+          "type": "사전식 배열 순서",
+          "cat": "cnt_perm",
+          "grade": "self"
+        }
+      }
     }
   }
 }
