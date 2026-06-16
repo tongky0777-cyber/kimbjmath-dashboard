@@ -93,14 +93,20 @@
 
   // 한 문항 채점. studentRaw: 학생 입력값(객관식이면 번호/기호, 단답이면 문자열).
   // teacherMark: 선생님이 나중에 지정한 'correct'/'wrong' (자가채점/오판정 보정용)
+  //
+  // 미입력(blank) 처리 정책:
+  //   - 자동채점 유형(mc/int/frac)에서 학생이 답을 안 적으면 → 'wrong'(틀림, X).
+  //     "몰라서 비워둔 것"도 오답으로 보아 약점 분석에 반영하기 위함.
+  //     단, '원래 미입력이었다'는 정보는 gradeHomework가 raw로 따로 기록(blank 배열)해 보존.
+  //   - self(자가채점/서술형)는 미입력이든 아니든 항상 'self'(보류, △) → 선생님 승인 대기.
   function gradeOne(meta, studentRaw, teacherMark){
     if(!meta) return 'self'; // 정답표에 없으면 보류(△)
     // 선생님이 직접 채점한 값이 있으면 그게 최우선 (자동채점도 덮어쓸 수 있음)
     if(teacherMark==='correct'||teacherMark==='wrong') return teacherMark;
     switch(meta.k){
-      case 'mc':   return gradeMc(meta.a, studentRaw);
-      case 'int':  return gradeInt(meta.a, studentRaw);
-      case 'frac': return gradeFrac(meta.a, studentRaw);
+      case 'mc':   var rMc=gradeMc(meta.a, studentRaw);    return rMc==='blank'?'wrong':rMc;
+      case 'int':  var rInt=gradeInt(meta.a, studentRaw);  return rInt==='blank'?'wrong':rInt;
+      case 'frac': var rFr=gradeFrac(meta.a, studentRaw);  return rFr==='blank'?'wrong':rFr;
       case 'self': return 'self';   // 자동채점 불가 → 항상 보류(△). 선생님이 수업시간에 처리.
       default:     return 'self';
     }
@@ -110,6 +116,10 @@
   // answers: { 번호: { raw, teacher } }  (raw=학생입력, teacher=선생님 O/X 보정)
   // 반환: { results:{번호:status}, wrong, correct, pending, blank, counts }
   //   pending = 'self' 상태(△, 아직 선생님이 채점 안 한 자동채점불가 문항)
+  //   blank   = 학생이 실제로 답을 비워둔 문항 번호(미입력 정보 보존용).
+  //             자동채점 유형(mc/int/frac)의 미입력은 results상 'wrong'이지만,
+  //             여기 blank에도 기록되어 "오답 vs 미입력" 구분 분석이 가능하다.
+  //             self의 미입력은 results가 'self'(보류)이고 blank에는 넣지 않는다.
   function gradeHomework(akData, unitKey, qStart, qEnd, answers){
     answers = answers || {};
     var results={}, wrong=[], correct=[], pending=[], blank=[];
@@ -121,7 +131,12 @@
       if(st==='correct') correct.push(n);
       else if(st==='wrong') wrong.push(n);
       else if(st==='self') pending.push(n);
-      else if(st==='blank') blank.push(n);
+      // 미입력 정보 보존: 자동채점 유형이고, 선생님 보정이 없고, raw가 비어 있으면 blank로도 기록.
+      // (이 문항은 results상 'wrong'으로 분류되지만 원래 비워둔 것임을 남긴다.)
+      var autoKind = meta && (meta.k==='mc'||meta.k==='int'||meta.k==='frac');
+      var rawEmpty = normNum(inp.raw)==='';
+      var noTeacher = !(inp.teacher==='correct'||inp.teacher==='wrong');
+      if(autoKind && rawEmpty && noTeacher) blank.push(n);
     }
     return {
       results: results,

@@ -3953,18 +3953,25 @@ function renderWrongView(){
       +'<button onclick="openCompareView(\''+sid+'\')" style="margin-left:8px;font-size:11px;padding:3px 9px;border:1px solid var(--line);border-radius:6px;background:none;color:var(--ink);cursor:pointer;">📊 교재 vs 시험</button>'
       +'<span style="font-size:12px;color:var(--muted);">'+(sub.submittedAt||'')+'</span>'
       +'<span style="margin-left:auto;font-size:13px;">맞음 <b style="color:var(--green)">'+c.correct+'</b> · 틀림 <b style="color:var(--red)">'+c.wrong+'</b>'
+      +((g.blank&&g.blank.length)?' <span style="color:var(--muted);font-size:11px;">(미입력 '+g.blank.length+')</span>':'')
       +(c.pending?' · △ <b>'+c.pending+'</b>':'')+' · '+pct+'점</span>'
       +'</div>';
 
     // 문항별 O/X 그리드 (선생님이 클릭해 보정)
+    // blank 배열 = 자동채점 유형인데 학생이 답을 비워둔 문항. X로 처리하되 점선으로 구분 표시.
+    var blankSet={}; (g.blank||[]).forEach(function(b){ blankSet[b]=1; });
     html+='<div style="display:flex;flex-wrap:wrap;gap:5px;">';
     for(var n=r.qStart;n<=r.qEnd;n++){
       var st=g.results[n];
       var bg=st==='correct'?'var(--green)':st==='wrong'?'var(--red)':st==='self'?'var(--gold)':'var(--bg2)';
       var fg=(st==='blank')?'var(--muted)':'#fff';
       var sym=st==='correct'?'O':st==='wrong'?'X':st==='self'?'△':'·';
-      html+='<button onclick="cycleMark(\''+sid+'\','+n+')" title="'+n+'번 (눌러서 O/X/△ 변경)" '
-        +'style="width:34px;height:30px;border:none;border-radius:5px;font-size:12px;font-weight:700;cursor:pointer;background:'+bg+';color:'+fg+';">'
+      // 미입력으로 X 처리된 문항: 점선 테두리 + 툴팁에 안내
+      var isBlankX=blankSet[n];
+      var border=isBlankX?'border:2px dashed #fff;':'border:none;';
+      var ttl=isBlankX?(n+'번 — 학생 미입력(빈칸) → 틀림 처리 (눌러서 O/X/△ 변경)'):(n+'번 (눌러서 O/X/△ 변경)');
+      html+='<button onclick="cycleMark(\''+sid+'\','+n+')" title="'+ttl+'" '
+        +'style="width:34px;height:30px;'+border+'border-radius:5px;font-size:12px;font-weight:700;cursor:pointer;background:'+bg+';color:'+fg+';">'
         +n+'<span style="font-size:9px;display:block;line-height:1;">'+sym+'</span></button>';
     }
     html+='</div>';
@@ -4039,7 +4046,7 @@ function _saveTeacherMarks(sid){
   var g=_gradeSub(ctx, sub);
   var update={
     teacher: sub.teacher||{},
-    wrong: g.wrong, correct: g.correct, pending: g.pending,
+    wrong: g.wrong, correct: g.correct, pending: g.pending, blank: g.blank,
     counts: g.counts,
     teacherEditedAt: new Date().toISOString()
   };
