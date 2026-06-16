@@ -1142,14 +1142,18 @@ window._fbReady = false;
     // (익명 로그인 완료 후에 읽어야 auth!=null 규칙을 통과)
     window._fbPull=function(cb){
       Promise.resolve(window._authReady).then(function(){
-        return db.ref().once("value");
-      }).then(function(snap){
-        var all=snap.val()||{};
-        SYNC_KEYS.forEach(function(k){
-          if(all[k]!==undefined && all[k]!==null){
-            _orig(k, JSON.stringify(all[k]));
-          }
+        // 루트(/) 전체 읽기는 보안 규칙(경로별 허용)에 막혀 permission_denied 발생.
+        // 허용된 각 키(bjm_*)를 개별로 읽어서 합친다.
+        var jobs=SYNC_KEYS.map(function(k){
+          return db.ref(k).once("value").then(function(snap){
+            var v=snap.val();
+            if(v!==undefined && v!==null){ _orig(k, JSON.stringify(v)); }
+          }).catch(function(e){
+            console.warn("pull 일부 실패:",k,e&&e.message);
+          });
         });
+        return Promise.all(jobs);
+      }).then(function(){
         window._fbReady=true;
         if(cb)cb(true);
       }).catch(function(e){
