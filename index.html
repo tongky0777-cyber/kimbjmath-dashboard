@@ -8,13 +8,14 @@
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --ink:#0f0f0f;--ink2:#2a2a2a;--muted:#777;--line:#e4e1d8;
-  --bg:#f5f4f0;--bg2:#eceae3;--white:#fff;
-  --red:#b4281e;--red2:#8f1e16;--red-bg:#fdf1f0;
-  --blue:#1c3c6e;--blue-bg:#edf2fb;
-  --teal:#0f5f5a;--teal-bg:#e8f5f4;
-  --gold:#8a6820;--gold-bg:#fdf8ee;
-  --green:#1a6b3a;--green-bg:#edf7f1;
+  --ink:#1f2a28;--ink2:#33403d;--muted:#7a8580;--line:#dfe9e4;
+  --bg:#f3faf7;--bg2:#e6f3ee;--white:#fff;
+  --red:#c0392b;--red2:#9c2c20;--red-bg:#fdf1f0;
+  --blue:#2484c4;--blue-bg:#eef6fc;
+  --teal:#117d70;--teal-bg:#e1f3ef;
+  --gold:#b07d12;--gold-bg:#fffaf0;
+  --green:#1d9e75;--green-bg:#e4f5ef;
+  --side:#fdf3cf;--side2:#fbe9a8;--side-ink:#7a5e10;--side-ink2:#5f4a0c;--side-on:#b07d12;
   --sans:'Pretendard','Apple SD Gothic Neo',sans-serif;
 }
 body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;}
@@ -22,25 +23,25 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 /* 레이아웃 */
 .shell{display:grid;grid-template-columns:220px 1fr;height:100vh;overflow:hidden;}
 
-/* 사이드바 */
-.sidebar{background:var(--ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
-.sb-logo{padding:20px;border-bottom:1px solid rgba(255,255,255,.08);}
-.sb-logo-name{font-size:15px;font-weight:700;color:#fff;}
-.sb-logo-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:3px;}
+/* 사이드바 — 여름 연노랑 */
+.sidebar{background:var(--side);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.sb-logo{padding:20px;border-bottom:1px solid rgba(122,94,16,.14);}
+.sb-logo-name{font-size:15px;font-weight:700;color:var(--side-ink2);}
+.sb-logo-sub{font-size:11px;color:rgba(122,94,16,.55);margin-top:3px;}
 .sb-nav{flex:1;padding:12px 0;}
-.sb-section{font-size:9px;font-weight:700;letter-spacing:.14em;color:rgba(255,255,255,.3);text-transform:uppercase;padding:14px 20px 6px;}
-.sb-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:rgba(255,255,255,.6);cursor:pointer;transition:.15s;border-left:2px solid transparent;user-select:none;}
-.sb-item:hover{color:#fff;background:rgba(255,255,255,.05);}
-.sb-item.on{color:#fff;background:rgba(180,40,30,.2);border-left-color:var(--red);}
+.sb-section{font-size:9px;font-weight:700;letter-spacing:.14em;color:rgba(122,94,16,.55);text-transform:uppercase;padding:14px 20px 6px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:var(--side-ink);cursor:pointer;transition:.15s;border-left:3px solid transparent;user-select:none;text-decoration:none;}
+.sb-item:hover{color:var(--side-ink2);background:rgba(176,125,18,.10);}
+.sb-item.on{color:#fff;background:var(--side-on);border-left-color:var(--side-ink2);font-weight:700;}
 .sb-icon{font-size:15px;width:20px;text-align:center;}
-.sb-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:rgba(255,255,255,.25);}
+.sb-footer{padding:16px 20px;border-top:1px solid rgba(122,94,16,.14);font-size:11px;color:rgba(122,94,16,.5);}
 
 /* 메인 */
 .main{display:flex;flex-direction:column;height:100vh;overflow:hidden;}
 .topbar{background:var(--white);border-bottom:1px solid var(--line);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
 .topbar-title{font-size:15px;font-weight:700;color:var(--ink);}
 .topbar-right{display:flex;align-items:center;gap:10px;}
-.today-badge{background:var(--red-bg);color:var(--red);font-size:11px;font-weight:700;padding:5px 12px;border-radius:100px;}
+.today-badge{background:var(--gold-bg);color:var(--gold);font-size:11px;font-weight:700;padding:5px 12px;border-radius:100px;border:1px solid var(--side2);}
 .content{padding:24px 28px;flex:1;overflow-y:auto;}
 
 /* 뷰 */
@@ -48,10 +49,28 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .view.on{display:block;min-height:100px;}
 
 /* 버튼 */
-.btn-sm{background:var(--red);color:#fff;border:0;font-size:12px;font-weight:700;padding:7px 14px;border-radius:3px;cursor:pointer;font-family:var(--sans);transition:.15s;white-space:nowrap;}
-.btn-sm:hover{background:var(--red2);}
+.btn-sm{background:var(--teal);color:#fff;border:0;font-size:12px;font-weight:700;padding:7px 14px;border-radius:5px;cursor:pointer;font-family:var(--sans);transition:.15s;white-space:nowrap;}
+.btn-sm:hover{background:#0d6b60;}
 .btn-sm.sec{background:var(--bg2);color:var(--ink2);}
 .btn-sm.sec:hover{background:var(--line);}
+.btn-sm.danger{background:var(--red);}
+.btn-sm.danger:hover{background:var(--red2);}
+
+/* 통계카드 성격별 색 (여름 톤) */
+.stat-card{position:relative;overflow:hidden;}
+.stat-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--teal);}
+.stat-row .stat-card:nth-child(1)::before{background:var(--teal);}
+.stat-row .stat-card:nth-child(2)::before{background:var(--blue);}
+.stat-row .stat-card:nth-child(3)::before{background:var(--gold);}
+.stat-row .stat-card:nth-child(4)::before{background:var(--blue);}
+.stat-row .stat-card:nth-child(5)::before{background:var(--green);}
+.stat-row .stat-card:nth-child(6)::before{background:var(--side2);}
+#dash-total{color:var(--teal);} 
+#dash-att{color:var(--blue);}
+#dash-hw{color:var(--gold);}
+#dash-sch{color:var(--blue);}
+#dash-new{color:var(--green);}
+#dash-withdrawn{color:var(--muted);}
 
 /* 통계 카드 */
 .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
@@ -144,8 +163,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--red);background:var(-
 textarea{resize:vertical;min-height:80px;}
 .modal-ft{padding:16px 24px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;}
 .btn-cancel{background:var(--bg2);color:var(--ink2);border:0;font-size:13px;font-weight:500;padding:9px 18px;border-radius:3px;cursor:pointer;font-family:var(--sans);}
-.btn-save{background:var(--red);color:#fff;border:0;font-size:13px;font-weight:700;padding:9px 18px;border-radius:3px;cursor:pointer;font-family:var(--sans);}
-.btn-save:hover{background:var(--red2);}
+.btn-save{background:var(--teal);color:#fff;border:0;font-size:13px;font-weight:700;padding:9px 18px;border-radius:5px;cursor:pointer;font-family:var(--sans);}
+.btn-save:hover{background:#0d6b60;}
 
 /* 출결 라디오 */
 .att-input-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
@@ -187,25 +206,25 @@ body.role-assistant .teacher-only{ display:none !important; }
 </head>
 <body>
 
-<div id="login-screen" style="position:fixed;inset:0;z-index:99999;background:#0f0f0f;display:none;align-items:center;justify-content:center;">
-  <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:40px 36px;width:100%;max-width:360px;">
+<div id="login-screen" style="position:fixed;inset:0;z-index:99999;background:#e4f5f0;display:none;align-items:center;justify-content:center;">
+  <div style="background:#fff;border:1px solid #d4ebe5;border-radius:16px;padding:40px 36px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(17,125,112,.10);">
     <div style="text-align:center;margin-bottom:32px;">
-      <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:4px;">김병진 수학연구소</div>
-      <div style="font-size:12px;color:#555;">학생 관리 시스템 · 관리자 전용</div>
+      <div style="font-size:18px;font-weight:700;color:#117d70;margin-bottom:4px;">김병진 수학연구소</div>
+      <div style="font-size:12px;color:#7a8580;">학생 관리 시스템 · 관리자 전용</div>
     </div>
     <div style="margin-bottom:16px;">
-      <div style="font-size:11px;font-weight:700;color:#555;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">비밀번호</div>
+      <div style="font-size:11px;font-weight:700;color:#7a8580;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">비밀번호</div>
       <input type="password" id="login-pw" placeholder="비밀번호 입력"
-        style="width:100%;background:#111;border:1.5px solid #2a2a2a;border-radius:6px;padding:12px 14px;font-size:14px;color:#fff;outline:none;font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;box-sizing:border-box;"
-        onfocus="this.style.borderColor='#b4281e'"
-        onblur="this.style.borderColor='#2a2a2a'">
+        style="width:100%;background:#f3faf7;border:1.5px solid #d4ebe5;border-radius:8px;padding:12px 14px;font-size:14px;color:#1f2a28;outline:none;font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;box-sizing:border-box;"
+        onfocus="this.style.borderColor='#117d70'"
+        onblur="this.style.borderColor='#d4ebe5'">
     </div>
-    <div id="login-err" style="font-size:12px;color:#b4281e;margin-bottom:12px;display:none;">비밀번호가 틀렸습니다</div>
+    <div id="login-err" style="font-size:12px;color:#c0392b;margin-bottom:12px;display:none;">비밀번호가 틀렸습니다</div>
     <button id="login-btn"
-      style="width:100%;background:#b4281e;color:#fff;border:0;border-radius:6px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;">
+      style="width:100%;background:#117d70;color:#fff;border:0;border-radius:8px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;">
       로그인
     </button>
-    <div style="text-align:center;margin-top:20px;font-size:11px;color:#333;">관리자 외 접근 불가</div>
+    <div style="text-align:center;margin-top:20px;font-size:11px;color:#a8b3ae;">관리자 외 접근 불가</div>
   </div>
 </div>
 
@@ -2343,7 +2362,7 @@ var showWithdrawn = document.getElementById('show-withdrawn') && document.getEle
     // 학년 섹션 헤더
     var hdr = document.createElement('div');
     hdr.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 0 6px;margin-top:12px;';
-    hdr.innerHTML = '<span style="font-size:12px;font-weight:700;color:var(--white);background:var(--red);padding:3px 12px;border-radius:100px;">'+grade+'</span>'
+    hdr.innerHTML = '<span style="font-size:12px;font-weight:700;color:var(--white);background:var(--teal);padding:3px 12px;border-radius:100px;">'+grade+'</span>'
       +'<span style="font-size:11px;color:var(--muted);">'+list.length+'명</span>'
       +'<div style="flex:1;height:1px;background:var(--line);"></div>';
     wrap.appendChild(hdr);
@@ -2417,7 +2436,7 @@ var showWithdrawn = document.getElementById('show-withdrawn') && document.getEle
       delBtn.onclick = function(){ deleteStudent(sid); };
       var wdBtn = document.createElement('button');
       wdBtn.className = 'btn-sm';
-      wdBtn.style.cssText = 'font-size:10px;padding:2px 8px;margin-right:4px;background:#1a1a2e;color:#fff;border:none;border-radius:4px;cursor:pointer;';
+      wdBtn.style.cssText = 'font-size:10px;padding:2px 8px;margin-right:4px;background:var(--bg2);color:var(--ink2);border:1px solid var(--line);border-radius:4px;cursor:pointer;';
       wdBtn.textContent = s.status==='withdrawn' ? '재원 복귀' : '퇴원';
       wdBtn.onclick = function(){ withdrawStudent(s.id); };
       actionTd.appendChild(wdBtn);
@@ -4786,7 +4805,7 @@ function renderDashboard() {
     var rows = Object.entries(grouped).map(function(entry){
       var sid=entry[0], names=entry[1];
       var s = students.find(function(s){ return s.id===sid; });
-      return '<tr><td class="student-name">'+(s?s.name:'—')+'</td><td>'+(s?getStudentGroups(s.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-size:12px;">'+names.slice(0,2).join(', ')+(names.length>2?' 외 '+(names.length-2)+'건':'')+'</td><td style="color:var(--red);font-weight:700;">'+names.length+'건</td></tr>';
+      return '<tr><td class="student-name">'+(s?s.name:'—')+'</td><td>'+(s?getStudentGroups(s.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-size:12px;">'+names.slice(0,2).join(', ')+(names.length>2?' 외 '+(names.length-2)+'건':'')+'</td><td style="color:var(--gold);font-weight:700;">'+names.length+'건</td></tr>';
     });
     hwbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px;">미제출 학생 없음 👍</td></tr>';
   }
@@ -4882,7 +4901,7 @@ card.onclick = function(){ openGroupDetail(gid); };
 
     // 헤더
     var hdr = document.createElement('div');
-    hdr.style.cssText = 'background:var(--red);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;';
+    hdr.style.cssText = 'background:var(--teal);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;';
     hdr.innerHTML = '<div><div style="font-size:13px;font-weight:700;color:#fff;">'+g.name+'</div>'
       +'<div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;">'+(g.subject||'')+' '+(g.type||'')+' · '+(g.startTime&&g.endTime ? g.startTime+'~'+g.endTime : g.time||'시간 미정')+'</div></div>';
 
