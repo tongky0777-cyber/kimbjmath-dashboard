@@ -420,6 +420,17 @@ body.role-assistant .teacher-only{ display:none !important; }
         <div id="hw-day-list" style="padding:14px 20px;display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;"></div>
       </div>
 
+      <!-- 학생별 현황 (학년별 카드) -->
+      <div class="sec-hd" style="margin-top:4px;">
+        <h2>🧑‍🎓 학생별 현황</h2>
+        <div class="actions" id="hwsv-filter">
+          <button class="btn-sm sec hwsv-fbtn" data-f="all" onclick="setHwSvFilter('all')">전체</button>
+          <button class="btn-sm sec hwsv-fbtn" data-f="risk" onclick="setHwSvFilter('risk')">⚠ 챙길 학생만</button>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">기한이 지난 미완료 숙제가 있는 학생은 <b style="color:var(--red);">빨강</b>, 나머지는 <b style="color:var(--green);">초록</b>입니다. 카드를 누르면 그 학생의 숙제 목록이 열립니다.</div>
+      <div id="hwsv-grid" style="margin-bottom:22px;"></div>
+
       <!-- 전체 목록 -->
       <div class="sec-hd"><h2>📋 전체 숙제 목록</h2></div>
       <div class="tbl-wrap">
@@ -781,6 +792,17 @@ body.role-assistant .teacher-only{ display:none !important; }
       <div style="text-align:center;color:var(--muted);padding:32px;">불러오는 중…</div>
     </div>
     <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-wrong')">닫기</button></div>
+  </div>
+</div>
+
+<!-- 모달: 학생별 숙제 상세 -->
+<div class="modal-bg" id="modal-hwstudent">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-hd"><h3 id="hwsv-title">🧑‍🎓 학생 숙제</h3><button class="modal-close" onclick="closeModal('modal-hwstudent')">×</button></div>
+    <div class="modal-body" id="hwsv-detail" style="max-height:72vh;overflow-y:auto;">
+      <div style="text-align:center;color:var(--muted);padding:32px;">불러오는 중…</div>
+    </div>
+    <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-hwstudent')">닫기</button></div>
   </div>
 </div>
 
@@ -1812,7 +1834,7 @@ function showView(id, el) {
     var afterLoad=function(){ if(classUsersLoaded) renderStudyLog(); else loadClassUsers(function(){ renderStudyLog(); }); };
     loadClassPlanners(afterLoad);
   }
-  if(id==='homework')   { renderHw(); hwCalYear=new Date().getFullYear(); hwCalMonth=new Date().getMonth(); renderHwCalendar(); loadClassHwDone(function(){ loadWaSubs(function(){ renderHw(); renderDashboard(); }); }); }
+  if(id==='homework')   { setHwSvFilter(_hwSvFilter); renderHw(); renderHwStudentView(); hwCalYear=new Date().getFullYear(); hwCalMonth=new Date().getMonth(); renderHwCalendar(); loadClassHwDone(function(){ loadWaSubs(function(){ renderHw(); renderHwStudentView(); renderDashboard(); }); }); }
   if(id==='wronganalysis') renderWrongAnalysisHome();
   if(id==='schedule')   { renderSchedule(); }
   if(id==='memo')       activateMemo();
@@ -1838,7 +1860,7 @@ function refreshCurrentView(){
     if(id==='students')   renderStudents();
     else if(id==='attendance'){ renderAttendance(); renderAttCalendar(); }
     else if(id==='tests'){ renderTests(); renderTestCalendar(); if(typeof testSelectedDate!=='undefined' && testSelectedDate) selectTestDay(testSelectedDate); }
-    else if(id==='homework'){ renderHw(); renderHwCalendar(); }
+    else if(id==='homework'){ renderHw(); renderHwStudentView(); renderHwCalendar(); }
     else if(id==='schedule')  renderSchedule();
     else if(id==='dashboard') renderDashboard();
     else if(id==='prep')      renderPrep();
@@ -3602,6 +3624,196 @@ function renderHw() {
     return '<tr style="'+(overdue?'background:#fffaf9;':'')+'"><td class="student-name">'+(student?student.name:'—')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+r.name+(overdue?' <span style="color:var(--red);font-size:10px;">⚠ 기한 초과</span>':'')+'</td><td style="font-size:12px;color:'+(overdue?'var(--red)':'var(--muted)')+';">'+r.due+'</td><td style="text-align:center;">'+checkCell+'</td><td>'+statusCell+'</td><td style="font-size:12px;color:var(--muted);">'+(r.memo||'—')+'</td><td><div class="row-action">'+aioBtns+'<button class="icon-btn" onclick="deleteHw(\''+r.id+'\')">🗑️</button></div></td></tr>';
   }).join('');
 }
+
+// ===== 학생별 숙제 현황 (학년별 카드) =====
+var _hwSvFilter = 'all';  // 'all' | 'risk'
+function setHwSvFilter(f){
+  _hwSvFilter = f;
+  document.querySelectorAll('.hwsv-fbtn').forEach(function(b){
+    var on = b.getAttribute('data-f')===f;
+    b.style.background = on ? 'var(--ink)' : '';
+    b.style.color = on ? '#fff' : '';
+  });
+  renderHwStudentView();
+}
+
+// 한 학생의 숙제 집계: { total, done, undone, overdue(기한지난 미완료), recs(정렬됨) }
+function _hwStatsForStudent(sid, allRecs){
+  var today = new Date().toISOString().slice(0,10);
+  var recs = allRecs.filter(function(r){ return r.sid===sid; });
+  var done=0, undone=0, overdue=0;
+  recs.forEach(function(r){
+    var submitted = isHwSubmitted(r);
+    if(submitted){ done++; }
+    else {
+      undone++;
+      if(r.due && r.due < today) overdue++;
+    }
+  });
+  return { total:recs.length, done:done, undone:undone, overdue:overdue, recs:recs };
+}
+
+// 학생별 카드 그리드 — 학년별 섹션으로 묶음
+function renderHwStudentView(){
+  var box = document.getElementById('hwsv-grid');
+  if(!box) return;
+  var students = DB.get('students').filter(function(s){ return !s.withdrawn && s.status!=='withdrawn'; });
+  var allRecs = DB.get('homework');
+
+  // 학생별 통계 계산
+  var stats = {};
+  students.forEach(function(s){ stats[s.id] = _hwStatsForStudent(s.id, allRecs); });
+
+  // 숙제가 한 건도 없는 학생은 제외(현황이 의미 없음)
+  var shown = students.filter(function(s){ return stats[s.id].total>0; });
+  // '챙길 학생만' 필터
+  if(_hwSvFilter==='risk') shown = shown.filter(function(s){ return stats[s.id].overdue>0; });
+
+  if(!shown.length){
+    box.innerHTML = '<div style="text-align:center;color:var(--muted);padding:28px;border:1px dashed var(--line);border-radius:8px;">'
+      + (_hwSvFilter==='risk' ? '기한 지난 미완료 숙제가 있는 학생이 없어요. 모두 양호합니다.' : '아직 등록된 숙제가 없어요.')
+      + '</div>';
+    return;
+  }
+
+  // 학년별 그룹핑
+  var gradeMap = {};
+  shown.forEach(function(s){
+    var g = s.grade || '기타';
+    if(!gradeMap[g]) gradeMap[g]=[];
+    gradeMap[g].push(s);
+  });
+  var grades = Object.keys(gradeMap).sort(function(a,b){
+    var ai=GRADE_ORDER.indexOf(a); if(ai===-1) ai=999;
+    var bi=GRADE_ORDER.indexOf(b); if(bi===-1) bi=999;
+    return ai-bi;
+  });
+
+  var html = '';
+  grades.forEach(function(g){
+    var list = gradeMap[g].slice().sort(function(a,b){
+      // 챙길 학생(기한 지남) 먼저, 그 다음 이름순
+      var ao=stats[a.id].overdue>0?0:1, bo=stats[b.id].overdue>0?0:1;
+      if(ao!==bo) return ao-bo;
+      return (a.name||'').localeCompare(b.name||'');
+    });
+    var riskCnt = list.filter(function(s){ return stats[s.id].overdue>0; }).length;
+    var badge = riskCnt>0
+      ? '<span style="background:#FCEBEB;color:#791F1F;font-size:11px;font-weight:700;padding:2px 9px;border-radius:5px;">챙길 학생 '+riskCnt+'</span>'
+      : '<span style="background:#EAF3DE;color:#27500A;font-size:11px;font-weight:700;padding:2px 9px;border-radius:5px;">모두 양호</span>';
+
+    html += '<div style="display:flex;align-items:center;gap:8px;margin:18px 0 10px;">'
+      + '<span style="font-size:14px;font-weight:700;color:var(--ink);">'+esc2(g)+'</span>'
+      + badge
+      + '<span style="font-size:12px;color:var(--muted);">· '+list.length+'명</span>'
+      + '</div>';
+
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">';
+    list.forEach(function(s){
+      var st = stats[s.id];
+      var risk = st.overdue>0;
+      var bg = risk ? '#FCEBEB' : '#EAF3DE';
+      var bd = risk ? '#F09595' : '#97C459';
+      var nameC = risk ? '#501313' : '#173404';
+      var subC = risk ? '#791F1F' : '#27500A';
+      var dimC = risk ? '#A32D2D' : '#3B6D11';
+      var icon = risk ? '⚠' : '✓';
+      html += '<div onclick="openHwStudentDetail(\''+s.id+'\')" style="background:'+bg+';border:0.5px solid '+bd+';border-radius:10px;padding:13px 15px;cursor:pointer;transition:transform .08s;" '
+        + 'onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'\'">'
+        + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'
+        + '<span style="font-weight:700;font-size:14px;color:'+nameC+';">'+esc2(s.name)+'</span>'
+        + '<span style="font-size:15px;color:'+dimC+';">'+icon+'</span>'
+        + '</div>'
+        + '<div style="font-size:12px;color:'+subC+';">기한 지남 <b>'+st.overdue+'</b></div>'
+        + '<div style="font-size:11px;color:'+dimC+';margin-top:2px;">미완료 '+st.undone+' · 완료 '+st.done+'</div>'
+        + '</div>';
+    });
+    html += '</div>';
+  });
+  box.innerHTML = html;
+}
+
+// 학생 카드 클릭 → 그 학생의 숙제 목록 모달
+function openHwStudentDetail(sid){
+  var s = DB.get('students').find(function(x){ return x.id===sid; });
+  if(!s) return;
+  var allRecs = DB.get('homework');
+  var st = _hwStatsForStudent(sid, allRecs);
+  var today = new Date().toISOString().slice(0,10);
+
+  document.getElementById('hwsv-title').textContent = '🧑‍🎓 ' + (s.name||'') + ' 숙제';
+
+  // 세 묶음으로 분류
+  var nowList=[], soonList=[], doneList=[];
+  st.recs.forEach(function(r){
+    if(isHwSubmitted(r)){ doneList.push(r); }
+    else if(r.due && r.due < today){ nowList.push(r); }
+    else { soonList.push(r); }
+  });
+  // 정렬: 기한 지난 건 오래된 순(가장 급한 게 위), 기한 전은 임박한 순
+  nowList.sort(function(a,b){ return (a.due||'').localeCompare(b.due||''); });
+  soonList.sort(function(a,b){ return (a.due||'').localeCompare(b.due||''); });
+  doneList.sort(function(a,b){ return (b.due||'').localeCompare(a.due||''); });
+
+  function daysFrom(due){
+    if(!due) return '';
+    var d1=new Date(due+'T00:00:00'), d2=new Date(today+'T00:00:00');
+    var diff=Math.round((d2-d1)/86400000);
+    if(diff>0) return diff+'일 지남';
+    if(diff<0) return (-diff)+'일 남음';
+    return '오늘 마감';
+  }
+  function aioBtns(r){
+    if(!_isAioHw(r)) return '';
+    return '<button class="icon-btn" title="학생 링크 복사" onclick="event.stopPropagation();copyHwLink(\''+r.id+'\',\''+r.sid+'\')">🔗</button>'
+         + '<button class="icon-btn" title="오답 현황" onclick="event.stopPropagation();closeModal(\'modal-hwstudent\');openWrongView(\''+r.id+'\')">📊</button>';
+  }
+
+  var html = '<div style="font-size:13px;color:var(--muted);margin-bottom:16px;">'
+    + esc2(getStudentGroups(s.id).map(function(g){return g.name;}).join(', ')||(s.grade||''))
+    + ' · 미완료 '+st.undone+' · 완료 '+st.done+'</div>';
+
+  // 지금 챙길 숙제
+  if(nowList.length){
+    html += '<div style="font-size:12px;font-weight:700;color:#791F1F;margin-bottom:8px;">지금 챙길 숙제</div>';
+    nowList.forEach(function(r){
+      html += '<div style="background:var(--white);border:0.5px solid #F09595;border-left:3px solid #A32D2D;border-radius:5px;padding:11px 13px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">'
+        + '<div><div style="font-weight:500;font-size:14px;color:var(--ink);">'+esc2(r.name)+'</div>'
+        + '<div style="font-size:12px;color:#A32D2D;margin-top:3px;">마감 '+(r.due||'-')+' · '+daysFrom(r.due)+'</div></div>'
+        + '<div style="display:flex;align-items:center;gap:4px;"><span style="background:#FCEBEB;color:#791F1F;font-size:11px;font-weight:700;padding:3px 9px;border-radius:5px;">미완료</span>'+aioBtns(r)+'</div>'
+        + '</div>';
+    });
+  }
+  // 아직 기한 전
+  if(soonList.length){
+    html += '<div style="font-size:12px;font-weight:700;color:var(--muted);margin:16px 0 8px;">아직 기한 전</div>';
+    soonList.forEach(function(r){
+      html += '<div style="background:var(--white);border:0.5px solid var(--line);border-radius:5px;padding:11px 13px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">'
+        + '<div><div style="font-weight:500;font-size:14px;color:var(--ink);">'+esc2(r.name)+'</div>'
+        + '<div style="font-size:12px;color:var(--muted);margin-top:3px;">마감 '+(r.due||'-')+' · '+daysFrom(r.due)+'</div></div>'
+        + '<div style="display:flex;align-items:center;gap:4px;"><span style="background:var(--bg2);color:var(--muted);font-size:11px;font-weight:700;padding:3px 9px;border-radius:5px;">미완료</span>'+aioBtns(r)+'</div>'
+        + '</div>';
+    });
+  }
+  // 완료
+  if(doneList.length){
+    html += '<div style="font-size:12px;font-weight:700;color:#27500A;margin:16px 0 8px;">완료</div>';
+    doneList.forEach(function(r){
+      html += '<div style="background:var(--white);border:0.5px solid var(--line);border-radius:5px;padding:10px 13px;margin-bottom:7px;opacity:.85;display:flex;align-items:center;justify-content:space-between;">'
+        + '<div><div style="font-size:14px;color:var(--ink);">'+esc2(r.name)+'</div>'
+        + '<div style="font-size:12px;color:var(--muted);margin-top:3px;">마감 '+(r.due||'-')+'</div></div>'
+        + '<div style="display:flex;align-items:center;gap:4px;"><span style="color:#3B6D11;font-size:12px;font-weight:700;">✓ 완료</span>'+aioBtns(r)+'</div>'
+        + '</div>';
+    });
+  }
+  if(!st.recs.length){
+    html += '<div style="text-align:center;color:var(--muted);padding:24px;">등록된 숙제가 없어요.</div>';
+  }
+
+  document.getElementById('hwsv-detail').innerHTML = html;
+  openModal('modal-hwstudent');
+}
+
 // 올인원 오답수집 숙제인지 (unitKey+번호범위가 있으면)
 function _isAioHw(r){
   return r && isAioBook(r.book) && r.unitKey && r.qStart!=null && r.qEnd!=null;
