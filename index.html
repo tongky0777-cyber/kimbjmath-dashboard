@@ -389,6 +389,7 @@ body.role-assistant .teacher-only{ display:none !important; }
     <div class="sb-item" onclick="showView('tests',this)"><span class="sb-icon">📝</span> 테스트 결과</div>
     <div class="sb-item teacher-only" onclick="showView('papers',this)"><span class="sb-icon">📊</span> 시험지 분석</div>
     <div class="sb-item" onclick="showView('studylog',this)"><span class="sb-icon">📒</span> 학생 학습기록</div>
+    <div class="sb-item teacher-only" onclick="showView('report',this)"><span class="sb-icon">📄</span> 학생 리포트</div>
     <div class="sb-item teacher-only" onclick="showView('groups',this)"><span class="sb-icon">🏫</span> 반 관리</div>
     <div class="sb-section">일정</div>
     <div class="sb-item" onclick="showView('schedule',this)"><span class="sb-icon">📅</span> 보강 · 일정</div>
@@ -456,6 +457,7 @@ body.role-assistant .teacher-only{ display:none !important; }
     <!-- 출결 관리 -->
     <div class="view" id="view-attendance">
       <div class="sec-hd"><h2>✅ 출결 관리</h2><div class="actions">
+        <button class="btn-sm sec" onclick="exportAttendanceExcel()">📥 출석부 내보내기</button>
         <button class="btn-sm sec" onclick="attViewMode='list';renderAttendance()">📋 학생별</button>
         <button class="btn-sm" onclick="openAttModal()">+ 출결 입력</button>
       </div></div>
@@ -689,6 +691,19 @@ body.role-assistant .teacher-only{ display:none !important; }
       <div class="sec-hd"><h2 id="studylog-title">📒 학생 학습기록</h2><div class="actions"><input type="date" id="studylog-date" onchange="renderStudyLog()" style="font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:3px;background:var(--white);cursor:pointer;font-family:var(--sans);"></div></div>
       <p style="font-size:12px;color:var(--muted);margin:-4px 0 14px;">학생들이 클래스룸 플래너에 올린 공부 기록입니다. 학원/자습으로 구분돼요. (선생님 진도 기록과는 별개)</p>
       <div id="studylog-list"></div>
+    </div>
+
+    <!-- 학생 리포트 -->
+    <div class="view" id="view-report">
+      <!-- 카드 그리드 화면 -->
+      <div id="report-grid-screen">
+        <div class="sec-hd"><h2>📄 학생 리포트</h2></div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">학생 카드를 누르면 학부모 전달용 월간 리포트가 열립니다. 기간을 정해 테스트·출석·과제 현황을 정리할 수 있어요.</div>
+        <div id="report-card-grid"></div>
+      </div>
+
+      <!-- 전체화면 리포트 -->
+      <div id="report-detail-screen" style="display:none;"></div>
     </div>
     <div class="view" id="view-exam"><div class="sec-hd"><h2>📝 학교 시험 일정</h2><div class="actions"><button class="btn-sm" onclick="openExamModal()">+ 시험 추가</button></div></div><div id="exam-calendar" style="margin-bottom:20px;"></div><div class="sec-hd" style="margin-top:8px;"><h2 style="font-size:14px;">전체 목록</h2></div><div id="exam-list"></div></div>
     <!-- 플래너 (이식) -->
@@ -1379,6 +1394,7 @@ body.role-assistant .teacher-only{ display:none !important; }
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -1954,7 +1970,7 @@ function activateMemo() {
   }
 }
 
-var viewTitles = {dashboard:'📊 전체 현황',prep:'🎯 다음 수업 준비',progress:'📖 진도 관리',groups:'🏫 반 관리',students:'👥 학생 목록',attendance:'✅ 출결 관리',tests:'📝 테스트 결과',homework:'📚 숙제 관리',schedule:'📅 보강 · 일정',memo:'🗒️ 메모',wronganalysis:'📊 교재 오답 분석',planner:'🗓️ 플래너'};
+var viewTitles = {dashboard:'📊 전체 현황',prep:'🎯 다음 수업 준비',progress:'📖 진도 관리',groups:'🏫 반 관리',students:'👥 학생 목록',attendance:'✅ 출결 관리',tests:'📝 테스트 결과',homework:'📚 숙제 관리',schedule:'📅 보강 · 일정',memo:'🗒️ 메모',wronganalysis:'📊 교재 오답 분석',planner:'🗓️ 플래너',report:'📄 학생 리포트'};
 
 
 // ===== 시험 일정 =====
@@ -2108,6 +2124,7 @@ function showView(id, el) {
   if(id==='groups')     renderGroups();
   if(id==='exam')       renderExam();
   if(id==='planner')    { plEvents = DB.get('planner_events')||[]; plRenderMonth(); plSelectDate(plFmt(plToday)); }
+  if(id==='report')     { document.getElementById('report-detail-screen').style.display='none'; document.getElementById('report-grid-screen').style.display=''; renderReportGrid(); }
   updateGroupFilter();
   window._curViewId = id;
   // 모든 화면 상단 공통 배너 갱신 (전체현황은 펼침, 그 외는 접힘 기본)
@@ -3557,7 +3574,17 @@ function _applyAioFields(rec, b){
 function updateHwStatus(id, status) {
   var recs = DB.get('homework');
   var idx = recs.findIndex(function(r){ return r.id===id; });
-  if(idx>-1) { recs[idx].status=status; DB.set('homework', recs); }
+  if(idx>-1) {
+    recs[idx].status=status;
+    // 제출 완료/부분 제출로 바뀌는 순간의 시각을 기록 (기한 내/후 판정용).
+    // 이미 기록돼 있으면 유지(최초 제출 시점 보존), 미제출로 되돌리면 시각 제거.
+    if(status==='done' || status==='half'){
+      if(!recs[idx].submittedAt) recs[idx].submittedAt = new Date().toISOString();
+    } else {
+      delete recs[idx].submittedAt;
+    }
+    DB.set('homework', recs);
+  }
   // 클래스룸 완료체크와 동기화 — 연결된 학생이면 class_hw_done에도 반영
   syncHwDoneToClass(id, status);
   renderHw(); renderDashboard();
@@ -7290,6 +7317,27 @@ function isHwSubmitted(r){
   return false;
 }
 
+// 제출 시각을 세 경로에서 통합 조회 (ISO 문자열 또는 null)
+// 우선순위: 숙제 레코드 submittedAt → 클래스룸 완료체크 at → 채점 제출 submittedAt
+function hwSubmittedAt(r){
+  if(!r) return null;
+  if(r.submittedAt) return r.submittedAt;
+  var sd = hwDoneBySid(r.id, r.sid);
+  if(sd && sd.done && sd.at) return sd.at;
+  var wa = WA_SUBS[r.id] && WA_SUBS[r.id][r.sid];
+  if(wa && wa.submittedAt) return wa.submittedAt;
+  return null;
+}
+
+// 기한 내/후 판정: 'ontime' | 'late' | 'unknown'(시각 미상) | 'notsubmitted'
+function hwTimeliness(r){
+  if(!isHwSubmitted(r)) return 'notsubmitted';
+  var at = hwSubmittedAt(r);
+  if(!at || !r.due) return 'unknown';        // 제출 시각 또는 마감일을 모르면 판정 불가
+  var submittedDay = String(at).slice(0,10);  // YYYY-MM-DD
+  return submittedDay <= r.due ? 'ontime' : 'late';
+}
+
 // 학생 학습기록 (클래스룸 플래너) 렌더
 function _slEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function renderStudyLog(){
@@ -8121,6 +8169,396 @@ function plCloseModal(){
 
 plRenderMonth();
 plSelectDate(plFmt(plToday));
+
+
+
+// ===== 출석부 엑셀 내보내기 (월별·학년별·달력형) =====
+function exportAttendanceExcel(){
+  if(typeof XLSX==='undefined'){ toast('엑셀 모듈을 불러오지 못했어요. 새로고침 후 다시 시도해주세요'); return; }
+
+  var year = attCalYear, month = attCalMonth; // 0-based month
+  var daysInMonth = new Date(year, month+1, 0).getDate();
+  var DOW = ['일','월','화','수','목','금','토'];
+  var STATUS_TEXT = { O:'출석', X:'결석', T:'지각', B:'보강', E:'공결' };
+  var STATUS_MARK = { O:'O', X:'X', T:'지', B:'보', E:'공' }; // 칸 안 표기(짧게)
+
+  var students = DB.get('students').filter(function(s){ return s.status!=='withdrawn' && !s.withdrawn; });
+  if(!students.length){ toast('등록된 학생이 없어요'); return; }
+
+  var recs = DB.get('attendance');
+  // sid -> { 'YYYY-MM-DD': status }
+  var byStudent = {};
+  recs.forEach(function(r){
+    if(!r.date || r.date.slice(0,7) !== (year+'-'+String(month+1).padStart(2,'0'))) return;
+    if(!byStudent[r.sid]) byStudent[r.sid] = {};
+    byStudent[r.sid][r.date] = r.status;
+  });
+
+  // 학년별 그룹핑 (GRADE_ORDER 순)
+  var gradeMap = {};
+  students.forEach(function(s){
+    var g = s.grade || '기타';
+    if(!gradeMap[g]) gradeMap[g] = [];
+    gradeMap[g].push(s);
+  });
+  var grades = Object.keys(gradeMap).sort(function(a,b){
+    var ai=GRADE_ORDER.indexOf(a); if(ai===-1) ai=999;
+    var bi=GRADE_ORDER.indexOf(b); if(bi===-1) bi=999;
+    return ai-bi;
+  });
+
+  var wb = XLSX.utils.book_new();
+
+  grades.forEach(function(g){
+    var list = gradeMap[g].slice().sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
+
+    // ── 시트 데이터(2차원 배열) 구성 ──
+    var aoa = [];
+    // 제목 행
+    aoa.push([year+'년 '+(month+1)+'월 출석부 ('+g+')']);
+    aoa.push([]); // 빈 줄
+
+    // 헤더: 이름 | 1 | 2 | ... | 출석 | 결석 | 지각 | 보강 | 공결
+    var header1 = ['이름'];
+    var header2 = ['']; // 요일 행
+    for(var d=1; d<=daysInMonth; d++){
+      header1.push(d);
+      header2.push(DOW[new Date(year, month, d).getDay()]);
+    }
+    header1 = header1.concat(['출석','결석','지각','보강','공결']);
+    header2 = header2.concat(['','','','','']);
+    aoa.push(header1);
+    aoa.push(header2);
+
+    // 학생별 행
+    list.forEach(function(s){
+      var row = [s.name||''];
+      var cnt = { O:0, X:0, T:0, B:0, E:0 };
+      for(var d=1; d<=daysInMonth; d++){
+        var ds = year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+        var st = byStudent[s.id] && byStudent[s.id][ds];
+        if(st){ row.push(STATUS_MARK[st]||''); if(cnt[st]!==undefined) cnt[st]++; }
+        else { row.push(''); }
+      }
+      row = row.concat([cnt.O, cnt.X, cnt.T, cnt.B, cnt.E]);
+      aoa.push(row);
+    });
+
+    var ws = XLSX.utils.aoa_to_sheet(aoa);
+
+    // ── 열 너비 ──
+    var cols = [{wch:10}]; // 이름
+    for(var d=1; d<=daysInMonth; d++) cols.push({wch:3.2}); // 날짜 칸
+    for(var k=0;k<5;k++) cols.push({wch:5}); // 합계 5칸
+    ws['!cols'] = cols;
+
+    // ── 제목 셀 병합 (전체 너비) ──
+    var totalCols = 1 + daysInMonth + 5;
+    ws['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:totalCols-1} }];
+
+    // 시트명: 학년 (엑셀 시트명 31자 제한, 특수문자 제거)
+    var sheetName = g.replace(/[\\\/\?\*\[\]:]/g,'').slice(0,31) || '기타';
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  });
+
+  // ── 범례 시트 ──
+  var legend = [
+    ['출석부 표기 안내'],
+    [],
+    ['표기','뜻'],
+    ['O','출석'],
+    ['X','결석'],
+    ['지','지각'],
+    ['보','보강'],
+    ['공','공결'],
+    [],
+    ['생성일', new Date().toLocaleDateString('ko-KR')],
+    ['대상', year+'년 '+(month+1)+'월']
+  ];
+  var lws = XLSX.utils.aoa_to_sheet(legend);
+  lws['!cols'] = [{wch:8},{wch:16}];
+  XLSX.utils.book_append_sheet(wb, lws, '안내');
+
+  var fname = '출석부_'+year+'년'+(month+1)+'월.xlsx';
+  XLSX.writeFile(wb, fname);
+  toast(year+'년 '+(month+1)+'월 출석부를 내려받았어요');
+}
+
+
+
+// ===== 학생 리포트 (학부모 전달용) =====
+var _reportPeriod = null; // {from:'YYYY-MM-DD', to:'YYYY-MM-DD'}
+var _reportPeerToggle = true; // 선생님 화면에서 또래 비교 표시 여부
+var _reportChartInst = null;
+
+// 기본 기간: 이번 달 1일 ~ 말일
+function _defaultReportPeriod(){
+  var d = new Date();
+  var y = d.getFullYear(), m = d.getMonth();
+  var from = y+'-'+String(m+1).padStart(2,'0')+'-01';
+  var lastDay = new Date(y, m+1, 0).getDate();
+  var to = y+'-'+String(m+1).padStart(2,'0')+'-'+String(lastDay).padStart(2,'0');
+  return {from:from, to:to};
+}
+
+// 한 학생의 리포트 데이터 집계 (기간 적용)
+function _computeReport(sid, period){
+  var s = DB.get('students').find(function(x){ return x.id===sid; });
+  if(!s) return null;
+  var from = period.from, to = period.to;
+  function inRange(dateStr){ return dateStr && dateStr>=from && dateStr<=to; }
+
+  // 테스트 (기간 내)
+  var tests = DB.get('tests').filter(function(t){ return t.sid===sid && inRange(t.date); })
+    .sort(function(a,b){ return a.date.localeCompare(b.date); });
+  var avg = tests.length ? Math.round(tests.reduce(function(a,t){return a+t.score;},0)/tests.length) : null;
+
+  // 출석 (기간 내)
+  var att = DB.get('attendance').filter(function(r){ return r.sid===sid && inRange(r.date); });
+  var attCnt = {O:0,X:0,T:0,B:0,E:0};
+  att.forEach(function(r){ if(attCnt[r.status]!==undefined) attCnt[r.status]++; });
+  var attTotal = att.length;
+  var present = attCnt.O + attCnt.B;
+  var attRate = attTotal ? Math.round(present/attTotal*100) : null;
+
+  // 과제 성실도 (기간 내 마감인 숙제 기준)
+  var hwAll = DB.get('homework').filter(function(h){ return h.sid===sid && inRange(h.due); });
+  var hwStat = {total:hwAll.length, submitted:0, ontime:0, late:0, unknown:0, notsubmitted:0};
+  hwAll.forEach(function(h){
+    var t = hwTimeliness(h);
+    if(t==='notsubmitted'){ hwStat.notsubmitted++; }
+    else {
+      hwStat.submitted++;
+      if(t==='ontime') hwStat.ontime++;
+      else if(t==='late') hwStat.late++;
+      else hwStat.unknown++;
+    }
+  });
+  var submitRate = hwStat.total ? Math.round(hwStat.submitted/hwStat.total*100) : null;
+
+  // 진도 (기간 내)
+  var prog = DB.get('progress').filter(function(p){ return p.sid===sid && inRange(p.date); })
+    .sort(function(a,b){ return b.date.localeCompare(a.date); });
+
+  return {
+    student:s, period:period,
+    tests:tests, avg:avg,
+    att:att, attCnt:attCnt, attTotal:attTotal, attRate:attRate,
+    hwStat:hwStat, submitRate:submitRate,
+    prog:prog
+  };
+}
+
+// 같은 학년/반 또래의 같은 기간 테스트 평균 (반 평균 대비용)
+function _peerAverage(sid, period){
+  var s = DB.get('students').find(function(x){ return x.id===sid; });
+  if(!s) return null;
+  var myGroups = getStudentGroups(sid).map(function(g){ return g.id; });
+  var students = DB.get('students').filter(function(x){ return x.status!=='withdrawn' && !x.withdrawn; });
+  // 같은 반이 있으면 같은 반, 없으면 같은 학년
+  var peers;
+  if(myGroups.length){
+    peers = students.filter(function(x){
+      return getStudentGroups(x.id).some(function(g){ return myGroups.indexOf(g.id)>-1; });
+    });
+  } else {
+    peers = students.filter(function(x){ return x.grade===s.grade; });
+  }
+  if(peers.length < 2) return null; // 비교 대상이 1명뿐이면 의미 없음(본인 추측 방지)
+  var from=period.from, to=period.to;
+  var scores = [];
+  peers.forEach(function(p){
+    var ts = DB.get('tests').filter(function(t){ return t.sid===p.id && t.date>=from && t.date<=to; });
+    if(ts.length) scores.push(ts.reduce(function(a,t){return a+t.score;},0)/ts.length);
+  });
+  if(!scores.length) return null;
+  var peerAvg = Math.round(scores.reduce(function(a,b){return a+b;},0)/scores.length);
+  return { peerAvg:peerAvg, peerCount:scores.length };
+}
+
+// 카드 그리드 (학년별)
+function renderReportGrid(){
+  var box = document.getElementById('report-card-grid');
+  if(!box) return;
+  var students = DB.get('students').filter(function(s){ return s.status!=='withdrawn' && !s.withdrawn; });
+  if(!students.length){ box.innerHTML='<div style="text-align:center;color:var(--muted);padding:28px;">등록된 학생이 없어요.</div>'; return; }
+
+  var gradeMap = {};
+  students.forEach(function(s){ var g=s.grade||'기타'; (gradeMap[g]=gradeMap[g]||[]).push(s); });
+  var grades = Object.keys(gradeMap).sort(function(a,b){
+    var ai=GRADE_ORDER.indexOf(a); if(ai===-1)ai=999;
+    var bi=GRADE_ORDER.indexOf(b); if(bi===-1)bi=999;
+    return ai-bi;
+  });
+
+  var html='';
+  grades.forEach(function(g){
+    var list = gradeMap[g].slice().sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
+    html += '<div style="display:flex;align-items:center;gap:8px;margin:18px 0 10px;">'
+      + '<span style="font-size:14px;font-weight:700;color:var(--ink);">'+esc2(g)+'</span>'
+      + '<span style="font-size:12px;color:var(--muted);">· '+list.length+'명</span></div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">';
+    list.forEach(function(s){
+      html += '<div onclick="openStudentReport(\''+s.id+'\')" style="background:var(--white);border:0.5px solid var(--line);border-radius:10px;padding:14px 16px;cursor:pointer;transition:transform .08s;" '
+        + 'onmouseover="this.style.transform=\'translateY(-2px)\';this.style.borderColor=\'var(--teal)\'" onmouseout="this.style.transform=\'\';this.style.borderColor=\'var(--line)\'">'
+        + '<div style="font-weight:700;font-size:15px;color:var(--ink);margin-bottom:4px;">'+esc2(s.name)+'</div>'
+        + '<div style="font-size:12px;color:var(--muted);">'+esc2(s.school||g)+'</div>'
+        + '<div style="font-size:11px;color:var(--teal);margin-top:8px;">리포트 보기 →</div>'
+        + '</div>';
+    });
+    html += '</div>';
+  });
+  box.innerHTML = html;
+}
+
+// 학생 카드 클릭 → 전체화면 리포트
+function openStudentReport(sid){
+  if(!_reportPeriod) _reportPeriod = _defaultReportPeriod();
+  document.getElementById('report-grid-screen').style.display='none';
+  var screen = document.getElementById('report-detail-screen');
+  screen.style.display='';
+  renderStudentReport(sid);
+}
+
+function closeStudentReport(){
+  if(_reportChartInst){ _reportChartInst.destroy(); _reportChartInst=null; }
+  document.getElementById('report-detail-screen').style.display='none';
+  document.getElementById('report-grid-screen').style.display='';
+}
+
+function _reportSetPeriod(sid){
+  var f = document.getElementById('rp-from').value;
+  var t = document.getElementById('rp-to').value;
+  if(!f || !t){ toast('기간을 선택해주세요'); return; }
+  if(f>t){ toast('시작일이 종료일보다 늦습니다'); return; }
+  _reportPeriod = {from:f, to:t};
+  renderStudentReport(sid);
+}
+
+function renderStudentReport(sid){
+  var r = _computeReport(sid, _reportPeriod);
+  if(!r){ return; }
+  var s = r.student;
+  var screen = document.getElementById('report-detail-screen');
+  var peer = _peerAverage(sid, _reportPeriod);
+
+  var scoreColor = function(v){ return v>=90?'var(--green)':v>=70?'var(--gold)':'var(--red)'; };
+
+  // 성실도 텍스트
+  var hwLine;
+  if(!r.hwStat.total){ hwLine = '이 기간에 배정된 과제가 없습니다.'; }
+  else {
+    var parts = ['제출 '+r.hwStat.submitted+'/'+r.hwStat.total+' ('+r.submitRate+'%)'];
+    var detail = [];
+    if(r.hwStat.ontime) detail.push('기한 내 '+r.hwStat.ontime);
+    if(r.hwStat.late) detail.push('기한 후 '+r.hwStat.late);
+    if(r.hwStat.unknown) detail.push('시각 미상 '+r.hwStat.unknown);
+    if(r.hwStat.notsubmitted) detail.push('미제출 '+r.hwStat.notsubmitted);
+    hwLine = parts[0] + (detail.length? ' · '+detail.join(' · ') : '');
+  }
+
+  var html = '';
+  // 헤더
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">'
+    + '<div><div style="font-size:18px;font-weight:700;color:var(--ink);">'+esc2(s.name)+' 학습 리포트</div>'
+    + '<div style="font-size:13px;color:var(--muted);margin-top:2px;">'+esc2(s.grade||'')+(s.school?' · '+esc2(s.school):'')+' · '+r.period.from+' ~ '+r.period.to+'</div></div>'
+    + '<div style="display:flex;gap:8px;align-items:center;">'
+    + '<button class="btn-sm sec" onclick="closeStudentReport()">← 목록</button>'
+    + '</div></div>';
+
+  // 기간 설정 바
+  html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--bg2);border-radius:8px;padding:10px 14px;margin-bottom:16px;">'
+    + '<span style="font-size:12px;font-weight:700;color:var(--ink2);">기간</span>'
+    + '<input type="date" id="rp-from" value="'+r.period.from+'" style="font-size:12px;padding:5px 8px;border:1px solid var(--line);border-radius:4px;font-family:var(--sans);">'
+    + '<span style="color:var(--muted);">~</span>'
+    + '<input type="date" id="rp-to" value="'+r.period.to+'" style="font-size:12px;padding:5px 8px;border:1px solid var(--line);border-radius:4px;font-family:var(--sans);">'
+    + '<button class="btn-sm" onclick="_reportSetPeriod(\''+sid+'\')">적용</button>'
+    + '</div>';
+
+  // 요약 카드
+  html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">'
+    + '<div style="background:var(--white);border:1px solid var(--line);border-radius:10px;padding:16px;text-align:center;"><div style="font-size:12px;color:var(--muted);">출석률</div><div style="font-size:24px;font-weight:700;color:var(--teal);">'+(r.attRate!=null?r.attRate+'%':'—')+'</div></div>'
+    + '<div style="background:var(--white);border:1px solid var(--line);border-radius:10px;padding:16px;text-align:center;"><div style="font-size:12px;color:var(--muted);">테스트 평균</div><div style="font-size:24px;font-weight:700;color:'+(r.avg!=null?scoreColor(r.avg):'var(--muted)')+';">'+(r.avg!=null?r.avg+'점':'—')+'</div></div>'
+    + '<div style="background:var(--white);border:1px solid var(--line);border-radius:10px;padding:16px;text-align:center;"><div style="font-size:12px;color:var(--muted);">테스트 횟수</div><div style="font-size:24px;font-weight:700;color:var(--blue);">'+r.tests.length+'회</div></div>'
+    + '</div>';
+
+  // 점수 추이 그래프
+  html += '<div style="background:var(--white);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:12px;">'
+    + '<div style="font-size:14px;font-weight:700;margin-bottom:10px;">테스트 점수 추이</div>';
+  if(r.tests.length){
+    html += '<canvas id="report-chart" style="max-height:200px;"></canvas>';
+  } else {
+    html += '<div style="font-size:13px;color:var(--muted);padding:20px 0;text-align:center;">이 기간에 테스트 기록이 없습니다.</div>';
+  }
+  // 또래 대비 (선생님 화면에만, 토글 ON일 때)
+  if(peer && _reportPeerToggle){
+    var diff = r.avg!=null ? r.avg - peer.peerAvg : null;
+    html += '<div style="margin-top:10px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;">'
+      + '<span style="background:var(--bg2);padding:3px 8px;border-radius:4px;">선생님용</span> 같은 반/학년 평균 '+peer.peerAvg+'점 (대상 '+peer.peerCount+'명)'
+      + (diff!=null ? ' · 이 학생 '+(diff>=0?'+'+diff:diff)+'점' : '')
+      + '</div>';
+  }
+  html += '</div>';
+
+  // 출석 + 진도
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">';
+  html += '<div style="background:var(--white);border:1px solid var(--line);border-radius:10px;padding:16px 18px;">'
+    + '<div style="font-size:14px;font-weight:700;margin-bottom:10px;">출석 요약</div>'
+    + '<div style="font-size:13px;color:var(--ink2);line-height:1.9;">'
+    + '출석 '+r.attCnt.O+' · 지각 '+r.attCnt.T+' · 결석 '+r.attCnt.X+' · 보강 '+r.attCnt.B+' · 공결 '+r.attCnt.E
+    + '</div></div>';
+  html += '<div style="background:var(--white);border:1px solid var(--line);border-radius:10px;padding:16px 18px;">'
+    + '<div style="font-size:14px;font-weight:700;margin-bottom:10px;">학습 진도</div>';
+  if(r.prog.length){
+    html += '<div style="font-size:13px;color:var(--ink2);line-height:1.9;">'
+      + r.prog.slice(0,4).map(function(p){ return esc2((p.subject||p.book||'')+(p.unit?' · '+p.unit:'')); }).join('<br>')
+      + '</div>';
+  } else {
+    html += '<div style="font-size:13px;color:var(--muted);">기간 내 진도 기록 없음</div>';
+  }
+  html += '</div></div>';
+
+  // 과제 성실도
+  html += '<div style="background:var(--white);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:12px;">'
+    + '<div style="font-size:14px;font-weight:700;margin-bottom:10px;">과제 성실도</div>'
+    + '<div style="font-size:13px;color:var(--ink2);line-height:1.8;">'+hwLine+'</div>';
+  if(r.hwStat.total){
+    var p = r.submitRate;
+    html += '<div style="margin-top:10px;height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;"><div style="width:'+p+'%;height:100%;background:'+(p>=90?'var(--green)':p>=70?'var(--gold)':'var(--red)')+';"></div></div>';
+  }
+  html += '</div>';
+
+  // 중단원 정답률 (자리 표시 — 2단계)
+  html += '<div style="background:var(--white);border:1px dashed var(--line);border-radius:10px;padding:16px 18px;margin-bottom:12px;opacity:.6;">'
+    + '<div style="font-size:14px;font-weight:700;margin-bottom:6px;">단원별 강·약점 <span style="font-size:11px;color:var(--muted);font-weight:400;">(중단원 기준)</span></div>'
+    + '<div style="font-size:12px;color:var(--muted);">다음 단계에서 추가됩니다 (유형 집계가 있는 학생만 표시).</div></div>';
+
+  // AI 의견 (자리 표시 — 3단계)
+  html += '<div style="background:var(--teal-bg);border:1px dashed var(--teal);border-radius:10px;padding:16px 18px;opacity:.7;">'
+    + '<div style="font-size:14px;font-weight:700;color:var(--teal);margin-bottom:6px;">✨ 선생님 종합 의견 (AI 초안)</div>'
+    + '<div style="font-size:12px;color:var(--teal);">다음 단계에서 추가됩니다.</div></div>';
+
+  screen.innerHTML = html;
+
+  // 차트 렌더
+  if(r.tests.length && window.Chart){
+    var ctx = document.getElementById('report-chart').getContext('2d');
+    if(_reportChartInst){ _reportChartInst.destroy(); }
+    _reportChartInst = new Chart(ctx, {
+      type:'line',
+      data:{
+        labels: r.tests.map(function(t){ return t.date.slice(5)+' '+(t.name && t.name.length>6?t.name.slice(0,6)+'…':(t.name||'')); }),
+        datasets:[{
+          data: r.tests.map(function(t){ return t.score; }),
+          borderColor:'#117d70', borderWidth:2.5,
+          pointBackgroundColor: r.tests.map(function(t){ return t.score>=90?'#1d9e75':t.score>=70?'#b07d12':'#c0392b'; }),
+          pointRadius:5, tension:0.3, fill:{target:'origin', above:'rgba(17,125,112,0.06)'}
+        }]
+      },
+      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{min:0,max:100,ticks:{callback:function(v){return v+'점';}}}, x:{ticks:{font:{size:10}}}} }
+    });
+  }
+}
 
 </script>
 </body>
