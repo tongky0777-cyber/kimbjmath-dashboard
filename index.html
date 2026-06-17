@@ -15,7 +15,7 @@
   --teal:#117d70;--teal-bg:#e1f3ef;
   --gold:#b07d12;--gold-bg:#fffaf0;
   --green:#1d9e75;--green-bg:#e4f5ef;
-  --side:#fdf3cf;--side2:#fbe9a8;--side-ink:#7a5e10;--side-ink2:#5f4a0c;--side-on:#b07d12;
+  --side:#d4f0ea;--side2:#b3e3da;--side-ink:#1a5a52;--side-ink2:#0c5d54;--side-on:#0e6e63;
   --sans:'Pretendard','Apple SD Gothic Neo',sans-serif;
 }
 body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;}
@@ -25,23 +25,23 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 
 /* 사이드바 — 여름 연노랑 */
 .sidebar{background:var(--side);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
-.sb-logo{padding:20px;border-bottom:1px solid rgba(122,94,16,.14);}
+.sb-logo{padding:20px;border-bottom:1px solid rgba(14,110,99,.16);}
 .sb-logo-name{font-size:15px;font-weight:700;color:var(--side-ink2);}
-.sb-logo-sub{font-size:11px;color:rgba(122,94,16,.55);margin-top:3px;}
+.sb-logo-sub{font-size:11px;color:rgba(14,110,99,.6);margin-top:3px;}
 .sb-nav{flex:1;padding:12px 0;}
-.sb-section{font-size:9px;font-weight:700;letter-spacing:.14em;color:rgba(122,94,16,.55);text-transform:uppercase;padding:14px 20px 6px;}
+.sb-section{font-size:9px;font-weight:700;letter-spacing:.14em;color:rgba(14,110,99,.6);text-transform:uppercase;padding:14px 20px 6px;}
 .sb-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:var(--side-ink);cursor:pointer;transition:.15s;border-left:3px solid transparent;user-select:none;text-decoration:none;}
-.sb-item:hover{color:var(--side-ink2);background:rgba(176,125,18,.10);}
+.sb-item:hover{color:var(--side-ink2);background:rgba(14,110,99,.10);}
 .sb-item.on{color:#fff;background:var(--side-on);border-left-color:var(--side-ink2);font-weight:700;}
 .sb-icon{font-size:15px;width:20px;text-align:center;}
-.sb-footer{padding:16px 20px;border-top:1px solid rgba(122,94,16,.14);font-size:11px;color:rgba(122,94,16,.5);}
+.sb-footer{padding:16px 20px;border-top:1px solid rgba(14,110,99,.16);font-size:11px;color:rgba(14,110,99,.5);}
 
 /* 메인 */
 .main{display:flex;flex-direction:column;height:100vh;overflow:hidden;}
 .topbar{background:var(--white);border-bottom:1px solid var(--line);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
 .topbar-title{font-size:15px;font-weight:700;color:var(--ink);}
 .topbar-right{display:flex;align-items:center;gap:10px;}
-.today-badge{background:var(--gold-bg);color:var(--gold);font-size:11px;font-weight:700;padding:5px 12px;border-radius:100px;border:1px solid var(--side2);}
+.today-badge{background:var(--gold-bg);color:var(--gold);font-size:11px;font-weight:700;padding:5px 12px;border-radius:100px;border:1px solid #ecd9a8;}
 .content{padding:24px 28px;flex:1;overflow-y:auto;}
 
 /* 뷰 */
@@ -64,7 +64,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .stat-row .stat-card:nth-child(3)::before{background:var(--gold);}
 .stat-row .stat-card:nth-child(4)::before{background:var(--blue);}
 .stat-row .stat-card:nth-child(5)::before{background:var(--green);}
-.stat-row .stat-card:nth-child(6)::before{background:var(--side2);}
+.stat-row .stat-card:nth-child(6)::before{background:#d8ddda;}
 #dash-total{color:var(--teal);} 
 #dash-att{color:var(--blue);}
 #dash-hw{color:var(--gold);}
