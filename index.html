@@ -42,6 +42,11 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .topbar-title{font-size:15px;font-weight:700;color:var(--ink);}
 .topbar-right{display:flex;align-items:center;gap:10px;}
 .today-badge{background:var(--gold-bg);color:var(--gold);font-size:11px;font-weight:700;padding:5px 12px;border-radius:100px;border:1px solid #ecd9a8;}
+.quick-nav{display:flex;align-items:center;gap:6px;margin-left:18px;}
+.quick-btn{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:500;color:var(--ink2);background:var(--bg2);border:1px solid transparent;border-radius:7px;padding:6px 12px;cursor:pointer;font-family:var(--sans);transition:.12s;white-space:nowrap;}
+.quick-btn:hover{background:var(--teal-bg);color:var(--teal);}
+.quick-btn.on{background:var(--teal);color:#fff;}
+.quick-btn .qb-ico{font-size:14px;}
 .content{padding:24px 28px;flex:1;overflow-y:auto;}
 
 /* 뷰 */
@@ -408,7 +413,15 @@ body.role-assistant .teacher-only{ display:none !important; }
 <!-- 메인 -->
 <div class="main">
   <div class="topbar">
-    <div class="topbar-title" id="page-title">📊 전체 현황</div>
+    <div style="display:flex;align-items:center;">
+      <div class="topbar-title" id="page-title">📊 전체 현황</div>
+      <div class="quick-nav">
+        <button class="quick-btn" data-view="attendance" onclick="showView('attendance',null)"><span class="qb-ico">✅</span><span class="qb-txt">출결 관리</span></button>
+        <button class="quick-btn" data-view="homework" onclick="showView('homework',null)"><span class="qb-ico">📚</span><span class="qb-txt">숙제 관리</span></button>
+        <button class="quick-btn" data-view="tests" onclick="showView('tests',null)"><span class="qb-ico">📝</span><span class="qb-txt">테스트 결과</span></button>
+        <button class="quick-btn" data-view="progress" onclick="showView('progress',null)"><span class="qb-ico">📖</span><span class="qb-txt">진도 관리</span></button>
+      </div>
+    </div>
     <div class="topbar-right">
       <div class="today-badge" id="today-label"></div>
       <button class="btn-sm" onclick="openStudentModal()">+ 학생 추가</button>
@@ -2101,7 +2114,18 @@ function showView(id, el) {
   document.querySelectorAll('.sb-item').forEach(function(i){ i.classList.remove('on'); });
   var target = document.getElementById('view-'+id);
   if(target) target.classList.add('on');
-  if(el) el.classList.add('on');
+  // 사이드바 항목 활성표시: 클릭된 요소(el)가 있으면 그걸, 없으면 id로 찾아서 강조
+  if(el && el.classList.contains('sb-item')){ el.classList.add('on'); }
+  else {
+    document.querySelectorAll('.sb-item').forEach(function(i){
+      var oc = i.getAttribute('onclick')||'';
+      if(oc.indexOf("showView('"+id+"'")>-1) i.classList.add('on');
+    });
+  }
+  // 상단 빠른 버튼 활성표시
+  document.querySelectorAll('.quick-btn').forEach(function(b){
+    b.classList.toggle('on', b.getAttribute('data-view')===id);
+  });
   document.getElementById('page-title').textContent = viewTitles[id]||'';
   if(id==='students')   renderStudents();
   if(id==='attendance') { renderAttendance(); attCalYear=new Date().getFullYear(); attCalMonth=new Date().getMonth(); renderAttCalendar(); }
