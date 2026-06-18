@@ -1178,7 +1178,7 @@ body.role-assistant .teacher-only{ display:none !important; }
       </div>
       <div class="form-row">
         <div class="form-group"><label>과목</label><select id="prog-subject" onchange="onSubjectChange('prog')"></select></div>
-        <div class="form-group"><label>단원</label><select id="prog-unit"></select><input id="prog-unit-text" placeholder="단원 직접 입력" style="display:none;"></div>
+        <div class="form-group"><label>단원</label><select id="prog-unit" onchange="onUnitChange('prog')"></select><input id="prog-unit-text" placeholder="단원 직접 입력" style="display:none;"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>교재</label><select id="prog-book" onchange="refreshUnits('prog')"></select></div>
@@ -2268,6 +2268,7 @@ var CURRICULUM = {
   "대수": ["지수","로그","지수와 로그(통합)","지수함수","로그함수","지수함수와 로그함수(통합)","삼각함수의 뜻","삼각함수의 그래프","사인법칙과 코사인법칙","삼각함수(통합)","등차수열과 등비수열","수열의 합","수학적 귀납법","수열(통합)"],
   "미적분1": ["함수의 극한","함수의 연속","함수의 극한과 연속(통합)","미분계수와 도함수","도함수의 활용","미분(통합)","부정적분","정적분","정적분의 활용","적분(통합)"],
   "확률과 통계": ["순열과 조합","이항정리","경우의 수(통합)","확률의 뜻과 활용","조건부확률","확률(통합)","확률분포","정규분포","통계적 추정","통계(통합)"],
+  "중등 1-1": [], "중등 1-2": [], "중등 2-1": [], "중등 2-2": [], "중등 3-1": [], "중등 3-2": [],
   "테마수업": []
 };
 
@@ -2377,6 +2378,8 @@ function getPaperKey(t){
 // 시험대비 범위 (모든 과목 공통, 단원 목록 맨 앞에 추가)
 var EXAM_PREP_UNITS = ["중간대비","기말대비","그 외"];
 function getUnitsFor(subject, book){
+  // 중학교 과목(중등 N-N)은 중간대비·기말대비·직접 입력만 사용
+  if(isMiddleSubject(subject)) return ["중간대비","기말대비","직접 입력"];
   var base;
   if(book && BOOKUNITS[book] && BOOKUNITS[book][subject]) base = BOOKUNITS[book][subject];
   else base = CURRICULUM[subject] || [];
@@ -2384,6 +2387,8 @@ function getUnitsFor(subject, book){
   if(isFreeUnitSubject(subject)) return base;
   return EXAM_PREP_UNITS.concat(base);
 }
+// 중학교 과목인지 (중등 1-1 ~ 중등 3-2)
+function isMiddleSubject(subj){ return /^중등 [1-3]-[1-2]$/.test(subj||''); }
 // 단원이 자유입력(테마수업 등)인 과목인지
 function isFreeUnitSubject(subj){ return subj==='테마수업'; }
 // 단원 값 읽기 (테마수업이면 input, 아니면 select)
@@ -2394,6 +2399,11 @@ function getUnitValue(prefix){
     return t ? t.value.trim() : '';
   }
   var s = document.getElementById(prefix+'-unit');
+  // '직접 입력'을 고른 경우 텍스트칸 값 사용
+  if(s && s.value === '직접 입력'){
+    var t2 = document.getElementById(prefix+'-unit-text');
+    return t2 ? t2.value.trim() : '직접 입력';
+  }
   return s ? s.value : '';
 }
 // 단원 값 세팅 (수정 시)
@@ -2402,7 +2412,16 @@ function setUnitValue(prefix, subj, unitVal){
     var t = document.getElementById(prefix+'-unit-text'); if(t) t.value = unitVal||'';
   } else {
     var s = document.getElementById(prefix+'-unit');
-    if(s){ var has=Array.prototype.some.call(s.options,function(o){return o.value===unitVal;}); if(has) s.value=unitVal; }
+    if(s){
+      var has=Array.prototype.some.call(s.options,function(o){return o.value===unitVal;});
+      if(has){ s.value=unitVal; }
+      else if(unitVal){
+        // 목록에 없는 값 = 예전에 직접 입력한 단원 → '직접 입력' 선택 + 텍스트칸 복원
+        var hasDirect=Array.prototype.some.call(s.options,function(o){return o.value==='직접 입력';});
+        var t2=document.getElementById(prefix+'-unit-text');
+        if(hasDirect && t2){ s.value='직접 입력'; t2.style.display=''; t2.value=unitVal; }
+      }
+    }
   }
 }
 // 과목/교재 선택 변화 시 단원 영역 갱신 (테마수업이면 input 토글)
@@ -2428,6 +2447,14 @@ function refreshUnits(prefix){
 // 과목 선택 시 단원 드롭다운 채우기 (교재별 단원 우선)
 function onSubjectChange(prefix){
   refreshUnits(prefix);
+}
+// 단원 select 변경 시: '직접 입력' 고르면 텍스트칸 표시
+function onUnitChange(prefix){
+  var sel = document.getElementById(prefix+'-unit');
+  var txt = document.getElementById(prefix+'-unit-text');
+  if(!sel || !txt) return;
+  if(sel.value === '직접 입력'){ txt.style.display=''; txt.focus(); }
+  else { txt.style.display='none'; }
 }
 // 과목/교재 드롭다운 옵션 채우기
 function fillSubjectBookSelects(prefix){
