@@ -1,0 +1,28 @@
+name: 출석생 입력 누락 점검
+ 
+on:
+  schedule:
+    # GitHub Actions는 UTC 기준. 한국시간(KST) 21:30 = UTC 12:30
+    - cron: '30 12 * * *'
+  workflow_dispatch:   # 수동 실행 버튼(테스트용)
+ 
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+ 
+      - name: Node 설정
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+ 
+      - name: 입력 점검 + 텔레그램 알림
+        env:
+          FB_DB_URL: ${{ secrets.FB_DB_URL }}
+          FB_DB_SECRET: ${{ secrets.FB_DB_SECRET }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: node check_inputs.js
+ 
