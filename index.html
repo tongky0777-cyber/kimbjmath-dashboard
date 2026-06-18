@@ -8323,12 +8323,16 @@ function _computeReport(sid, period){
 
   // 과제 성실도 (기간 내 마감인 숙제 기준)
   var hwAll = DB.get('homework').filter(function(h){ return h.sid===sid && inRange(h.due); });
-  var hwStat = {total:hwAll.length, submitted:0, ontime:0, late:0, unknown:0, notsubmitted:0};
+  var todayStr = new Date().toISOString().slice(0,10);
+  var hwStat = {total:0, submitted:0, ontime:0, late:0, unknown:0, notsubmitted:0, pending:0};
   hwAll.forEach(function(h){
     var t = hwTimeliness(h);
-    if(t==='notsubmitted'){ hwStat.notsubmitted++; }
-    else {
-      hwStat.submitted++;
+    if(t==='notsubmitted'){
+      // 아직 마감일이 안 지난 미제출은 성실도 집계에서 제외 (pending으로만 기록)
+      if(h.due && h.due > todayStr){ hwStat.pending++; return; }
+      hwStat.notsubmitted++; hwStat.total++;
+    } else {
+      hwStat.submitted++; hwStat.total++;
       if(t==='ontime') hwStat.ontime++;
       else if(t==='late') hwStat.late++;
       else hwStat.unknown++;
@@ -8446,7 +8450,8 @@ function renderStudentReport(sid){
 
   // 성실도 텍스트
   var hwLine;
-  if(!r.hwStat.total){ hwLine = '이 기간에 배정된 과제가 없습니다.'; }
+  if(!r.hwStat.total && !r.hwStat.pending){ hwLine = '이 기간에 배정된 과제가 없습니다.'; }
+  else if(!r.hwStat.total && r.hwStat.pending){ hwLine = '아직 마감 전인 과제 '+r.hwStat.pending+'건 (집계는 마감 후)'; }
   else {
     var parts = ['제출 '+r.hwStat.submitted+'/'+r.hwStat.total+' ('+r.submitRate+'%)'];
     var detail = [];
@@ -8455,6 +8460,7 @@ function renderStudentReport(sid){
     if(r.hwStat.unknown) detail.push('시각 미상 '+r.hwStat.unknown);
     if(r.hwStat.notsubmitted) detail.push('미제출 '+r.hwStat.notsubmitted);
     hwLine = parts[0] + (detail.length? ' · '+detail.join(' · ') : '');
+    if(r.hwStat.pending) hwLine += ' <span style="color:var(--muted);">(아직 마감 전 '+r.hwStat.pending+'건 제외)</span>';
   }
 
   var html = '';
