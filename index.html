@@ -7988,12 +7988,36 @@ function renderMemoTodos(){
   var todos=getMemoTodos();
   if(!todos.length){ box.innerHTML='<div style="font-size:12px;color:var(--muted);padding:4px 0;">할 일이 없어요. 아래에 추가해보세요.</div>'; return; }
   box.innerHTML=todos.map(function(t,i){
+    if(_memoEditIdx===i){
+      // 편집 모드: 입력칸 + 저장/취소
+      return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);">'
+        +'<input id="memo-todo-edit-input" type="text" value="'+_slEsc(t.text).replace(/"/g,'&quot;')+'" onkeydown="if(event.key===\'Enter\')saveMemoTodoEdit('+i+');if(event.key===\'Escape\')cancelMemoTodoEdit();" style="flex:1;padding:6px 10px;border:1.5px solid var(--teal);border-radius:4px;font-size:13.5px;font-family:var(--sans);outline:none;">'
+        +'<button onclick="saveMemoTodoEdit('+i+')" class="btn-sm" style="flex-shrink:0;">저장</button>'
+        +'<button onclick="cancelMemoTodoEdit()" style="flex-shrink:0;background:none;border:1px solid var(--line);border-radius:4px;color:var(--muted);font-size:12px;padding:5px 10px;cursor:pointer;">취소</button>'
+        +'</div>';
+    }
     return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);">'
       +'<button onclick="toggleMemoTodo('+i+')" style="flex-shrink:0;width:22px;height:22px;border-radius:6px;border:1.5px solid '+(t.done?'var(--teal,#2a9d8f)':'var(--line)')+';background:'+(t.done?'var(--teal,#2a9d8f)':'#fff')+';color:#fff;cursor:pointer;font-size:13px;line-height:1;">'+(t.done?'✓':'')+'</button>'
       +'<span style="flex:1;font-size:13.5px;'+(t.done?'text-decoration:line-through;color:var(--muted);':'color:var(--ink);')+'">'+_slEsc(t.text)+'</span>'
-      +'<button onclick="removeMemoTodo('+i+')" style="flex-shrink:0;background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;">×</button>'
+      +'<button onclick="startMemoTodoEdit('+i+')" title="수정" style="flex-shrink:0;background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;">✏️</button>'
+      +'<button onclick="removeMemoTodo('+i+')" title="삭제" style="flex-shrink:0;background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;">×</button>'
       +'</div>';
   }).join('');
+  // 편집 모드면 입력칸에 포커스
+  if(_memoEditIdx>-1){ var ei=document.getElementById('memo-todo-edit-input'); if(ei){ ei.focus(); ei.setSelectionRange(ei.value.length, ei.value.length); } }
+}
+var _memoEditIdx = -1;
+function startMemoTodoEdit(i){ _memoEditIdx=i; renderMemoTodos(); }
+function cancelMemoTodoEdit(){ _memoEditIdx=-1; renderMemoTodos(); }
+function saveMemoTodoEdit(i){
+  var inp=document.getElementById('memo-todo-edit-input');
+  if(!inp) return;
+  var v=(inp.value||'').trim();
+  if(!v){ toast('내용을 입력해주세요'); return; }
+  var todos=getMemoTodos();
+  if(todos[i]){ todos[i].text=v; DB.set('memo_todo', todos); }
+  _memoEditIdx=-1;
+  renderMemoTodos();
 }
 function addMemoTodo(){
   var inp=document.getElementById('memo-todo-input');
