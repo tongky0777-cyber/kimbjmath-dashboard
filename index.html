@@ -2166,7 +2166,7 @@ function refreshCurrentView(){
     if(id==='students')   renderStudents();
     else if(id==='attendance'){ renderAttendance(); renderAttCalendar(); }
     else if(id==='tests'){ renderTests(); renderTestCalendar(); if(typeof testSelectedDate!=='undefined' && testSelectedDate) selectTestDay(testSelectedDate); }
-    else if(id==='homework'){ renderHw(); renderHwStudentView(); renderHwCalendar(); }
+    else if(id==='homework'){ renderHw(); renderHwStudentView(); renderHwCalendar(); if(hwSelectedDate) selectHwDay(hwSelectedDate); }
     else if(id==='schedule')  renderSchedule();
     else if(id==='dashboard') renderDashboard();
     else if(id==='prep')      renderPrep();
@@ -6035,8 +6035,8 @@ function renderHwCalendar() {
       var ds=hwCalYear+'-'+String(hwCalMonth+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
       var dow=new Date(hwCalYear,hwCalMonth,day).getDay();
       var dayRecs=recs.filter(function(r){return r.due===ds;});
-      var pending=dayRecs.filter(function(r){return r.status==='pending';}).length;
-      var done=dayRecs.filter(function(r){return r.status==='done';}).length;
+      var done=dayRecs.filter(function(r){return isHwSubmitted(r);}).length;
+      var pending=dayRecs.length - done;
       var isSel=ds===hwSelectedDate;
       var isToday=ds===today;
       var isOverdue=ds<today&&pending>0;
@@ -6076,7 +6076,10 @@ function selectHwDay(dateStr) {
     var statusStyle={pending:{bg:'var(--red-bg)',color:'var(--red)',label:'미제출'},done:{bg:'var(--green-bg)',color:'var(--green)',label:'제출'},half:{bg:'var(--gold-bg)',color:'var(--gold)',label:'부분제출'}};
     recs.forEach(function(r){
       var s=students.find(function(x){return x.id===r.sid;});
-      var st=statusStyle[r.status]||statusStyle.pending;
+      // 표시 상태: 선생님이 명시적으로 정한 status가 우선, 없으면 학생 제출(클래스룸/채점) 반영
+      var effStatus = r.status;
+      if(effStatus!=='done' && effStatus!=='half' && isHwSubmitted(r)) effStatus='done';
+      var st=statusStyle[effStatus]||statusStyle.pending;
       var card=document.createElement('div');
       card.style.cssText='display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 14px;';
       var aioBtns2='';
@@ -6084,12 +6087,13 @@ function selectHwDay(dateStr) {
         aioBtns2='<button title="학생 링크 복사" onclick="copyHwLink(\''+r.id+'\',\''+r.sid+'\')" style="font-size:11px;padding:4px 8px;border:1px solid var(--line);border-radius:3px;background:var(--white);cursor:pointer;margin-left:4px;">🔗</button>'
           +'<button title="오답 현황" onclick="openWrongView(\''+r.id+'\')" style="font-size:11px;padding:4px 8px;border:1px solid var(--teal);border-radius:3px;background:var(--teal-bg);cursor:pointer;margin-left:4px;">📊</button>';
       }
+      var studentSubmitted = (r.status!=='done' && r.status!=='half' && isHwSubmitted(r));
       card.innerHTML='<div style="font-size:13px;font-weight:700;white-space:nowrap;min-width:60px;">'+(s?s.name:'—')+'<span style="font-size:11px;color:var(--muted);margin-left:6px;">'+(s?s.grade:'')+'</span></div>'
-        +'<div style="flex:1;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+r.name+'</div>'
+        +'<div style="flex:1;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+r.name+(studentSubmitted?' <span style="color:var(--green);">· 학생 제출함</span>':'')+'</div>'
         +'<select onchange="updateHwStatus(\''+r.id+'\',this.value);renderHwCalendar();selectHwDay(\''+dateStr+'\')" style="font-size:11px;padding:4px 6px;border:1px solid var(--line);border-radius:3px;background:'+st.bg+';color:'+st.color+';font-weight:700;cursor:pointer;font-family:var(--sans);flex-shrink:0;width:80px;">'
-        +'<option value="pending"'+(r.status==='pending'?' selected':'')+'>미제출</option>'
-        +'<option value="done"'+(r.status==='done'?' selected':'')+'>제출</option>'
-        +'<option value="half"'+(r.status==='half'?' selected':'')+'>부분제출</option>'
+        +'<option value="pending"'+(effStatus==='pending'?' selected':'')+'>미제출</option>'
+        +'<option value="done"'+(effStatus==='done'?' selected':'')+'>제출</option>'
+        +'<option value="half"'+(effStatus==='half'?' selected':'')+'>부분제출</option>'
         +'</select>'
         +aioBtns2
         +'<button onclick="editHw(\''+r.id+'\')" style="font-size:11px;padding:4px 8px;border:1px solid var(--line);border-radius:3px;background:var(--white);color:var(--ink);cursor:pointer;margin-left:4px;">✏️</button>'
@@ -7352,9 +7356,21 @@ function loadClassPlanners(cb){
 // 특정 학생(sid)의 숙제 완료 여부 — classKey로 조회
 function hwDoneBySid(hwId, sid){
   var s = DB.get('students').find(function(x){ return x.id===sid; });
-  if(!s || !s.classKey) return null;
-  var rec = HW_DONE[hwId] && HW_DONE[hwId][s.classKey];
-  return rec || null;
+  if(!s) return null;
+  var bucket = HW_DONE[hwId];
+  if(!bucket) return null;
+  // 1) classKey로 정확히 매칭 (가장 정확)
+  if(s.classKey && bucket[s.classKey]) return bucket[s.classKey];
+  // 2) classKey가 없거나 어긋난 경우: 같은 이름으로 저장된 완료 기록 찾기
+  //    (클래스룸은 완료 시 name도 함께 저장하므로 이름으로 보조 매칭)
+  if(s.name){
+    var keys = Object.keys(bucket);
+    for(var i=0;i<keys.length;i++){
+      var rec = bucket[keys[i]];
+      if(rec && rec.name && rec.name===s.name) return rec;
+    }
+  }
+  return null;
 }
 // 이 숙제가 실질적으로 제출된 상태인지
 // (선생님 status done/half  OR  학생 클래스룸 완료체크  OR  학생이 '채점받기'로 제출)
