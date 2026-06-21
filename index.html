@@ -875,6 +875,7 @@ body.role-assistant .teacher-only{ display:none !important; }
         <div class="schedule-card">
           <div class="schedule-card-hd"><span>📋 전체 일정</span><span id="all-count" style="font-size:11px;color:var(--muted);">0건</span></div>
           <ul class="sch-list" id="sch-all"><li style="padding:16px;text-align:center;color:var(--muted);font-size:12px;">일정을 추가해보세요</li></ul>
+          <button id="sch-past-toggle" onclick="togglePastSched()" style="display:none;width:100%;border:none;border-top:1px solid var(--line);background:var(--bg2);color:var(--teal);font-size:12px;font-weight:600;padding:10px;cursor:pointer;font-family:var(--sans);">지난 일정 보기</button>
         </div>
       </div>
     </div>
@@ -2247,7 +2248,7 @@ function openHwModal() {
   addHwBlock();
   openModal('modal-hw');
 }
-function updateSchTarget(){ var sel=document.getElementById('sch-target-sel'); var inp=document.getElementById('sch-target'); var sid=sel.value; if(sid&&sid!=='전체'){ var st=(DB.get('students')||[]).find(function(s){return s.id===sid;}); inp.value=st?st.name:sid; } else { inp.value=''; } } function openScheduleModal() { openModal('modal-schedule'); ['sch-content','sch-target','sch-memo'].forEach(function(id){ document.getElementById(id).value=''; }); var sel=document.getElementById('sch-target-sel'); sel.value=''; var students=(DB.get('students')||[]).filter(function(s){return !s.withdrawn;}); sel.innerHTML='<option value="">-- 학생 선택 --</option><option value="전체">전체</option>'+sortByGrade(students).map(function(s){return '<option value="'+s.id+'">('+s.grade+') '+s.name+'</option>';}).join(''); }
+function updateSchTarget(){ var sel=document.getElementById('sch-target-sel'); var inp=document.getElementById('sch-target'); var sid=sel.value; if(sid&&sid!=='전체'){ var st=(DB.get('students')||[]).find(function(s){return s.id===sid;}); inp.value=st?st.name:sid; } else { inp.value=''; } } function openScheduleModal(isEdit) { openModal('modal-schedule'); var titleEl=document.querySelector('#modal-schedule .modal-hd h3'); if(titleEl) titleEl.textContent=isEdit?'일정 · 보강 수정':'일정 · 보강 추가'; if(!isEdit){ _editingSchId=null; ['sch-content','sch-target','sch-memo'].forEach(function(id){ document.getElementById(id).value=''; }); var sel0=document.getElementById('sch-target-sel'); sel0.value=''; } var sel=document.getElementById('sch-target-sel'); var students=(DB.get('students')||[]).filter(function(s){return !s.withdrawn;}); sel.innerHTML='<option value="">-- 학생 선택 --</option><option value="전체">전체</option>'+sortByGrade(students).map(function(s){return '<option value="'+s.id+'">('+s.grade+') '+s.name+'</option>';}).join(''); }
 
 // 토스트
 function toast(msg) {
@@ -4619,17 +4620,51 @@ function _saveTeacherMarks(sid){
 function esc2(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 
 // 일정 저장
+var _editingSchId = null;
 function saveSchedule() {
   var content = document.getElementById('sch-content').value.trim();
   if(!content) { toast('내용을 입력해주세요'); return; }
   var recs = DB.get('schedules');
-  recs.push({id:Date.now().toString(), date:document.getElementById('sch-date').value, time:document.getElementById('sch-time').value, type:document.getElementById('sch-type').value, target:document.getElementById('sch-target').value, content:content, memo:document.getElementById('sch-memo').value, done:false});
+  if(_editingSchId){
+    // 수정 모드: 기존 항목 갱신 (done 상태는 유지)
+    var idx = recs.findIndex(function(r){ return r.id===_editingSchId; });
+    if(idx>-1){
+      recs[idx].date=document.getElementById('sch-date').value;
+      recs[idx].time=document.getElementById('sch-time').value;
+      recs[idx].type=document.getElementById('sch-type').value;
+      recs[idx].target=document.getElementById('sch-target').value;
+      recs[idx].content=content;
+      recs[idx].memo=document.getElementById('sch-memo').value;
+    }
+    _editingSchId=null;
+  } else {
+    recs.push({id:Date.now().toString(), date:document.getElementById('sch-date').value, time:document.getElementById('sch-time').value, type:document.getElementById('sch-type').value, target:document.getElementById('sch-target').value, content:content, memo:document.getElementById('sch-memo').value, done:false});
+  }
   DB.set('schedules', recs);
   closeModal('modal-schedule');
   renderSchedule();
-  // 선택된 날짜 있으면 상세 갱신
   if(calSelectedDate) { var ds=DB.get('schedules').filter(function(x){return x.date===calSelectedDate;}); selectCalDay(calSelectedDate,ds); }
-  renderDashboard(); toast('일정이 추가되었습니다');
+  renderDashboard(); toast(_editingSchId?'일정이 수정되었습니다':'일정이 저장되었습니다');
+}
+
+// 일정 수정 모달 열기 (기존 값 채우기)
+function editSchedule(id){
+  var r = DB.get('schedules').find(function(x){ return x.id===id; });
+  if(!r) return;
+  _editingSchId = id;
+  openScheduleModal(true);
+  document.getElementById('sch-date').value = r.date||'';
+  document.getElementById('sch-time').value = r.time||'';
+  document.getElementById('sch-type').value = r.type||'makeup';
+  document.getElementById('sch-content').value = r.content||'';
+  document.getElementById('sch-target').value = r.target||'';
+  document.getElementById('sch-memo').value = r.memo||'';
+  // 학생 드롭다운에 기존 대상 반영
+  var sel=document.getElementById('sch-target-sel');
+  if(sel && r.target){
+    var st=(DB.get('students')||[]).find(function(s){return s.name===r.target;});
+    sel.value = st? st.id : (r.target==='전체'?'전체':'');
+  }
 }
 
 function toggleSchedule(id) {
@@ -4644,6 +4679,8 @@ function deleteSchedule(id) {
   renderSchedule(); renderDashboard(); toast('삭제되었습니다');
 }
 
+var _showPastSched = false;
+function togglePastSched(){ _showPastSched=!_showPastSched; renderSchedule(); }
 function renderSchedule() {
   renderCalendar();
   var recs = DB.get('schedules').sort(function(a,b){ return a.date.localeCompare(b.date); });
@@ -4655,13 +4692,31 @@ function renderSchedule() {
   function schItem(r) {
     var overdue = !r.done&&r.date<today;
     var isUrgent = !r.done&&r.date<=oneWeek;
-    return '<li class="sch-item" onclick="toggleSchedule(\''+r.id+'\')"><div class="sch-check'+(r.done?' done':overdue?' warn':'')+'">'+(r.done?'✓':overdue?'!':'')+'</div><div style="flex:1;"><div class="sch-title'+(r.done?' done-text':'')+'">'+r.content+(r.target?' · <span style="font-size:11px;color:var(--muted);">'+r.target+'</span>':'')+'</div><div class="sch-meta">'+r.date+(r.time?' '+r.time:'')+' · '+typeLabel(r.type)+'</div></div><span class="sch-badge '+(r.done?'sch-done-badge':isUrgent?'sch-urgent':'sch-normal')+'">'+(r.done?'완료':isUrgent?'이번 주':'예정')+'</span><button onclick="event.stopPropagation();deleteSchedule(\''+r.id+'\')" class="icon-btn" style="opacity:1;margin-left:4px;">✕</button></li>';
+    return '<li class="sch-item" onclick="toggleSchedule(\''+r.id+'\')"><div class="sch-check'+(r.done?' done':overdue?' warn':'')+'">'+(r.done?'✓':overdue?'!':'')+'</div><div style="flex:1;"><div class="sch-title'+(r.done?' done-text':'')+'">'+r.content+(r.target?' · <span style="font-size:11px;color:var(--muted);">'+r.target+'</span>':'')+'</div><div class="sch-meta">'+r.date+(r.time?' '+r.time:'')+' · '+typeLabel(r.type)+'</div></div><span class="sch-badge '+(r.done?'sch-done-badge':isUrgent?'sch-urgent':'sch-normal')+'">'+(r.done?'완료':isUrgent?'이번 주':'예정')+'</span><button onclick="event.stopPropagation();editSchedule(\''+r.id+'\')" class="icon-btn" title="수정" style="opacity:1;margin-left:4px;">✏️</button><button onclick="event.stopPropagation();deleteSchedule(\''+r.id+'\')" class="icon-btn" title="삭제" style="opacity:1;margin-left:2px;">✕</button></li>';
   }
 
   var urgEl = document.getElementById('sch-urgent');
   var allEl = document.getElementById('sch-all');
   if(urgEl) urgEl.innerHTML = urgent.length ? urgent.map(schItem).join('') : '<li style="padding:16px;text-align:center;color:var(--muted);font-size:12px;">이번 주 긴급 일정 없음</li>';
-  if(allEl) allEl.innerHTML = recs.length ? recs.map(schItem).join('') : '<li style="padding:16px;text-align:center;color:var(--muted);font-size:12px;">일정을 추가해보세요</li>';
+  // 전체 일정: 지난 일정 숨김 토글 적용 (지난 = 날짜가 오늘 이전이면서 완료된 것, 또는 그냥 지난 것)
+  var allRecs = recs;
+  var pastRecs = recs.filter(function(r){ return r.date<today; });
+  var shown = _showPastSched ? recs : recs.filter(function(r){ return r.date>=today; });
+  if(allEl){
+    if(!recs.length){ allEl.innerHTML='<li style="padding:16px;text-align:center;color:var(--muted);font-size:12px;">일정을 추가해보세요</li>'; }
+    else if(!shown.length){ allEl.innerHTML='<li style="padding:16px;text-align:center;color:var(--muted);font-size:12px;">다가오는 일정이 없어요. 아래에서 지난 일정을 볼 수 있어요.</li>'; }
+    else { allEl.innerHTML = shown.map(schItem).join(''); }
+  }
+  // 지난 일정 토글 버튼 갱신
+  var toggleEl = document.getElementById('sch-past-toggle');
+  if(toggleEl){
+    if(pastRecs.length){
+      toggleEl.style.display='';
+      toggleEl.textContent = (_showPastSched?'지난 일정 숨기기':'지난 일정 보기')+' ('+pastRecs.length+')';
+    } else {
+      toggleEl.style.display='none';
+    }
+  }
 
   var uc = document.getElementById('urgent-count');
   var ac = document.getElementById('all-count');
