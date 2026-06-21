@@ -3135,6 +3135,75 @@
           "grade": "self"
         }
       }
+    },
+    "mini||2026||공통수학1||26주차": {
+      "kind": "mini",
+      "year": "2026",
+      "target": "공통수학1",
+      "week": "26주차",
+      "totalCount": 12,
+      "typeMap": {
+        "1": {
+          "type": "연립방정식+판별식",
+          "cat": "eq_sys",
+          "grade": "self"
+        },
+        "2": {
+          "type": "부등식 정수해 개수",
+          "cat": "fn_ineq",
+          "grade": "self"
+        },
+        "3": {
+          "type": "연립부등식 정수해 범위",
+          "cat": "fn_ineq",
+          "grade": "mc"
+        },
+        "4": {
+          "type": "조건부 수 나열(배수·이웃)",
+          "cat": "cnt_case",
+          "grade": "self"
+        },
+        "5": {
+          "type": "조건부 팀 구성",
+          "cat": "cnt_comb",
+          "grade": "self"
+        },
+        "6": {
+          "type": "완전순열",
+          "cat": "cnt_case",
+          "grade": "self"
+        },
+        "7": {
+          "type": "행렬 거듭제곱",
+          "cat": "mat_pow",
+          "grade": "self"
+        },
+        "8": {
+          "type": "서로소 경우의 수",
+          "cat": "cnt_case",
+          "grade": "self"
+        },
+        "9": {
+          "type": "부등식 순서쌍 개수",
+          "cat": "cnt_case",
+          "grade": "self"
+        },
+        "10": {
+          "type": "행렬 연산·상등",
+          "cat": "mat_op",
+          "grade": "self"
+        },
+        "11": {
+          "type": "조건부 배정",
+          "cat": "cnt_case",
+          "grade": "self"
+        },
+        "12": {
+          "type": "조건부 수 나열(자릿수)",
+          "cat": "cnt_case",
+          "grade": "self"
+        }
+      }
     }
   }
 }
