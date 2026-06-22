@@ -1,6 +1,8 @@
 {
   "subject": "대수",
   "categories": {
+    "explog_calc": "지수로그-지수·로그 계산",
+    "explog_fn": "지수로그-지수·로그함수 그래프·방정식·부등식",
     "trig_basic": "삼각함수-각·동경·부채꼴",
     "trig_id": "삼각함수-삼각비·항등식",
     "trig_graph": "삼각함수-그래프·주기·최대최소",
@@ -274,6 +276,114 @@
         "20": {
           "type": "삼각함수 주기+절댓값 합(서술)",
           "cat": "trig_graph",
+          "grade": "self"
+        }
+      }
+    },
+    "gicul||2025||경신고||대수||1학기||기말": {
+      "school": "경신고",
+      "year": "2025",
+      "term": "기말",
+      "totalCount": 20,
+      "typeMap": {
+        "1": {
+          "type": "호도법 변환",
+          "cat": "trig_basic",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "삼각방정식 해 구하기",
+          "cat": "trig_eq",
+          "grade": "mc"
+        },
+        "3": {
+          "type": "로그함수 평행이동",
+          "cat": "explog_fn",
+          "grade": "mc"
+        },
+        "4": {
+          "type": "로그방정식 근과 계수",
+          "cat": "explog_fn",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "삼각부등식 해",
+          "cat": "trig_eq",
+          "grade": "mc"
+        },
+        "6": {
+          "type": "등비수열 곱의 값",
+          "cat": "seq_basic",
+          "grade": "mc"
+        },
+        "7": {
+          "type": "등차수열 합 최대·최댓값",
+          "cat": "seq_basic",
+          "grade": "mc"
+        },
+        "8": {
+          "type": "집합 원소 곱 개수 수열 합",
+          "cat": "seq_gen",
+          "grade": "mc"
+        },
+        "9": {
+          "type": "배수 아닌 수 나열 수열",
+          "cat": "seq_gen",
+          "grade": "mc"
+        },
+        "10": {
+          "type": "삼각방정식 모든 해의 합",
+          "cat": "trig_eq",
+          "grade": "mc"
+        },
+        "11": {
+          "type": "부채꼴·삼각형 넓이(삼각비)",
+          "cat": "trig_law",
+          "grade": "mc"
+        },
+        "12": {
+          "type": "삼각방정식 실근 조건·곱",
+          "cat": "trig_eq",
+          "grade": "mc"
+        },
+        "13": {
+          "type": "삼각함수 항등식 정수 조건",
+          "cat": "trig_id",
+          "grade": "mc"
+        },
+        "14": {
+          "type": "등차·등비 혼합 수열 합 조건",
+          "cat": "seq_basic",
+          "grade": "mc"
+        },
+        "15": {
+          "type": "부채꼴·삼각형 넓이(삼각비)",
+          "cat": "trig_law",
+          "grade": "self"
+        },
+        "16": {
+          "type": "코사인법칙·내분점·외접원",
+          "cat": "trig_law",
+          "grade": "self"
+        },
+        "17": {
+          "type": "귀납적 정의 수열(배수 조건)",
+          "cat": "seq_gen",
+          "grade": "self"
+        },
+        "18": {
+          "type": "부등식 만족 자연수 개수 Σ",
+          "cat": "seq_sum",
+          "grade": "self"
+        },
+        "19": {
+          "type": "닮음 점 수열 일반항",
+          "cat": "seq_app",
+          "grade": "self"
+        },
+        "20": {
+          "type": "수열+삼각함수 그래프 실근 개수",
+          "cat": "seq_app",
           "grade": "self"
         }
       }

@@ -961,13 +961,13 @@
       "totalCount": 21,
       "typeMap": {
         "1": {
-          "type": "행렬 상등(성분 비교)",
+          "type": "행렬 연산·미지수",
           "cat": "mat_op",
           "grade": "mc"
         },
         "2": {
           "type": "공약수 개수(소인수분해)",
-          "cat": "cnt_case",
+          "cat": "application",
           "grade": "mc"
         },
         "3": {
@@ -976,33 +976,33 @@
           "grade": "mc"
         },
         "4": {
-          "type": "음 아닌 정수해 순서쌍 개수",
-          "cat": "cnt_dist",
+          "type": "부등식 만족 순서쌍 개수",
+          "cat": "cnt_case",
           "grade": "mc"
         },
         "5": {
-          "type": "행렬 방정식(X 구하기)",
+          "type": "행렬 방정식(미지행렬)",
           "cat": "mat_op",
           "grade": "mc"
         },
         "6": {
-          "type": "이차부등식 해 없을 조건→정수 개수",
+          "type": "이차부등식 해 없을 조건",
           "cat": "fn_ineq",
           "grade": "mc"
         },
         "7": {
-          "type": "카드 곱·합 홀짝 경우의 수",
+          "type": "곱·합 홀수 경우의 수",
           "cat": "cnt_case",
           "grade": "mc"
         },
         "8": {
-          "type": "행렬 곱 조건→성분합",
+          "type": "행렬 조건→성분 합",
           "cat": "mat_op",
           "grade": "mc"
         },
         "9": {
-          "type": "순열·조합 방정식(nCr·nPr)",
-          "cat": "cnt_perm",
+          "type": "조합·순열 등식",
+          "cat": "cnt_comb",
           "grade": "mc"
         },
         "10": {
@@ -1011,12 +1011,12 @@
           "grade": "mc"
         },
         "11": {
-          "type": "행렬 거듭제곱+단위행렬 조건",
+          "type": "행렬 거듭제곱(케일리해밀턴)",
           "cat": "mat_pow",
           "grade": "mc"
         },
         "12": {
-          "type": "점에서 사각형·삼각형 개수",
+          "type": "점으로 만드는 사각형·삼각형 개수",
           "cat": "cnt_comb",
           "grade": "mc"
         },
@@ -1026,28 +1026,28 @@
           "grade": "mc"
         },
         "14": {
-          "type": "허근 ω 식의 값(주기성)",
-          "cat": "complex_root",
+          "type": "행렬 거듭제곱 규칙성→합",
+          "cat": "mat_pow",
           "grade": "mc"
         },
         "15": {
-          "type": "사차식 네 근 곱(인수분해)",
+          "type": "사차방정식 네 근 곱",
           "cat": "eq_quartic",
           "grade": "mc"
         },
         "16": {
-          "type": "조합·순열 종합(대표·이웃)",
-          "cat": "cnt_perm",
+          "type": "순열·조합 종합(대표 뽑기·줄세우기)",
+          "cat": "cnt_comb",
           "grade": "self"
         },
         "17": {
-          "type": "자연수 순서대로 나열(순열)",
-          "cat": "cnt_perm",
+          "type": "자연수 사전식 나열 순서",
+          "cat": "cnt_case",
           "grade": "self"
         },
         "18": {
-          "type": "행렬 거듭제곱 성분합 조건",
-          "cat": "mat_pow",
+          "type": "행렬 성분 합 조건→실수값",
+          "cat": "mat_op",
           "grade": "self"
         },
         "19": {
