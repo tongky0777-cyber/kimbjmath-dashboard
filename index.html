@@ -3717,7 +3717,7 @@ function hwBlockHtml(n, data){
     +'</div>'
     +'<div class="form-row">'
     +'<div class="form-group hw-unit-group" style="'+((isAioBook(book) && String(n).charAt(0)!=='g')?'display:none;':'')+'"><label>단원</label><select class="hw-unit">'+_hwUnitOptions(subj, book, data.unit)+'</select></div>'
-    +'<div class="form-group"><label>페이지/범위</label><input class="hw-range" placeholder="p.45~50" value="'+(data.range||'')+'"></div>'
+    +'<div class="form-group hw-range-group" style="'+((isAioBook(book) && String(n).charAt(0)!=='g')?'display:none;':'')+'"><label>페이지/범위</label><input class="hw-range" placeholder="p.45~50" value="'+(data.range||'')+'"></div>'
     +'</div>'
     + _hwAioSectionHtml(n, data)
     +'<div class="form-row">'
@@ -3841,6 +3841,9 @@ function _toggleHwAio(n){
   // All in one이면 기존 단원 드롭다운 숨김 (오답수집 영역에서 단원 선택하므로 중복 제거)
   var ug=block.querySelector('.hw-unit-group');
   if(ug) ug.style.display=(isAio?'none':'');
+  // All in one이면 페이지/범위 칸도 숨김 (번호범위로 지정하므로 불필요)
+  var rg=block.querySelector('.hw-range-group');
+  if(rg) rg.style.display=(isAio?'none':'');
 }
 function onHwBlockSubjectChange(n){
   var block=document.querySelector('.hw-block[data-n="'+n+'"]'); if(!block) return;
