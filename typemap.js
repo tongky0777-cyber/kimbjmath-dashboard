@@ -17,6 +17,8 @@ const TYPEMAP_PATH = {
   '올인원': './data/올인원_통합_typeMap.json',
   '올인원 대수': './data/올인원대수_통합_typeMap.json',
   '온리원': './data/온리원_통합_typeMap.json',
+  '올인원 미적분': './data/올인원미적분1_통합_typeMap.json',
+  '온리원 미적분': './data/온리원미적분1_통합_typeMap.json',
   // 다른 교재 추가 시 여기에 한 줄씩:
   // '자이스토리': './data/자이스토리_통합_typeMap.json',
 };

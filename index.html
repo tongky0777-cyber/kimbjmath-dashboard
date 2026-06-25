@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -2340,7 +2340,7 @@ var BOOKUNITS = {
   }
 };
 // 교재 목록 (학원에서 쓰는 책). 추가/삭제하세요.
-var BOOKLIST = ["내 교재","보충 프린트","고쟁이","절대등급","개념원리","RPM","라이트쎈","쎈","개념+유형","마플시너지","자이스토리","완쏠","All in one 공수1","All in one 대수","Only one 공수1"];
+var BOOKLIST = ["내 교재","보충 프린트","고쟁이","절대등급","개념원리","RPM","라이트쎈","쎈","개념+유형","마플시너지","자이스토리","완쏠","All in one 공수1","All in one 대수","Only one 공수1","All in one 미적분1","Only one 미적분1"];
 // 테스트 이름 목록 (드롭다운). 추가/삭제하세요.
 var TESTLIST = ["개념반 Daily Test","문풀반 Daily Test - 기본","문풀반 Daily Test - 실전","문풀반 Daily Test - 심화","미니모의고사","기출 Test","모의고사 기출"];
 
@@ -3764,6 +3764,24 @@ var AIO_BOOKS = {
       { key:'unit2_1', name:'2-1단원 복소수' },
       { key:'unit2_2', name:'2-2단원 이차방정식과 이차함수' },
       { key:'unit2_3', name:'2-3단원 여러 가지 방정식과 부등식' }
+    ]
+  },
+  'All in one 미적분1': {
+    subject: '미적분Ⅰ',
+    tmKey: '올인원 미적분',
+    totalQ: 200,
+    units: [
+      { key:'unit_diff',  name:'미분' },
+      { key:'unit_integ', name:'적분' }
+    ]
+  },
+  'Only one 미적분1': {
+    subject: '미적분Ⅰ',
+    tmKey: '온리원 미적분',
+    totalQ: 300,
+    units: [
+      { key:'unit_diff',  name:'미분' },
+      { key:'unit_integ', name:'적분' }
     ]
   }
 };

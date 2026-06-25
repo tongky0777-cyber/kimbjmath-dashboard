@@ -19,7 +19,9 @@
   var ANSWERKEY_PATH = {
     '올인원': './data/올인원_정답_answerKey.json',
     '올인원 대수': './data/올인원대수_정답_answerKey.json',
-    '온리원': './data/온리원_정답_answerKey.json'
+    '온리원': './data/온리원_정답_answerKey.json',
+    '올인원 미적분': './data/올인원미적분1_정답_answerKey.json',
+    '온리원 미적분': './data/온리원미적분1_정답_answerKey.json'
   };
   var _cache = {};
 
