@@ -1701,11 +1701,66 @@ function setExamScoreTables(o){ DB.setOne('examscores', o); if(window._fbPush) _
 function saveExamScoreTable(key, points){
   var tables=getExamScoreTables();
   var nums=Object.keys(points).map(Number);
-  var full=nums.reduce(function(s,n){return s+(+points[n]||0);},0);
+  var full=nums.reduce(function(s,n){return s+examEntryPt(points[n]);},0);
   tables[key]={ points:points, total:nums.length, full:Math.round(full*100)/100 };
   setExamScoreTables(tables);
   return tables[key];
 }
+// ===== 서술형 소문항(부분점수) 공통 헬퍼 =====
+// 배점표 한 칸의 값: 숫자(3.0) 또는 소문항객체 {sub:[{label:"(1)",pt:3.0},...]}
+function examIsSub(v){ return v && typeof v==='object' && Array.isArray(v.sub); }
+// 한 문항의 전체 배점 (소문항이면 sub 합)
+function examEntryPt(v){
+  if(examIsSub(v)) return v.sub.reduce(function(s,x){return s+(+x.pt||0);},0);
+  return +v||0;
+}
+// 배점표 전체 만점 합 (소문항 반영)
+function examFullScore(tbl){
+  if(!tbl||!tbl.points) return 0;
+  if(tbl.full) return tbl.full;
+  return Math.round(Object.keys(tbl.points).reduce(function(s,k){return s+examEntryPt(tbl.points[k]);},0)*100)/100;
+}
+// 틀린집합(wset: {16:true,"17-2":true})으로 잃은 점수 계산 (소문항 반영)
+function examLostScore(tbl, wset, total){
+  if(!tbl||!tbl.points) return 0;
+  var lost=0;
+  Object.keys(wset).forEach(function(k){
+    if(!wset[k]) return;
+    if(String(k).indexOf('-')>=0){
+      var pa=String(k).split('-'); var bn=parseInt(pa[0],10); var si=parseInt(pa[1],10)-1;
+      if(total && bn>total) return;
+      var ent=tbl.points[bn];
+      if(examIsSub(ent) && ent.sub[si]) lost+=(+ent.sub[si].pt||0);
+    } else {
+      var n=parseInt(k,10);
+      if(total && n>total) return;
+      var e=tbl.points[n];
+      if(e==null) return;
+      lost+=examEntryPt(e);
+    }
+  });
+  return Math.round(lost*100)/100;
+}
+// wset에서 표시용 틀린 "번호" 목록 (소문항은 부모번호로 합쳐 표시, 중복 제거)
+function examWrongNums(wset, total){
+  var seen={};
+  Object.keys(wset).forEach(function(k){
+    if(!wset[k]) return;
+    var bn = String(k).indexOf('-')>=0 ? parseInt(String(k).split('-')[0],10) : parseInt(k,10);
+    if(total && bn>total) return;
+    seen[bn]=true;
+  });
+  return Object.keys(seen).map(Number).sort(function(a,b){return a-b;});
+}
+// 배점표에 소문항이 하나라도 있는지
+function examHasSub(tbl){
+  if(!tbl||!tbl.points) return false;
+  return Object.keys(tbl.points).some(function(k){ return examIsSub(tbl.points[k]); });
+}
+// 틀린목록 항목(숫자 또는 "17-2")에서 부모 문항번호만 추출
+function wrongBaseNo(k){ return parseInt(String(k).split('-')[0],10); }
+// 배열 → {키:true} 집합 헬퍼
+function arrToSet(arr){ var o={}; (arr||[]).forEach(function(k){ o[k]=true; }); return o; }
 // 현재 기출/모의고사 입력폼에서 paperKey 생성 (getPaperKey와 동일 규칙)
 function currentExamScoreKey(){
   var name=document.getElementById('test-name').value;
@@ -1921,11 +1976,14 @@ function examScoreKeyOfRecord(t){
     changed=true;
   }
   // 2025 혜화여고 공통수학2 2학기 중간 (20문항, 만점 100 / 17~20번 서술형)
+  // 17번은 (1)(2) 소문항 — PDF에 소문항별 배점 미표기, 6.0을 3.0+3.0으로 분할(추정)
   var KEY20='gicul||2025||혜화여고||공통수학2||2학기||중간';
-  if(!tables[KEY20]){
+  if(!tables[KEY20] || !(tables[KEY20].points && tables[KEY20].points['17'] && tables[KEY20].points['17'].sub)){
     tables[KEY20]={ points:{
       1:3.0, 2:3.0, 3:3.5, 4:3.5, 5:3.5, 6:4.0, 7:4.0, 8:4.0, 9:4.0, 10:4.0,
-      11:4.5, 12:4.5, 13:4.5, 14:4.5, 15:5.0, 16:5.5, 17:6.0, 18:9.0, 19:8.0, 20:11.0
+      11:4.5, 12:4.5, 13:4.5, 14:4.5, 15:5.0, 16:5.5,
+      17:{ sub:[ {label:'(1)', pt:3.0}, {label:'(2)', pt:3.0} ] },
+      18:9.0, 19:8.0, 20:11.0
     }, total:20, full:100 };
     changed=true;
   }
@@ -2966,7 +3024,8 @@ function collectTestData(){
     data.unit=document.getElementById('test-unit').value;
   }
   var isGicul = (name==='기출 Test' || name==='모의고사 기출');
-  var wrong = getWrongList().filter(function(n){ return n<=total; });
+  // 저장용 틀린목록 — 소문항("17-2") 포함, total 넘는 부모번호만 제외
+  var wrong = getWrongList().filter(function(k){ return wrongBaseNo(k)<=total; });
   data.wrong = wrong;
   if(isNaN(total) || total<=0){
     // 미채점(준비) 상태 — 점수 비움
@@ -2980,8 +3039,9 @@ function collectTestData(){
     // 기출/모의고사 기출 — 배점표 있으면 배점 기반, 없으면 균등
     var tbl=getExamScoreTables()[currentExamScoreKey()];
     if(tbl && tbl.points){
-      var full = tbl.full || Object.keys(tbl.points).reduce(function(s,k){return s+(+tbl.points[k]||0);},0);
-      var lost = wrong.reduce(function(s,n){ return s+(+tbl.points[n]||0); },0);
+      var wsetP=arrToSet(wrong);
+      var full = examFullScore(tbl);
+      var lost = examLostScore(tbl, wsetP, total);
       var got = Math.round((full-lost)*100)/100;
       data.total=total;           // 문항 수 (그리드 복원용)
       data.fullScore=full;        // 만점(배점 합)
@@ -2992,16 +3052,16 @@ function collectTestData(){
       data.pending=false;
       return data;
     }
-    // 배점표 없음 → 균등 배점
+    // 배점표 없음 → 균등 배점 (소문항 키는 부모번호로 합쳐 카운트)
     data.total=total;
-    data.correct = total - wrong.length;
+    data.correct = total - examWrongNums(arrToSet(wrong), total).length;
     data.score = Math.round(data.correct/total*100);
     data.scoredBy='even';
     data.pending=false;
     return data;
   }
   // 일반 데일리류 — 균등(문항수) 계산
-  data.correct = total - wrong.length;
+  data.correct = total - examWrongNums(arrToSet(wrong), total).length;
   data.score = Math.round(data.correct/total*100);
   data.pending = false;
   return data;
@@ -3326,7 +3386,10 @@ function paperStatOf(p, students){
   var topQ=null;
   if(withWrong.length){
     var counts={};
-    withWrong.forEach(function(r){(r.wrong||[]).forEach(function(q){counts[q]=(counts[q]||0)+1;});});
+    withWrong.forEach(function(r){
+      var seen={}; (r.wrong||[]).forEach(function(q){ seen[wrongBaseNo(q)]=true; });
+      Object.keys(seen).forEach(function(q){counts[q]=(counts[q]||0)+1;});
+    });
     var best=null;
     Object.keys(counts).forEach(function(q){ if(!best||counts[q]>best.c){best={q:+q,c:counts[q]};} });
     if(best) topQ={q:best.q, rate:Math.round(best.c/withWrong.length*100)};
@@ -3513,7 +3576,10 @@ function paperDetailHtml(p, students){
   if(withWrong.length){
     var totalQ=Math.max.apply(null,withWrong.map(function(r){return r.total||0;}));
     var counts={};
-    withWrong.forEach(function(r){ (r.wrong||[]).forEach(function(q){ counts[q]=(counts[q]||0)+1; }); });
+    withWrong.forEach(function(r){
+      var seen={}; (r.wrong||[]).forEach(function(q){ seen[wrongBaseNo(q)]=true; });
+      Object.keys(seen).forEach(function(q){ counts[q]=(counts[q]||0)+1; });
+    });
     var denom=withWrong.length;
     var qList=[];
     for(var q=1;q<=totalQ;q++){ var c=counts[q]||0; qList.push({q:q, c:c, rate:Math.round(c/denom*100)}); }
@@ -5746,29 +5812,74 @@ function buildWrongGrid() {
   }
   wrap.style.display='block';
   grid.innerHTML='';
+  var name=document.getElementById('test-name').value;
+  var isGicul=(name==='기출 Test'||name==='모의고사 기출');
+  var tbl = isGicul ? getExamScoreTables()[currentExamScoreKey()] : null;
   for(var i=1;i<=total;i++){
     (function(n){
-      var b=document.createElement('button');
-      b.type='button';
-      b.textContent=n;
-      b.dataset.num=n;
-      var on=!!testWrongSet[n];
-      styleWrongBtn(b,on);
-      b.onclick=function(){
-        if(testWrongSet[n]){ delete testWrongSet[n]; styleWrongBtn(b,false); }
-        else { testWrongSet[n]=true; styleWrongBtn(b,true); }
-        calcTestPct();
-      };
-      grid.appendChild(b);
+      var ent = (tbl&&tbl.points)?tbl.points[n]:null;
+      if(examIsSub(ent)){
+        grid.appendChild(buildSubBox(n, ent, testWrongSet, calcTestPct));
+      } else {
+        var b=document.createElement('button');
+        b.type='button';
+        b.textContent=n;
+        b.dataset.num=n;
+        var on=!!testWrongSet[n];
+        styleWrongBtn(b,on);
+        b.onclick=function(){
+          if(testWrongSet[n]){ delete testWrongSet[n]; styleWrongBtn(b,false); }
+          else { testWrongSet[n]=true; styleWrongBtn(b,true); }
+          calcTestPct();
+        };
+        grid.appendChild(b);
+      }
     })(i);
   }
   calcTestPct();
+}
+// 소문항 펼침 박스 생성 (개인/반별 공용)
+// num: 문항번호, ent: {sub:[{label,pt}]}, wset: 틀린집합(키 "num-idx"), onChange: 갱신콜백
+function buildSubBox(num, ent, wset, onChange){
+  var box=document.createElement('div');
+  box.style.cssText='display:inline-flex;flex-direction:column;gap:4px;border:1.5px solid var(--teal);border-radius:8px;padding:5px 6px;background:var(--bg2);vertical-align:top;';
+  var head=document.createElement('div');
+  head.style.cssText='display:flex;align-items:center;gap:6px;';
+  var tag=document.createElement('span');
+  tag.textContent=num;
+  tag.style.cssText='min-width:28px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:12px;font-weight:700;background:var(--white);border:1.5px solid var(--teal);color:var(--teal);';
+  var lab=document.createElement('span'); lab.textContent='서술형'; lab.style.cssText='font-size:10px;color:var(--teal);font-weight:700;';
+  head.appendChild(tag); head.appendChild(lab);
+  box.appendChild(head);
+  var btnRow=document.createElement('div'); btnRow.style.cssText='display:flex;gap:4px;flex-wrap:wrap;';
+  ent.sub.forEach(function(sub, idx){
+    var key=num+'-'+(idx+1);
+    var b=document.createElement('button'); b.type='button';
+    function paint(){
+      var on=!!wset[key];
+      b.style.cssText='height:28px;padding:0 8px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid '+(on?'var(--red)':'var(--line)')+';background:'+(on?'var(--red)':'var(--white)')+';color:'+(on?'#fff':'var(--ink)')+';';
+      b.textContent=sub.label+' '+sub.pt+(on?' ✕':' ○');
+    }
+    paint();
+    b.onclick=function(){
+      if(wset[key]) delete wset[key]; else wset[key]=true;
+      paint(); if(onChange) onChange();
+    };
+    btnRow.appendChild(b);
+  });
+  box.appendChild(btnRow);
+  return box;
 }
 function styleWrongBtn(b,on){
   b.style.cssText='min-width:34px;height:34px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid '+(on?'var(--red)':'var(--line)')+';background:'+(on?'var(--red)':'var(--white)')+';color:'+(on?'#fff':'var(--ink)')+';';
 }
 function getWrongList(){
-  return Object.keys(testWrongSet).map(Number).sort(function(a,b){return a-b;});
+  // 저장용: 일반 번호(숫자)와 소문항("17-2") 모두 포함, 번호 오름차순
+  return Object.keys(testWrongSet).filter(function(k){return testWrongSet[k];}).sort(function(a,b){
+    var na=parseInt(String(a).split('-')[0],10), nb=parseInt(String(b).split('-')[0],10);
+    if(na!==nb) return na-nb;
+    return String(a).localeCompare(String(b));
+  });
 }
 
 function calcTestPct() {
@@ -5777,27 +5888,27 @@ function calcTestPct() {
   var scoreEl = document.getElementById('test-score');
   var correctEl = document.getElementById('test-correct');
   if(isNaN(total) || total<=0){ preview.style.display='none'; scoreEl.value=''; correctEl.value=''; return; }
-  var wrongList = getWrongList().filter(function(n){ return n<=total; });
-  var wrong = wrongList.length;
 
-  // 기출/모의고사 기출 + 배점표가 있으면 배점 기반 계산
   var name=document.getElementById('test-name').value;
   var isGicul=(name==='기출 Test'||name==='모의고사 기출');
   var tbl = isGicul ? getExamScoreTables()[currentExamScoreKey()] : null;
+
+  var wrongNums = examWrongNums(testWrongSet, total);
+  var wrong = wrongNums.length;
+
   if(isGicul && tbl && tbl.points){
-    var full = tbl.full || Object.keys(tbl.points).reduce(function(s,k){return s+(+tbl.points[k]||0);},0);
-    var lost = wrongList.reduce(function(s,n){ return s + (+tbl.points[n]||0); },0);
+    var full = examFullScore(tbl);
+    var lost = examLostScore(tbl, testWrongSet, total);
     var got = Math.round((full - lost)*100)/100;
     var pct = Math.round(got/full*100);
     scoreEl.value=pct; correctEl.value=got;
     preview.style.display='block';
     preview.style.background = pct>=90?'var(--green-bg)':pct>=70?'var(--gold-bg)':'var(--red-bg)';
     preview.style.color = pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
-    preview.textContent = '배점 적용: '+got+' / '+full+'점 = '+pct+'점 (틀린 '+wrong+'개'+(wrong?': '+wrongList.join(', ')+'번':'')+')';
+    preview.textContent = '배점 적용: '+got+' / '+full+'점 = '+pct+'점 (틀린 '+wrong+'개'+(wrong?': '+wrongNums.join(', ')+'번':'')+')';
     return;
   }
 
-  // 그 외(또는 배점표 없음) — 균등 배점(문항수 기준)
   var correct = total - wrong;
   var pct = Math.round(correct/total*100);
   scoreEl.value=pct; correctEl.value=correct;
@@ -5805,7 +5916,7 @@ function calcTestPct() {
   preview.style.background = pct>=90?'var(--green-bg)':pct>=70?'var(--gold-bg)':'var(--red-bg)';
   preview.style.color = pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
   var extra = isGicul ? ' · 배점표 없어 균등계산' : '';
-  preview.textContent = correct + ' / ' + total + ' = ' + pct + '점  (틀린 '+wrong+'개'+(wrong?': '+wrongList.join(', ')+'번':'')+')'+extra;
+  preview.textContent = correct + ' / ' + total + ' = ' + pct + '점  (틀린 '+wrong+'개'+(wrong?': '+wrongNums.join(', ')+'번':'')+')'+extra;
 }
 
 // 테스트명 바뀌면 입력 칸 전환
@@ -6995,26 +7106,31 @@ function updateGroupTestList() {
     function refreshPct(){
       if(isNaN(total) || total<=0){ pctEl.textContent='—'; return; }
       var wset = gtWrongSets[sid] || {};
-      var wrongArr = Object.keys(wset).map(Number).filter(function(n){ return n<=total; });
       if(isGicul && tbl && tbl.points){
-        var full = tbl.full || Object.keys(tbl.points).reduce(function(a,k){return a+(+tbl.points[k]||0);},0);
-        var lost = wrongArr.reduce(function(a,n){ return a+(+tbl.points[n]||0); },0);
+        var full = examFullScore(tbl);
+        var lost = examLostScore(tbl, wset, total);
         var got = Math.round((full-lost)*100)/100;
         var pct = Math.round(got/full*100);
         pctEl.textContent = pct+'점 ('+got+')';
         pctEl.style.color = pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
       } else {
-        var pct2 = Math.round((total-wrongArr.length)/total*100);
+        var wn = examWrongNums(wset, total).length;
+        var pct2 = Math.round((total-wn)/total*100);
         pctEl.textContent = pct2+'%';
         pctEl.style.color = pct2>=90?'var(--green)':pct2>=70?'var(--gold)':'var(--red)';
       }
     }
 
     if(!isNaN(total) && total>0){
-      var grid=document.createElement('div'); grid.style.cssText='display:flex;flex-wrap:wrap;gap:4px;';
+      var grid=document.createElement('div'); grid.style.cssText='display:flex;flex-wrap:wrap;gap:4px;align-items:flex-start;';
       if(!gtWrongSets[sid]) gtWrongSets[sid]={};
       for(var i=1;i<=total;i++){
         (function(num){
+          var ent = (isGicul&&tbl&&tbl.points)?tbl.points[num]:null;
+          if(examIsSub(ent)){
+            grid.appendChild(buildSubBox(num, ent, gtWrongSets[sid], refreshPct));
+            return;
+          }
           var b=document.createElement('div');
           var on = !!gtWrongSets[sid][num];
           b.textContent=num;
@@ -7064,12 +7180,17 @@ function saveGroupTest() {
     var memoEl = document.getElementById('gt-memo-'+sid);
     var rec = Object.assign({}, meta, { id:Date.now().toString()+sid, sid:sid, memo:memoEl?memoEl.value:'', by:currentInputter(), byAt:new Date().toISOString() });
     var wset = gtWrongSets[sid] || {};
-    var wrongArr = Object.keys(wset).map(Number).filter(function(n){ return n<=total; }).sort(function(a,b){return a-b;});
+    var wrongArr = Object.keys(wset).filter(function(k){
+      return wset[k] && wrongBaseNo(k)<=total;
+    }).sort(function(a,b){
+      var na=parseInt(String(a).split('-')[0],10), nb=parseInt(String(b).split('-')[0],10);
+      if(na!==nb) return na-nb; return String(a).localeCompare(String(b));
+    });
     rec.total = total; rec.wrong = wrongArr; rec.pending=false;
     if(tbl && tbl.points){
-      // 배점 기반: 점수 = 만점 − 틀린 문항 배점 합 (100점 환산)
-      var full = tbl.full || Object.keys(tbl.points).reduce(function(a,k){return a+(+tbl.points[k]||0);},0);
-      var lost = wrongArr.reduce(function(a,n){ return a+(+tbl.points[n]||0); },0);
+      // 배점 기반: 점수 = 만점 − 틀린 문항 배점 합 (100점 환산, 소문항 반영)
+      var full = examFullScore(tbl);
+      var lost = examLostScore(tbl, wset, total);
       var got = Math.round((full-lost)*100)/100;
       rec.score = Math.round(got/full*100);
       rec.correct = got;        // 획득 점수(배점 기반)
@@ -7077,8 +7198,9 @@ function saveGroupTest() {
       rec.gotScore = got;
       rec.scoreMode = 'points';
     } else {
-      rec.correct = total - wrongArr.length;
-      rec.score = Math.round((total-wrongArr.length)/total*100);
+      var wn = examWrongNums(wset, total).length;
+      rec.correct = total - wn;
+      rec.score = Math.round((total-wn)/total*100);
     }
     recs.push(rec);
     saved++;
@@ -7192,7 +7314,10 @@ function examWrongByCat(sid){
     var pk=getPaperKey(t).key;
     var tm=_GICUL_TM && _GICUL_TM[pk];
     if(!tm) return;  // 분류 안 된 시험
-    t.wrong.forEach(function(no){
+    // 소문항("17-2") → 부모번호로 정규화 + 같은 문항 중복 제거
+    var seen={};
+    t.wrong.forEach(function(no){ seen[wrongBaseNo(no)]=true; });
+    Object.keys(seen).forEach(function(no){
       var e=tm[String(no)];
       if(e && e.cat) byCat[e.cat]=(byCat[e.cat]||0)+1;
     });
@@ -7448,7 +7573,7 @@ function studentWrongSet(sid){
   (DB.get('tests')||[]).forEach(function(t){
     if(t.sid!==sid || !Array.isArray(t.wrong)) return;
     var pk=getPaperKey(t).key;
-    t.wrong.forEach(function(no){ set[pk+'#'+no]=true; });
+    t.wrong.forEach(function(no){ set[pk+'#'+wrongBaseNo(no)]=true; });
   });
   // 교재: wronganswers (WA_SUBS) — 숙제의 book/unitKey 기준
   var homework=DB.get('homework')||[];
