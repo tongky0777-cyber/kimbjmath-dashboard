@@ -5188,9 +5188,10 @@ function renderCheckBanner(){
   box.style.display='';
   var toneBg={warn:'#FCEFD6',red:'#F7E0E0',blue:'#E5EEF7',green:'#E3F0EA'};
 
-  // 접힌 한 줄 요약 만들기
+  // 접힌 한 줄 요약 만들기 (18자 넘으면 … 표시)
   var summaryParts=items.slice(0,3).map(function(it){
-    return it.text.replace(/<[^>]+>/g,'').replace(/^[\s·—-]+/,'').slice(0,18);
+    var t=it.text.replace(/<[^>]+>/g,'').replace(/^[\s·—-]+/,'').trim();
+    return t.length>18 ? t.slice(0,18)+'…' : t;
   });
   var summary=summaryParts.join(' · ')+(items.length>3?' 외':'');
 
@@ -5198,7 +5199,7 @@ function renderCheckBanner(){
     // 접힌 띠
     box.innerHTML='<div onclick="toggleCheckBanner()" style="background:#FCEFD6;border:1px solid #E8C97A;border-radius:8px;padding:11px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;">'
       +'<span style="font-size:15px;">🔔</span>'
-      +'<span style="font-size:13px;color:#7A5200;flex:1;"><b>오늘 확인할 것 '+items.length+'건</b> — '+summary+'</span>'
+      +'<span style="font-size:13px;color:#7A5200;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><b>오늘 확인할 것 '+items.length+'건</b> — '+summary+'</span>'
       +'<span style="font-size:12px;color:#9A6700;white-space:nowrap;">펼치기 ▾</span>'
       +'</div>';
     return;
@@ -8336,7 +8337,7 @@ function plGoToday(){plToday=new Date();plCurYear=plToday.getFullYear();plCurMon
 function plRenderMonth(){
   document.getElementById('pl-month-title').textContent=`${plCurYear}년 ${PL_MONTHS_KR[plCurMonth]}`;
   var labels=document.getElementById('pl-cal-labels');
-  labels.innerHTML=PL_DAYS.map((d,i)=>`<div class="pl-cal-day-label ${i===0?'sun':i===6?'sat':''}">${d}</div>`).join('');
+  labels.innerHTML=PL_DAYS.map((d,i)=>`<div class="pl-cal-day-label ${i===0?'pl-sun':i===6?'pl-sat':''}">${d}</div>`).join('');
   var first=new Date(plCurYear,plCurMonth,1).getDay();
   var lastDay=new Date(plCurYear,plCurMonth+1,0).getDate();
   var cells='';
@@ -8349,11 +8350,11 @@ function plRenderMonth(){
       var isToday=ds===plFmt(plToday);
       var isSel=ds===plSelectedDate;
       var dayEvs=plEvents.filter(e=>e.date===ds).sort((a,b)=>a.time.localeCompare(b.time));
-      var cls=['cal-cell'];
-      if(isOther)cls.push('other-month');
-      if(isToday)cls.push('plToday');
-      if(isSel)cls.push('selected');
-      var dateCls='cal-date'+(c===0?' sun':c===6?' sat':'');
+      var cls=['pl-cal-cell'];
+      if(isOther)cls.push('pl-other-month');
+      if(isToday)cls.push('pl-today');
+      if(isSel)cls.push('pl-selected');
+      var dateCls='pl-cal-date'+(c===0?' pl-sun':c===6?' pl-sat':'');
       var evHtml=dayEvs.slice(0,3).map(e=>`<div class="pl-cal-event pl-${e.type}" onclick="plShowDetail(${e.id},event)" title="${e.title}" style="${e.done?'opacity:0.45;text-decoration:line-through;':''}">${e.done?'✅ ':''} ${e.time.slice(0,5)} ${e.title}</div>`).join('');
       var moreHtml=dayEvs.length>3?`<div class="pl-cal-more">+${dayEvs.length-3}개 더</div>`:'';
       cells+=`<div class="${cls.join(' ')}" onclick="plSelectDate('${ds}')">
@@ -8374,10 +8375,10 @@ function plRenderWeek(){
   for(var i=0;i<7;i++){var d=new Date(ws);d.setDate(d.getDate()+i);days.push(d);}
   var hdr=`<div class="pl-week-corner"></div>`+days.map((d,i)=>{
     var isT=plFmt(d)===plFmt(plToday);
-    var cls=i===0?'sun':i===6?'sat':'';
+    var cls=i===0?'pl-sun':i===6?'pl-sat':'';
     return `<div class="pl-week-day-col">
       <div class="pl-week-day-name ${cls}">${PL_DAYS[d.getDay()]}</div>
-      <div class="pl-week-day-num ${isT?'plToday-circle':''}" style="${(i===0||i===6)&&!isT?'color:'+(i===0?'var(--red)':'var(--blue)'):''}"}>${d.getDate()}</div>
+      <div class="pl-week-day-num ${isT?'pl-today-circle':''}" style="${(i===0||i===6)&&!isT?'color:'+(i===0?'var(--red)':'var(--blue)'):''}">${d.getDate()}</div>
     </div>`;
   }).join('');
   document.getElementById('pl-week-header').innerHTML=hdr;
