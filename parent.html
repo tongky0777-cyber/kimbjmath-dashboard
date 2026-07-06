@@ -74,6 +74,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 </head>
 <body>
 
@@ -100,6 +101,11 @@ var firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 var rtdb = firebase.database();
+// 익명 로그인: Firebase 보안 규칙이 인증을 요구하므로 데이터 접근 전 로그인 필요
+window._authReady = (firebase.auth ? firebase.auth().signInAnonymously()
+  .then(function(){ return true; })
+  .catch(function(e){ console.warn('익명 로그인 실패:', e); return false; })
+  : Promise.resolve(false));
 
 function getParam(name){
   return new URLSearchParams(window.location.search).get(name);
@@ -118,24 +124,27 @@ function render(){
   var data = {};
   var loaded = 0;
 
-  keys.forEach(function(key){
-    rtdb.ref('bjm_' + key).once('value', function(snap){
-      var val = snap.val();
-      if(!val){
+  // 익명 로그인 완료 후 데이터 읽기 (인증 전에 읽으면 permission_denied)
+  Promise.resolve(window._authReady).then(function(){
+    keys.forEach(function(key){
+      rtdb.ref('bjm_' + key).once('value', function(snap){
+        var val = snap.val();
+        if(!val){
+          data[key] = [];
+        } else if(Array.isArray(val)){
+          data[key] = val;
+        } else if(typeof val === 'object'){
+          data[key] = Object.values(val);
+        } else {
+          data[key] = [];
+        }
+        loaded++;
+        if(loaded === keys.length) renderData(sid, data, app);
+      }, function(err){
         data[key] = [];
-      } else if(Array.isArray(val)){
-        data[key] = val;
-      } else if(typeof val === 'object'){
-        data[key] = Object.values(val);
-      } else {
-        data[key] = [];
-      }
-      loaded++;
-      if(loaded === keys.length) renderData(sid, data, app);
-    }, function(err){
-      data[key] = [];
-      loaded++;
-      if(loaded === keys.length) renderData(sid, data, app);
+        loaded++;
+        if(loaded === keys.length) renderData(sid, data, app);
+      });
     });
   });
 }
@@ -303,6 +312,7 @@ render();
   var params=new URLSearchParams(window.location.search);
   var sid=params.get('id');
   if(!sid)return;
+  Promise.resolve(window._authReady).then(function(){
   db.ref('bjm_exam_files').once('value',function(snap){
     var val=snap.val();
     if(!val)return;
@@ -330,6 +340,7 @@ render();
       }).join('');
     wrap.appendChild(sec);
     window._examData=exams;
+  });
   });
 })();
 function viewExam(id){
