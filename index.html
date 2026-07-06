@@ -1699,9 +1699,18 @@ var DB = {
   get: function(k) {
     var arr;
     try { arr = JSON.parse(localStorage.getItem('bjm_'+k)||'[]'); } catch(e){ return []; }
-    // 과외 학생 잠금: students 조회 시 잠겨 있으면 tutoring:true 학생 숨김
-    if(k==='students' && Array.isArray(arr) && !isTutorUnlocked()){
+    if(isTutorUnlocked() || !Array.isArray(arr)) return arr;
+    // 잠금 상태: 과외 학생 본인 + 과외 학생의 sid 기반 기록을 숨김
+    if(k==='students'){
       return arr.filter(function(s){ return !s.tutoring; });
+    }
+    // sid 필드로 학생과 연결되는 기록들 → 과외 학생 것 제외
+    var SID_LINKED = { tests:1, attendance:1, homework:1, wronganswers:1, planners:1 };
+    if(SID_LINKED[k]){
+      var hidden = tutoringSidSet();
+      if(hidden.size){
+        return arr.filter(function(r){ return !(r && hidden.has(String(r.sid))); });
+      }
     }
     return arr;
   },
@@ -1725,6 +1734,23 @@ function tutorUnlock(pin){
   return false;
 }
 function tutorLock(){ try { sessionStorage.removeItem('bjm_tutor_unlock'); } catch(e){} }
+// 과외 학생 id 집합 (문자열) — sid 기반 기록 필터용. 잠금 상태에서만 의미 있음.
+// 매번 원본을 읽으므로 짧게 캐시해 성능 보호.
+var _tutorSidCache = null, _tutorSidCacheAt = 0;
+function tutoringSidSet(){
+  var now = Date.now();
+  if(_tutorSidCache && (now - _tutorSidCacheAt) < 1000) return _tutorSidCache;
+  var set = new Set();
+  try {
+    var raw = JSON.parse(localStorage.getItem('bjm_students')||'[]');
+    if(Array.isArray(raw)){
+      raw.forEach(function(s){ if(s && s.tutoring) set.add(String(s.id)); });
+    }
+  } catch(e){}
+  _tutorSidCache = set; _tutorSidCacheAt = now;
+  return set;
+}
+function clearTutorSidCache(){ _tutorSidCache = null; }
 // 사이드바 자물쇠 클릭
 function toggleTutorLock(){
   if(isTutorUnlocked()){
@@ -1744,6 +1770,7 @@ function toggleTutorLock(){
 }
 // 잠금 상태 바뀔 때 화면 갱신 (자물쇠 라벨 + 열려있는 뷰들)
 function refreshTutorUI(){
+  clearTutorSidCache();
   var unlocked=isTutorUnlocked();
   var lockBtn=document.getElementById('tutor-lock-btn');
   if(lockBtn){
@@ -2709,24 +2736,27 @@ function saveStudent() {
   var students = DB.getRaw('students');
   var id = document.getElementById('s-id').value || Date.now().toString();
   var idx = students.findIndex(function(s){ return s.id===id; });
-  var student = {
-    id:id, name:name,
-    grade: document.getElementById('s-grade').value,
-    school: document.getElementById('s-school').value,
-    class: document.getElementById('s-class').value,
-    phone: document.getElementById('s-phone').value,
-    parent: document.getElementById('s-parent').value,
-    memo: document.getElementById('s-memo').value,
-    createdAt: document.getElementById('s-created-at').value || (idx===-1 ? new Date().toISOString().slice(0,10) : students[idx].createdAt),
-    withdrawnAt: document.getElementById('s-withdrawn-at').value || (idx!==-1 ? students[idx].withdrawnAt : ''),
-    status: document.getElementById('s-withdrawn-at').value ? 'withdrawn' : (idx!==-1 ? students[idx].status : ''),
-    // 과외 학생 표시: 잠금이 열려 있을 때만 체크박스로 수정 가능, 잠겨있으면 기존값 보존
-    tutoring: isTutorUnlocked()
-      ? document.getElementById('s-tutoring').checked
-      : (idx!==-1 ? !!students[idx].tutoring : false)
-  };
+  // 기존 학생의 모든 필드(classKey 등 클래스룸 연결 정보 포함)를 먼저 보존한 뒤 입력값만 덮어씀
+  var base = (idx!==-1) ? Object.assign({}, students[idx]) : {};
+  base.id = id;
+  base.name = name;
+  base.grade = document.getElementById('s-grade').value;
+  base.school = document.getElementById('s-school').value;
+  base.class = document.getElementById('s-class').value;
+  base.phone = document.getElementById('s-phone').value;
+  base.parent = document.getElementById('s-parent').value;
+  base.memo = document.getElementById('s-memo').value;
+  base.createdAt = document.getElementById('s-created-at').value || (idx===-1 ? new Date().toISOString().slice(0,10) : students[idx].createdAt);
+  base.withdrawnAt = document.getElementById('s-withdrawn-at').value || (idx!==-1 ? students[idx].withdrawnAt : '');
+  base.status = document.getElementById('s-withdrawn-at').value ? 'withdrawn' : (idx!==-1 ? students[idx].status : '');
+  // 과외 학생 표시: 잠금이 열려 있을 때만 체크박스로 수정 가능, 잠겨있으면 기존값 보존
+  base.tutoring = isTutorUnlocked()
+    ? document.getElementById('s-tutoring').checked
+    : (idx!==-1 ? !!students[idx].tutoring : false);
+  var student = base;
   if(idx===-1) students.push(student); else students[idx]=student;
   DB.set('students', students);
+  clearTutorSidCache();
 
   // 반 배정 업데이트
   var checkedGroups = [...document.querySelectorAll('.s-group-check:checked')].map(function(el){ return el.value; });
@@ -7864,8 +7894,8 @@ function openClassLinkPicker(sid){
 }
 
 function linkClass(sid, classKey){
-  var students = DB.get('students');
-  var idx = students.findIndex(function(x){ return x.id===sid; });
+  var students = DB.getRaw('students');
+  var idx = students.findIndex(function(x){ return String(x.id)===String(sid); });
   if(idx<0) return;
   students[idx].classKey = classKey;
   DB.set('students', students);
@@ -7876,8 +7906,8 @@ function linkClass(sid, classKey){
 
 function unlinkClass(sid){
   if(isAssistant()){ toast('클래스룸 연결 해제는 선생님만 할 수 있어요'); return; }
-  var students = DB.get('students');
-  var idx = students.findIndex(function(x){ return x.id===sid; });
+  var students = DB.getRaw('students');
+  var idx = students.findIndex(function(x){ return String(x.id)===String(sid); });
   if(idx<0) return;
   delete students[idx].classKey;
   DB.set('students', students);
