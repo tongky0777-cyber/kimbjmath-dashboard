@@ -142,25 +142,28 @@ function render(){
 
 function renderData(sid, data, app){
   var students = data.students || [];
-  var student = students.find(function(s){ return s && s.id === sid; });
+  var student = students.find(function(s){ return s && String(s.id) === String(sid); });
 
   if(!student){
     app.innerHTML = '<div class="error-screen"><h2>학생 정보를 찾을 수 없습니다</h2><p>링크가 올바른지 확인해주세요.</p></div>';
     return;
   }
 
+  // id 타입 불일치 방지: 이후 모든 기록 조회는 문자열 기준으로 통일
+  sid = String(student.id);
+
   var threeMonthsAgo = new Date();
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
   var threeMonthsAgoStr = threeMonthsAgo.toISOString().slice(0,10);
   var today = new Date().toISOString().slice(0,10);
 
-  var attendance = (data.attendance || []).filter(function(a){ return a && a.sid === sid && a.date >= threeMonthsAgoStr; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
-  var homework = (data.homework || []).filter(function(h){ return h && h.sid === sid; }).sort(function(a,b){ return b.due.localeCompare(a.due); });
-  var tests = (data.tests || []).filter(function(t){ return t && t.sid === sid; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
+  var attendance = (data.attendance || []).filter(function(a){ return a && String(a.sid) === sid && a.date >= threeMonthsAgoStr; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
+  var homework = (data.homework || []).filter(function(h){ return h && String(h.sid) === sid; }).sort(function(a,b){ return b.due.localeCompare(a.due); });
+  var tests = (data.tests || []).filter(function(t){ return t && String(t.sid) === sid; }).sort(function(a,b){ return b.date.localeCompare(a.date); });
 
   // 최근 진도 2개
   var progress = (data.progress || []).filter(function(p){
-    return p && p.sid === sid;
+    return p && String(p.sid) === sid;
   }).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,2);
 
   // 보강 일정: target이 학생 이름과 일치하는 것
@@ -308,7 +311,7 @@ render();
       var raw=localStorage.getItem('bjm_groups');
       if(raw){
         var groups=JSON.parse(raw);
-        groups.forEach(function(g){if((g.students||[]).includes(sid))groupIds.push(g.id);});
+        groups.forEach(function(g){if((g.students||[]).some(function(x){return String(x)===String(sid);}))groupIds.push(g.id);});
       }
     }catch(e){}
     var exams=Object.values(val).filter(function(e){return e&&(e.targetId===sid||groupIds.includes(e.targetId));}).sort(function(a,b){return b.date.localeCompare(a.date);});
