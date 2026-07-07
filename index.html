@@ -571,13 +571,23 @@ body.role-assistant .teacher-only{ display:none !important; }
     <div class="view" id="view-daily">
       <div class="sec-hd"><h2>🎯 오늘의 문제</h2><div class="actions teacher-only"><button class="btn-sm" onclick="openDailyModal()">+ 문제 등록</button></div></div>
       <div class="card" style="margin-bottom:14px;">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-          <label style="font-size:13px;color:var(--muted);">날짜</label>
-          <input type="date" id="daily-date" onchange="renderDailyStatus()" style="padding:8px 10px;border:1px solid var(--line);border-radius:8px;">
-          <span id="daily-date-summary" style="font-size:13px;color:var(--muted);"></span>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn-sm sec" onclick="dailyCalMove(-1)">‹</button>
+            <span id="daily-cal-label" style="font-size:16px;font-weight:700;min-width:120px;text-align:center;"></span>
+            <button class="btn-sm sec" onclick="dailyCalMove(1)">›</button>
+            <button class="btn-sm sec" onclick="dailyCalToday()">오늘</button>
+          </div>
+          <div style="display:flex;gap:12px;font-size:11px;color:var(--muted);flex-wrap:wrap;">
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#dff0e4;vertical-align:middle;"></span> 공수1</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#e2edfb;vertical-align:middle;"></span> 공수2</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#efe6fb;vertical-align:middle;"></span> 미적분1</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#f0f0f0;vertical-align:middle;"></span> 기타</span>
+          </div>
         </div>
       </div>
-      <div id="daily-status"></div>
+      <div id="daily-calendar"></div>
+      <div id="daily-status" style="margin-top:14px;"></div>
     </div>
 
     <!-- 숙제 관리 -->
@@ -2345,11 +2355,12 @@ function saveDailyProblem(){
   };
   probs.push(prob);
   DB.set('daily_problems', probs);
-  if(window._fbPush) _fbPush();
   closeModal('modal-daily');
   toast('오늘의 문제를 등록했어요');
-  document.getElementById('daily-date').value=date;
-  renderDailyStatus();
+  // 등록한 날짜로 캘린더 이동 + 선택
+  var dt=new Date(date+'T00:00:00');
+  _dailyCalY=dt.getFullYear(); _dailyCalM=dt.getMonth();
+  dailySelectDate(date);
 }
 
 function deleteDailyProblem(id){
@@ -2357,31 +2368,127 @@ function deleteDailyProblem(id){
   if(!confirm('이 문제를 삭제할까요? (학생 제출 기록도 함께 사라집니다)')) return;
   DB.set('daily_problems', getDailyProblems().filter(function(p){ return p.id!==id; }));
   var subs=getDailySubs(); delete subs[id]; DB.setOne('daily_subs', subs);
-  if(window._fbPush) _fbPush();
-  renderDailyStatus();
+  renderDailyCalendar();
+  if(_dailySelDate) renderDailyStatus(_dailySelDate);
 }
 
-// 날짜별 현황: 그날 문제들 + 각 문제에 참여한 학생(정답/오답)
-function renderDailyStatus(){
+// ===== 오늘의 문제 캘린더 =====
+var _dailyCalY, _dailyCalM, _dailySelDate=null;
+
+// 태그/과목명에서 과목 판별 → 색 클래스
+function dailySubjectColor(p){
+  var t=(p.subject||p.tag||'');
+  if(/미적/.test(t)) return {bg:'#efe6fb',fg:'#5b2d8e'};   // 미적분1 보라
+  if(/공수2|공통수학2/.test(t)) return {bg:'#e2edfb',fg:'#1c3c6e'}; // 공수2 파랑
+  if(/공수1|공통수학1/.test(t)) return {bg:'#dff0e4',fg:'#1a6b3a'}; // 공수1 초록
+  return {bg:'#f0f0f0',fg:'#666'}; // 기타 회색
+}
+// 태그에서 유형만 짧게 (과목 접두어 제거)
+function dailyShortTag(p){
+  var t=(p.tag||'');
+  return t.replace(/^(공수1|공수2|공통수학1|공통수학2|미적분1|미적분)\s*/,'').trim() || t || '문제';
+}
+
+function dailyCalInit(){
+  var now=new Date();
+  if(_dailyCalY==null){ _dailyCalY=now.getFullYear(); _dailyCalM=now.getMonth(); }
+  renderDailyCalendar();
+  // 오늘 날짜 문제 있으면 자동 선택
+  var todayStr=now.toISOString().slice(0,10);
+  if(getDailyProblems().some(function(p){return p.date===todayStr;})){ dailySelectDate(todayStr); }
+  else { document.getElementById('daily-status').innerHTML=''; }
+}
+function dailyCalMove(delta){
+  _dailyCalM+=delta;
+  if(_dailyCalM<0){ _dailyCalM=11; _dailyCalY--; }
+  if(_dailyCalM>11){ _dailyCalM=0; _dailyCalY++; }
+  renderDailyCalendar();
+}
+function dailyCalToday(){
+  var now=new Date(); _dailyCalY=now.getFullYear(); _dailyCalM=now.getMonth();
+  renderDailyCalendar(); dailySelectDate(now.toISOString().slice(0,10));
+}
+
+function renderDailyCalendar(){
+  var box=document.getElementById('daily-calendar'); if(!box) return;
+  document.getElementById('daily-cal-label').textContent=_dailyCalY+'년 '+(_dailyCalM+1)+'월';
+  var probs=getDailyProblems();
+  var subs=getDailySubs();
+  // 날짜별 문제 그룹
+  var byDate={};
+  probs.forEach(function(p){ (byDate[p.date]=byDate[p.date]||[]).push(p); });
+
+  var first=new Date(_dailyCalY,_dailyCalM,1);
+  var startDow=first.getDay();
+  var daysInMonth=new Date(_dailyCalY,_dailyCalM+1,0).getDate();
+  var todayStr=new Date().toISOString().slice(0,10);
+  var pad=function(n){return n<10?'0'+n:''+n;};
+
+  var days=['일','월','화','수','목','금','토'];
+  var html='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;">';
+  days.forEach(function(d,i){
+    var col=i===0?'var(--red)':i===6?'var(--blue)':'var(--muted)';
+    html+='<div style="text-align:center;font-size:11px;color:'+col+';padding:4px;font-weight:700;">'+d+'</div>';
+  });
+  // 빈 칸
+  for(var b=0;b<startDow;b++){ html+='<div></div>'; }
+  for(var d=1;d<=daysInMonth;d++){
+    var ds=_dailyCalY+'-'+pad(_dailyCalM+1)+'-'+pad(d);
+    var dayProbs=byDate[ds]||[];
+    var isToday=ds===todayStr;
+    var isSel=ds===_dailySelDate;
+    // 참여 인원(중복 제거)
+    var pt={}; dayProbs.forEach(function(p){ var s=subs[p.id]||{}; Object.keys(s).forEach(function(sid){pt[sid]=true;}); });
+    var ptCount=Object.keys(pt).length;
+    var border = isSel?'2px solid var(--teal)':isToday?'2px solid var(--gold)':'0.5px solid var(--line)';
+    html+='<div onclick="dailySelectDate(\''+ds+'\')" style="min-height:88px;border:'+border+';border-radius:8px;padding:5px;background:var(--white);cursor:pointer;overflow:hidden;">';
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">';
+    html+='<span style="font-size:12px;font-weight:'+(dayProbs.length?'700':'400')+';color:'+(isToday?'var(--gold)':'var(--ink)')+';">'+d+'</span>';
+    if(dayProbs.length){
+      var badgeBg = ptCount>0?'var(--green-bg)':'var(--line)';
+      var badgeFg = ptCount>0?'var(--green)':'var(--muted)';
+      html+='<span style="font-size:9px;background:'+badgeBg+';color:'+badgeFg+';padding:1px 5px;border-radius:100px;white-space:nowrap;">👤'+ptCount+'</span>';
+    }
+    html+='</div>';
+    // 문제 유형 배지
+    dayProbs.slice(0,3).forEach(function(p){
+      var c=dailySubjectColor(p);
+      html+='<div style="font-size:9px;background:'+c.bg+';color:'+c.fg+';padding:2px 4px;border-radius:3px;line-height:1.3;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(dailyShortTag(p))+'</div>';
+    });
+    if(dayProbs.length>3) html+='<div style="font-size:9px;color:var(--muted);">+'+(dayProbs.length-3)+'</div>';
+    html+='</div>';
+  }
+  html+='</div>';
+  box.innerHTML=html;
+}
+
+// 날짜 선택 → 하단 상세
+function dailySelectDate(ds){
+  _dailySelDate=ds;
+  renderDailyCalendar();
+  renderDailyStatus(ds);
+  var st=document.getElementById('daily-status');
+  if(st) st.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// 선택 날짜 상세: 그날 문제들 + 참여 학생
+function renderDailyStatus(date){
   var box=document.getElementById('daily-status'); if(!box) return;
-  var date=document.getElementById('daily-date').value;
-  var sumEl=document.getElementById('daily-date-summary');
+  if(!date){ box.innerHTML=''; return; }
   var probs=getDailyProblems().filter(function(p){ return p.date===date; });
   var subs=getDailySubs();
   var students=DB.get('students');
   function nm(sid){ var s=students.find(function(x){return String(x.id)===String(sid);}); return s?s.name:'(알수없음)'; }
 
+  var dateLabel=date.slice(5).replace('-','월 ')+'일';
   if(!probs.length){
-    if(sumEl) sumEl.textContent='';
-    box.innerHTML='<div class="card" style="text-align:center;color:var(--muted);padding:40px;">이 날짜에 등록된 문제가 없어요.<br><span style="font-size:12px;">우측 상단 “+ 문제 등록”으로 추가하세요.</span></div>';
+    box.innerHTML='<div class="card" style="text-align:center;color:var(--muted);padding:30px;">'+dateLabel+'에 등록된 문제가 없어요.</div>';
     return;
   }
-  // 그날 참여 학생 수(중복 제거)
   var participants={};
   probs.forEach(function(p){ var s=subs[p.id]||{}; Object.keys(s).forEach(function(sid){ participants[sid]=true; }); });
-  if(sumEl) sumEl.textContent='· 문제 '+probs.length+'개 · 참여 '+Object.keys(participants).length+'명';
 
-  var html='';
+  var html='<div class="card" style="margin-bottom:10px;"><div style="font-weight:700;font-size:15px;">'+dateLabel+' · 문제 '+probs.length+'개 · 참여 '+Object.keys(participants).length+'명</div></div>';
   probs.forEach(function(p, i){
     var s=subs[p.id]||{};
     var sids=Object.keys(s);
@@ -2389,18 +2496,18 @@ function renderDailyStatus(){
     var wrongList=sids.filter(function(sid){ return !s[sid].correct; });
     var typeLabel = p.type==='mc'?'객관식':'단답형';
     var ansLabel = p.type==='mc' ? ['','①','②','③','④','⑤'][+p.answer]||p.answer : p.answer;
+    var c=dailySubjectColor(p);
     html+='<div class="card" style="margin-bottom:12px;">';
     html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">';
     html+='<span style="font-weight:700;">문제 '+(i+1)+'</span>';
-    if(p.tag) html+='<span style="font-size:11px;background:var(--teal);color:#fff;padding:2px 8px;border-radius:100px;">'+esc(p.tag)+'</span>';
+    if(p.tag) html+='<span style="font-size:11px;background:'+c.bg+';color:'+c.fg+';padding:2px 8px;border-radius:100px;">'+esc(p.tag)+'</span>';
     html+='<span style="font-size:11px;color:var(--muted);">'+typeLabel+' · 정답 '+ansLabel+'</span>';
     html+='<span style="margin-left:auto;font-size:12px;color:var(--muted);">참여 '+sids.length+'명</span>';
     html+='<button class="icon-btn teacher-only" onclick="deleteDailyProblem(\''+p.id+'\')" title="삭제">🗑️</button>';
     html+='</div>';
     html+='<div style="display:flex;gap:8px;margin-bottom:10px;">';
-    html+='<img src="'+p.imgQ+'" style="width:90px;border:1px solid var(--line);border-radius:6px;cursor:pointer;" onclick="window.open(\'\',\'_blank\').document.write(\'<img src=\\\''+p.imgQ+'\\\' style=width:100%>\')" title="문제 크게보기">';
+    html+='<img src="'+p.imgQ+'" style="width:90px;border:1px solid var(--line);border-radius:6px;cursor:pointer;" onclick="dailyImgFull(\''+p.id+'\')" title="문제 크게보기">';
     html+='</div>';
-    // 참여 학생
     html+='<div style="display:flex;flex-direction:column;gap:6px;">';
     if(!sids.length){
       html+='<div style="font-size:13px;color:var(--muted);">아직 참여한 학생이 없어요.</div>';
@@ -2414,6 +2521,13 @@ function renderDailyStatus(){
     html+='</div></div>';
   });
   box.innerHTML=html;
+}
+
+function dailyImgFull(pid){
+  var p=getDailyProblems().find(function(x){return x.id===pid;});
+  if(!p) return;
+  var w=window.open('','_blank');
+  if(w) w.document.write('<body style="margin:0;background:#111;"><img src="'+p.imgQ+'" style="width:100%;"></body>');
 }
 
 function saveExam() {
@@ -2539,7 +2653,7 @@ function showView(id, el) {
   if(id==='students')   renderStudents();
   if(id==='attendance') { renderAttendance(); attCalYear=new Date().getFullYear(); attCalMonth=new Date().getMonth(); renderAttCalendar(); }
   if(id==='tests')      { renderTests(); testCalYear=new Date().getFullYear(); testCalMonth=new Date().getMonth(); renderTestCalendar(); }
-  if(id==='daily')      { var de=document.getElementById('daily-date'); if(de && !de.value) de.value=new Date().toISOString().slice(0,10); renderDailyStatus(); }
+  if(id==='daily')      { dailyCalInit(); }
   if(id==='papers')     { renderPaperFolders(); }
   if(id==='studylog')   {
     var dEl=document.getElementById('studylog-date');
