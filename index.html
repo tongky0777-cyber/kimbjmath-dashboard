@@ -4037,7 +4037,7 @@ function paperBarChartHtml(arr){
   var maxBar=arr.length;
   var rows=arr.map(function(p){
     var s=p.stat;
-    var col=s.avg>=90?'var(--green)':s.avg>=70?'var(--gold)':'var(--red)';
+    var col=s.avg>=90?'#7ec9a8':s.avg>=70?'#e6b980':'#e89aac';
     var lbl=paperFullLabel(p);
     return '<div style="display:flex;align-items:center;gap:12px;">'
       +'<div style="width:160px;flex-shrink:0;">'
@@ -4055,9 +4055,9 @@ function paperBarChartHtml(arr){
     +'<div style="font-size:11px;color:var(--muted);margin-bottom:14px;">단원·회차가 다른 시험지를 개별 막대로 비교합니다 (막대를 누르면 상세)</div>'
     +'<div style="display:flex;flex-direction:column;gap:10px;">'+rows+'</div>'
     +'<div style="display:flex;gap:14px;margin-top:14px;font-size:11px;color:var(--muted);">'
-      +'<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--green);margin-right:4px;"></span>90↑ 우수</span>'
-      +'<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--gold);margin-right:4px;"></span>70↑ 보통</span>'
-      +'<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--red);margin-right:4px;"></span>70↓ 주의</span>'
+      +'<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#7ec9a8;margin-right:4px;"></span>90↑ 우수</span>'
+      +'<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#e6b980;margin-right:4px;"></span>70↑ 보통</span>'
+      +'<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#e89aac;margin-right:4px;"></span>70↓ 주의</span>'
     +'</div></div>';
 }
 // 그래프 x축에 쓸 짧은 라벨
@@ -5076,7 +5076,7 @@ function renderBookAnalysis(){
     var ctx=document.getElementById('wa-cat-chart').getContext('2d');
     _waChart=new Chart(ctx,{ type:'bar',
       data:{ labels:catArr.map(function(o){return o.name;}),
-        datasets:[{ data:catArr.map(function(o){return o.n;}), backgroundColor:'#1c3c6e', borderRadius:4 }] },
+        datasets:[{ data:catArr.map(function(o){return o.n;}), backgroundColor:'#c3b0e8', borderRadius:6 }] },
       options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
         scales:{ y:{ beginAtZero:true, ticks:{precision:0} } } } });
   }
@@ -8422,7 +8422,7 @@ function openStudentDetail(sid) {
     chartEl.style.display=''; noTestEl.style.display='none';
     var labels = tests.map(function(t){ return t.date.slice(5)+'\n'+(t.name.length>8?t.name.slice(0,8)+'…':t.name); });
     var scores = tests.map(function(t){ return t.score; });
-    var colors = scores.map(function(sc){ return sc>=90?'#1a6b3a':sc>=70?'#8a6820':'#b4281e'; });
+    var colors = scores.map(function(sc){ return sc>=90?'#8fd9c8':sc>=70?'#f5cfa0':'#f0a8b8'; });
 
     function loadChartAndRender() {
       var ctx = chartEl.getContext('2d');
@@ -8433,14 +8433,14 @@ function openStudentDetail(sid) {
           datasets: [{
             label: '점수',
             data: scores,
-            borderColor: '#b4281e',
-            borderWidth: 2.5,
+            borderColor: '#c3b0e8',
+            borderWidth: 3,
             pointBackgroundColor: colors,
             pointBorderColor: colors,
             pointRadius: 6,
             pointHoverRadius: 8,
-            fill: {target:'origin', above:'rgba(180,40,30,0.06)'},
-            tension: 0.3,
+            fill: {target:'origin', above:'rgba(195,176,232,0.12)'},
+            tension: 0.35,
           }]
         },
         options: {
@@ -8640,20 +8640,20 @@ var sIds = g ? g.students || [] : [];
       if(existing) existing.destroy();
       var labels = sTests.map(function(t){ return t.date.slice(5)+'\n'+(t.name.length>6?t.name.slice(0,6)+'…':t.name); });
       var scores = sTests.map(function(t){ return t.score; });
-      var colors = scores.map(function(sc){ return sc>=90?'#1a6b3a':sc>=70?'#8a6820':'#b4281e'; });
+      var colors = scores.map(function(sc){ return sc>=90?'#8fd9c8':sc>=70?'#f5cfa0':'#f0a8b8'; });
       new Chart(canvas.getContext('2d'), {
         type: 'line',
         data: {
           labels: labels,
           datasets: [{
             data: scores,
-            borderColor: '#b4281e',
-            borderWidth: 2,
+            borderColor: '#c3b0e8',
+            borderWidth: 2.5,
             pointBackgroundColor: colors,
             pointBorderColor: colors,
             pointRadius: 5,
             fill: false,
-            tension: 0.3,
+            tension: 0.35,
           }]
         },
         options: {
@@ -8677,7 +8677,7 @@ var sIds = g ? g.students || [] : [];
             cctx.textBaseline = 'bottom';
             meta.data.forEach(function(pt, i){
               var val = scores[i];
-              cctx.fillStyle = val>=90?'#1a6b3a':val>=70?'#8a6820':'#b4281e';
+              cctx.fillStyle = val>=90?'#5aa58c':val>=70?'#c99a5a':'#d47a90';
               cctx.fillText(val+'점', pt.x, pt.y - 4);
             });
             cctx.restore();
@@ -9449,9 +9449,9 @@ function renderStudentReport(sid){
         labels: r.tests.map(function(t){ return t.date.slice(5)+' '+(t.name && t.name.length>6?t.name.slice(0,6)+'…':(t.name||'')); }),
         datasets:[{
           data: r.tests.map(function(t){ return t.score; }),
-          borderColor:'#117d70', borderWidth:2.5,
-          pointBackgroundColor: r.tests.map(function(t){ return t.score>=90?'#1d9e75':t.score>=70?'#b07d12':'#c0392b'; }),
-          pointRadius:5, tension:0.3, fill:{target:'origin', above:'rgba(17,125,112,0.06)'}
+          borderColor:'#c3b0e8', borderWidth:3,
+          pointBackgroundColor: r.tests.map(function(t){ return t.score>=90?'#8fd9c8':t.score>=70?'#f5cfa0':'#f0a8b8'; }),
+          pointRadius:5, tension:0.35, fill:{target:'origin', above:'rgba(195,176,232,0.12)'}
         }]
       },
       options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{min:0,max:100,ticks:{callback:function(v){return v+'점';}}}, x:{ticks:{font:{size:10}}}} }
