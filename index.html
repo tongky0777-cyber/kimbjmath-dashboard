@@ -392,6 +392,7 @@ body.role-assistant .teacher-only{ display:none !important; }
     <div class="sb-item" onclick="showView('prep',this)" style="display:none;"><span class="sb-icon">🎯</span> 다음 수업 준비</div>
     <div class="sb-item" onclick="showView('progress',this)"><span class="sb-icon">📖</span> 진도 관리</div>
     <div class="sb-item" onclick="showView('tests',this)"><span class="sb-icon">📝</span> 테스트 결과</div>
+    <div class="sb-item" onclick="showView('daily',this)"><span class="sb-icon">🎯</span> 오늘의 문제</div>
     <div class="sb-item teacher-only" onclick="showView('papers',this)"><span class="sb-icon">📊</span> 시험지 분석</div>
     <div class="sb-item" onclick="showView('studylog',this)"><span class="sb-icon">📒</span> 학생 학습기록</div>
     <div class="sb-item teacher-only" onclick="showView('report',this)"><span class="sb-icon">📄</span> 학생 리포트</div>
@@ -564,6 +565,19 @@ body.role-assistant .teacher-only{ display:none !important; }
         <table><thead><tr><th>이름</th><th>반</th><th>테스트명</th><th>단원</th><th>날짜</th><th>점수</th><th>메모</th><th></th></tr></thead>
         <tbody id="test-body"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">테스트 결과를 입력해보세요</td></tr></tbody></table>
       </div>
+    </div>
+
+    <!-- 오늘의 문제 -->
+    <div class="view" id="view-daily">
+      <div class="sec-hd"><h2>🎯 오늘의 문제</h2><div class="actions teacher-only"><button class="btn-sm" onclick="openDailyModal()">+ 문제 등록</button></div></div>
+      <div class="card" style="margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <label style="font-size:13px;color:var(--muted);">날짜</label>
+          <input type="date" id="daily-date" onchange="renderDailyStatus()" style="padding:8px 10px;border:1px solid var(--line);border-radius:8px;">
+          <span id="daily-date-summary" style="font-size:13px;color:var(--muted);"></span>
+        </div>
+      </div>
+      <div id="daily-status"></div>
     </div>
 
     <!-- 숙제 관리 -->
@@ -1107,6 +1121,28 @@ body.role-assistant .teacher-only{ display:none !important; }
 </div>
 
 <!-- 모달: 일정 입력 -->
+<div class="modal-bg" id="modal-daily"><div class="modal"><div class="modal-hd"><h3>🎯 오늘의 문제 등록</h3><button class="modal-close" onclick="closeModal('modal-daily')">×</button></div><div class="modal-body">
+  <div class="form-group full">
+    <label>PDF 파일 (1페이지=문제, 2페이지=풀이)</label>
+    <input type="file" id="daily-pdf" accept="application/pdf" onchange="onDailyPdfPick(event)">
+    <div id="daily-pdf-status" style="font-size:12px;color:var(--muted);margin-top:6px;"></div>
+  </div>
+  <div id="daily-preview" style="display:none;gap:8px;margin-bottom:12px;">
+    <div style="flex:1;text-align:center;"><div style="font-size:11px;color:var(--muted);margin-bottom:4px;">문제(1p)</div><img id="daily-prev-q" style="width:100%;border:1px solid var(--line);border-radius:6px;"></div>
+    <div style="flex:1;text-align:center;"><div style="font-size:11px;color:var(--muted);margin-bottom:4px;">풀이(2p)</div><img id="daily-prev-a" style="width:100%;border:1px solid var(--line);border-radius:6px;"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>날짜 *</label><input type="date" id="daily-in-date"></div>
+    <div class="form-group"><label>유형 *</label><select id="daily-type" onchange="onDailyTypeChange()"><option value="mc">객관식</option><option value="short">단답형</option></select></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>정답 *</label>
+      <select id="daily-answer-mc"><option value="1">①</option><option value="2">②</option><option value="3">③</option><option value="4">④</option><option value="5">⑤</option></select>
+      <input id="daily-answer-short" placeholder="예) 12 또는 3/4" style="display:none;">
+    </div>
+    <div class="form-group"><label>범위(선택)</label><input id="daily-tag" placeholder="예) 공수2 · 명제와 집합"></div>
+  </div>
+</div><div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-daily')">취소</button><button class="btn-save" id="daily-save-btn" onclick="saveDailyProblem()">등록</button></div></div></div>
  <div class="modal-bg" id="modal-exam"><div class="modal"><div class="modal-hd"><h3>시험 일정 추가</h3><button class="modal-close" onclick="closeModal('modal-exam')">×</button></div><div class="modal-body"><div class="form-row"><div class="form-group"><label>학교명 *</label><input id="exam-school" placeholder="예) 경북고등학교"></div><div class="form-group"><label>시험 종류</label><select id="exam-type"><option value="mid">중간고사</option><option value="final">기말고사</option><option value="mock">모의고사</option><option value="other">기타</option></select></div></div><div class="form-row"><div class="form-group"><label>시작일 *</label><input type="date" id="exam-start"></div><div class="form-group"><label>종료일 *</label><input type="date" id="exam-end"></div></div><div class="form-group full"><label>메모</label><input id="exam-memo" placeholder="추가 메모"></div></div><div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-exam')">취소</button><button class="btn-save" onclick="saveExam()">저장</button></div></div></div>
 <div class="modal-bg" id="modal-schedule">
   <div class="modal">
@@ -1419,6 +1455,8 @@ body.role-assistant .teacher-only{ display:none !important; }
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>if(window.pdfjsLib){ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }</script>
 <script src="./typemap.js"></script>
 <script src="./grader.js"></script>
 <script>
@@ -2190,7 +2228,7 @@ function activateMemo() {
   }
 }
 
-var viewTitles = {dashboard:'📊 전체 현황',prep:'🎯 다음 수업 준비',progress:'📖 진도 관리',groups:'🏫 반 관리',students:'👥 학생 목록',attendance:'✅ 출결 관리',tests:'📝 테스트 결과',homework:'📚 숙제 관리',schedule:'📅 보강 · 일정',memo:'🗒️ 메모',wronganalysis:'📊 교재 오답 분석',planner:'🗓️ 플래너',report:'📄 학생 리포트'};
+var viewTitles = {dashboard:'📊 전체 현황',prep:'🎯 다음 수업 준비',progress:'📖 진도 관리',groups:'🏫 반 관리',students:'👥 학생 목록',attendance:'✅ 출결 관리',tests:'📝 테스트 결과',homework:'📚 숙제 관리',schedule:'📅 보강 · 일정',memo:'🗒️ 메모',wronganalysis:'📊 교재 오답 분석',planner:'🗓️ 플래너',report:'📄 학생 리포트',daily:'🎯 오늘의 문제'};
 
 
 // ===== 시험 일정 =====
@@ -2212,6 +2250,168 @@ function openExamModal(id) {
       document.getElementById('exam-memo').value=exam.memo||'';
     }
   }
+}
+
+// ===== 오늘의 문제 =====
+var _dailyImgs = { q:null, a:null };  // 변환된 이미지(dataURL)
+
+function openDailyModal(){
+  if(isAssistant()){ toast('문제 등록은 선생님만 할 수 있어요'); return; }
+  _dailyImgs = { q:null, a:null };
+  document.getElementById('daily-pdf').value='';
+  document.getElementById('daily-pdf-status').textContent='';
+  document.getElementById('daily-preview').style.display='none';
+  document.getElementById('daily-in-date').value = document.getElementById('daily-date').value || new Date().toISOString().slice(0,10);
+  document.getElementById('daily-type').value='mc';
+  document.getElementById('daily-answer-mc').value='1';
+  document.getElementById('daily-answer-short').value='';
+  document.getElementById('daily-tag').value='';
+  onDailyTypeChange();
+  openModal('modal-daily');
+}
+
+function onDailyTypeChange(){
+  var t=document.getElementById('daily-type').value;
+  document.getElementById('daily-answer-mc').style.display   = (t==='mc')?'':'none';
+  document.getElementById('daily-answer-short').style.display= (t==='short')?'':'none';
+}
+
+// PDF → 페이지별 이미지(dataURL). 압축(가로 max 1000px, jpeg 0.7)
+function pdfPageToDataURL(pdf, pageNum, cb){
+  pdf.getPage(pageNum).then(function(page){
+    var vp1 = page.getViewport({scale:1});
+    var targetW = 1000;
+    var scale = Math.min(2, targetW / vp1.width);
+    var vp = page.getViewport({scale:scale});
+    var canvas=document.createElement('canvas');
+    canvas.width=Math.round(vp.width); canvas.height=Math.round(vp.height);
+    var ctx=canvas.getContext('2d');
+    ctx.fillStyle='#fff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    page.render({canvasContext:ctx, viewport:vp}).promise.then(function(){
+      cb(null, canvas.toDataURL('image/jpeg', 0.7));
+    }).catch(function(e){ cb(e); });
+  }).catch(function(e){ cb(e); });
+}
+
+function onDailyPdfPick(ev){
+  var file=ev.target.files && ev.target.files[0];
+  if(!file) return;
+  var st=document.getElementById('daily-pdf-status');
+  if(!window.pdfjsLib){ st.textContent='PDF 라이브러리 로딩 실패 — 새로고침 후 다시 시도하세요.'; return; }
+  st.textContent='PDF 변환 중…';
+  var reader=new FileReader();
+  reader.onload=function(){
+    var typed=new Uint8Array(reader.result);
+    pdfjsLib.getDocument({data:typed}).promise.then(function(pdf){
+      if(pdf.numPages<2){ st.textContent='⚠️ 2페이지(문제/풀이) PDF가 필요해요. 현재 '+pdf.numPages+'페이지.'; return; }
+      pdfPageToDataURL(pdf,1,function(e1,q){
+        if(e1){ st.textContent='문제 페이지 변환 실패'; return; }
+        pdfPageToDataURL(pdf,2,function(e2,a){
+          if(e2){ st.textContent='풀이 페이지 변환 실패'; return; }
+          _dailyImgs={q:q,a:a};
+          document.getElementById('daily-prev-q').src=q;
+          document.getElementById('daily-prev-a').src=a;
+          document.getElementById('daily-preview').style.display='flex';
+          var kb=Math.round((q.length+a.length)/1024);
+          st.textContent='✓ 변환 완료 (약 '+kb+'KB)';
+        });
+      });
+    }).catch(function(e){ st.textContent='PDF를 읽을 수 없어요: '+(e&&e.message||e); });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function getDailyProblems(){ return DB.get('daily_problems')||[]; }
+function getDailySubs(){ return DB.getOne('daily_subs')||{}; }  // {probId:{sid:{answer,correct,at}}}
+
+function saveDailyProblem(){
+  if(isAssistant()){ toast('문제 등록은 선생님만 할 수 있어요'); return; }
+  if(!_dailyImgs.q || !_dailyImgs.a){ toast('PDF를 올려주세요'); return; }
+  var date=document.getElementById('daily-in-date').value;
+  if(!date){ toast('날짜를 선택해주세요'); return; }
+  var type=document.getElementById('daily-type').value;
+  var answer = (type==='mc') ? document.getElementById('daily-answer-mc').value
+                             : document.getElementById('daily-answer-short').value.trim();
+  if(type==='short' && !answer){ toast('정답을 입력해주세요'); return; }
+  var probs=getDailyProblems();
+  var prob={
+    id:'dp'+Date.now(),
+    date:date, type:type, answer:answer,
+    tag:document.getElementById('daily-tag').value.trim(),
+    imgQ:_dailyImgs.q, imgA:_dailyImgs.a,
+    createdAt:new Date().toISOString()
+  };
+  probs.push(prob);
+  DB.set('daily_problems', probs);
+  if(window._fbPush) _fbPush();
+  closeModal('modal-daily');
+  toast('오늘의 문제를 등록했어요');
+  document.getElementById('daily-date').value=date;
+  renderDailyStatus();
+}
+
+function deleteDailyProblem(id){
+  if(isAssistant()){ toast('삭제는 선생님만 할 수 있어요'); return; }
+  if(!confirm('이 문제를 삭제할까요? (학생 제출 기록도 함께 사라집니다)')) return;
+  DB.set('daily_problems', getDailyProblems().filter(function(p){ return p.id!==id; }));
+  var subs=getDailySubs(); delete subs[id]; DB.setOne('daily_subs', subs);
+  if(window._fbPush) _fbPush();
+  renderDailyStatus();
+}
+
+// 날짜별 현황: 그날 문제들 + 각 문제에 참여한 학생(정답/오답)
+function renderDailyStatus(){
+  var box=document.getElementById('daily-status'); if(!box) return;
+  var date=document.getElementById('daily-date').value;
+  var sumEl=document.getElementById('daily-date-summary');
+  var probs=getDailyProblems().filter(function(p){ return p.date===date; });
+  var subs=getDailySubs();
+  var students=DB.get('students');
+  function nm(sid){ var s=students.find(function(x){return String(x.id)===String(sid);}); return s?s.name:'(알수없음)'; }
+
+  if(!probs.length){
+    if(sumEl) sumEl.textContent='';
+    box.innerHTML='<div class="card" style="text-align:center;color:var(--muted);padding:40px;">이 날짜에 등록된 문제가 없어요.<br><span style="font-size:12px;">우측 상단 “+ 문제 등록”으로 추가하세요.</span></div>';
+    return;
+  }
+  // 그날 참여 학생 수(중복 제거)
+  var participants={};
+  probs.forEach(function(p){ var s=subs[p.id]||{}; Object.keys(s).forEach(function(sid){ participants[sid]=true; }); });
+  if(sumEl) sumEl.textContent='· 문제 '+probs.length+'개 · 참여 '+Object.keys(participants).length+'명';
+
+  var html='';
+  probs.forEach(function(p, i){
+    var s=subs[p.id]||{};
+    var sids=Object.keys(s);
+    var correctList=sids.filter(function(sid){ return s[sid].correct; });
+    var wrongList=sids.filter(function(sid){ return !s[sid].correct; });
+    var typeLabel = p.type==='mc'?'객관식':'단답형';
+    var ansLabel = p.type==='mc' ? ['','①','②','③','④','⑤'][+p.answer]||p.answer : p.answer;
+    html+='<div class="card" style="margin-bottom:12px;">';
+    html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">';
+    html+='<span style="font-weight:700;">문제 '+(i+1)+'</span>';
+    if(p.tag) html+='<span style="font-size:11px;background:var(--teal);color:#fff;padding:2px 8px;border-radius:100px;">'+esc(p.tag)+'</span>';
+    html+='<span style="font-size:11px;color:var(--muted);">'+typeLabel+' · 정답 '+ansLabel+'</span>';
+    html+='<span style="margin-left:auto;font-size:12px;color:var(--muted);">참여 '+sids.length+'명</span>';
+    html+='<button class="icon-btn teacher-only" onclick="deleteDailyProblem(\''+p.id+'\')" title="삭제">🗑️</button>';
+    html+='</div>';
+    html+='<div style="display:flex;gap:8px;margin-bottom:10px;">';
+    html+='<img src="'+p.imgQ+'" style="width:90px;border:1px solid var(--line);border-radius:6px;cursor:pointer;" onclick="window.open(\'\',\'_blank\').document.write(\'<img src=\\\''+p.imgQ+'\\\' style=width:100%>\')" title="문제 크게보기">';
+    html+='</div>';
+    // 참여 학생
+    html+='<div style="display:flex;flex-direction:column;gap:6px;">';
+    if(!sids.length){
+      html+='<div style="font-size:13px;color:var(--muted);">아직 참여한 학생이 없어요.</div>';
+    } else {
+      html+='<div style="font-size:12px;color:var(--muted);">✅ 정답 '+correctList.length+'명 · ❌ 오답 '+wrongList.length+'명</div>';
+      html+='<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+      correctList.forEach(function(sid){ html+='<span style="font-size:12px;background:var(--green-bg);color:var(--green);padding:4px 10px;border-radius:100px;font-weight:500;">'+esc(nm(sid))+' ✓</span>'; });
+      wrongList.forEach(function(sid){ html+='<span style="font-size:12px;background:var(--red-bg);color:var(--red);padding:4px 10px;border-radius:100px;">'+esc(nm(sid))+' ✕</span>'; });
+      html+='</div>';
+    }
+    html+='</div></div>';
+  });
+  box.innerHTML=html;
 }
 
 function saveExam() {
@@ -2337,6 +2537,7 @@ function showView(id, el) {
   if(id==='students')   renderStudents();
   if(id==='attendance') { renderAttendance(); attCalYear=new Date().getFullYear(); attCalMonth=new Date().getMonth(); renderAttCalendar(); }
   if(id==='tests')      { renderTests(); testCalYear=new Date().getFullYear(); testCalMonth=new Date().getMonth(); renderTestCalendar(); }
+  if(id==='daily')      { var de=document.getElementById('daily-date'); if(de && !de.value) de.value=new Date().toISOString().slice(0,10); renderDailyStatus(); }
   if(id==='papers')     { renderPaperFolders(); }
   if(id==='studylog')   {
     var dEl=document.getElementById('studylog-date');
