@@ -1476,7 +1476,7 @@ window._fbReady = false;
       : Promise.resolve());
     var PREFIX=window._FB_PREFIX;
     // 동기화 대상 키
-    var SYNC_KEYS=["students","attendance","homework","tests","progress","groups","schedules","exams","memo","memo_todo","examscores","planner_events"].map(function(k){return PREFIX+k;});
+    var SYNC_KEYS=["students","attendance","homework","tests","progress","groups","schedules","exams","memo","memo_todo","examscores","planner_events","daily_problems","daily_subs"].map(function(k){return PREFIX+k;});
 
     // 저장 시 서버에도 반영 (단, 동기화 준비 전에는 서버 덮어쓰기 금지)
     var _orig=localStorage.setItem.bind(localStorage);
