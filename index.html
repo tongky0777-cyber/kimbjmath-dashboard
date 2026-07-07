@@ -1771,7 +1771,38 @@ var DB = {
   },
   // 원본(잠금 무시) 접근 — 저장/삭제/반배정 등 데이터 무결성이 필요한 곳 전용
   getRaw: function(k) { try { return JSON.parse(localStorage.getItem('bjm_'+k)||'[]'); } catch(e){ return []; } },
-  set: function(k,v) { localStorage.setItem('bjm_'+k, JSON.stringify(v)); },
+  set: function(k,v) {
+    // ★ 안전장치: 잠금 상태에서 필터로 숨겨진 과외 학생 데이터가 저장 시 유실되지 않도록,
+    //   원본에 있던 과외 학생 레코드를 자동으로 다시 합쳐서 저장한다.
+    if(Array.isArray(v) && !isTutorUnlocked()){
+      var SID_LINKED = { tests:1, attendance:1, homework:1, wronganswers:1, planners:1 };
+      if(k==='students'){
+        // 과외 학생 본인 데이터 보존
+        var rawS; try { rawS = JSON.parse(localStorage.getItem('bjm_students')||'[]'); } catch(e){ rawS=[]; }
+        if(Array.isArray(rawS)){
+          var keepS = rawS.filter(function(s){ return s && s.tutoring; });
+          var haveIds = {}; v.forEach(function(s){ if(s) haveIds[String(s.id)]=1; });
+          keepS.forEach(function(s){ if(!haveIds[String(s.id)]) v.push(s); });
+        }
+      } else if(SID_LINKED[k]){
+        var hidden = tutoringSidSet();
+        if(hidden.size){
+          var raw; try { raw = JSON.parse(localStorage.getItem('bjm_'+k)||'[]'); } catch(e){ raw=[]; }
+          if(Array.isArray(raw)){
+            var haveIds2 = {}; v.forEach(function(r){ if(r && r.id!=null) haveIds2[String(r.id)]=1; });
+            // 원본의 과외 학생 레코드 중, 저장하려는 목록에 없는 것을 다시 합침
+            raw.forEach(function(r){
+              if(r && hidden.has(String(r.sid))){
+                if(r.id!=null && !haveIds2[String(r.id)]) v.push(r);
+                else if(r.id==null) v.push(r);
+              }
+            });
+          }
+        }
+      }
+    }
+    localStorage.setItem('bjm_'+k, JSON.stringify(v));
+  },
   getOne: function(k) { try { return JSON.parse(localStorage.getItem('bjm_'+k)||'null'); } catch(e){ return null; } },
   setOne: function(k,v) { localStorage.setItem('bjm_'+k, JSON.stringify(v)); }
 };
