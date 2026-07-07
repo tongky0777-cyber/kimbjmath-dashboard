@@ -4,25 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>수업 시간표 · 김병진 수학연구소</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --navy:#1a1a2e;--red:#c0392b;--red-bg:#fdf0ef;
-  --ink:#1a1a2e;--ink2:#3a3a5c;--muted:#888;--bg:#f7f7fa;--white:#fff;--line:#e8e8f0;
-  --green:#1a6b3a;--green-bg:#edf7f1;--blue:#1c3c6e;--blue-bg:#eef3fb;
-  --gold:#8a6820;--gold-bg:#fdf8ee;--pink:#7b2d5e;--pink-bg:#fdf0f7;
-  --sans:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --navy:#117d70;--red:#c0392b;--red-bg:#fdf1f0;
+  --ink:#1f2a28;--ink2:#33403d;--muted:#7a8580;--bg:#f3faf7;--white:#fff;--line:#dfe9e4;
+  --green:#1d9e75;--green-bg:#e4f5ef;--blue:#2484c4;--blue-bg:#eef6fc;
+  --gold:#b07d12;--gold-bg:#fffaf0;--pink:#7b2d5e;--pink-bg:#fdf0f7;
+  --teal:#117d70;--teal-bg:#e1f3ef;--bg2:#e6f3ee;
+  --side:#d4f0ea;--side-ink:#1a5a52;--side-ink2:#0c5d54;--side-on:#0e6e63;
+  --sans:'Pretendard','Apple SD Gothic Neo',sans-serif;
 }
 body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;}
-.sb{position:fixed;top:0;left:0;width:180px;height:100vh;background:var(--navy);display:flex;flex-direction:column;z-index:100;}
-.sb-logo{padding:20px 16px 12px;font-size:13px;font-weight:700;color:#fff;opacity:.9;border-bottom:1px solid rgba(255,255,255,.1);}
+.sb{position:fixed;top:0;left:0;width:180px;height:100vh;background:var(--side);display:flex;flex-direction:column;z-index:100;}
+.sb-logo{padding:20px 16px 12px;font-size:13px;font-weight:700;color:var(--side-ink2);border-bottom:1px solid rgba(14,110,99,.16);}
 .sb-menu{flex:1;padding:12px 0;overflow-y:auto;}
-.sb-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:rgba(255,255,255,.65);font-size:13px;cursor:pointer;transition:.15s;text-decoration:none;}
-.sb-item:hover{background:rgba(255,255,255,.08);color:#fff;}
-.sb-item.active{background:rgba(255,255,255,.12);color:#fff;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--side-ink);font-size:13px;cursor:pointer;transition:.15s;text-decoration:none;border-left:3px solid transparent;}
+.sb-item:hover{background:rgba(14,110,99,.10);color:var(--side-ink2);}
+.sb-item.active{background:var(--side-on);color:#fff;border-left-color:var(--side-ink2);font-weight:700;}
 .sb-item .icon{font-size:16px;width:18px;text-align:center;}
-.sb-section{padding:8px 16px 4px;font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.08em;text-transform:uppercase;margin-top:4px;}
-.sb-footer{padding:12px 16px;font-size:11px;color:rgba(255,255,255,.35);border-top:1px solid rgba(255,255,255,.08);}
+.sb-section{padding:8px 16px 4px;font-size:10px;color:rgba(14,110,99,.6);letter-spacing:.08em;text-transform:uppercase;margin-top:4px;font-weight:700;}
+.sb-footer{padding:12px 16px;font-size:11px;color:rgba(14,110,99,.5);border-top:1px solid rgba(14,110,99,.16);}
 .main{margin-left:180px;min-height:100vh;}
 .top-bar{background:var(--white);border-bottom:1px solid var(--line);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
 .top-bar h1{font-size:15px;font-weight:700;}
@@ -40,7 +43,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .tt-time-cell{font-size:11px;color:var(--muted);padding:0 8px;display:flex;align-items:flex-start;padding-top:6px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);height:80px;}
 .tt-cell{border-right:1px solid var(--line);border-bottom:1px solid var(--line);height:80px;position:relative;cursor:pointer;}
 .tt-cell:last-child{border-right:none;}
-.tt-cell:hover{background:#f7f7fa;}
+.tt-cell:hover{background:var(--bg);}
 .tt-class{position:absolute;left:2px;right:2px;border-radius:5px;padding:4px 7px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;justify-content:center;z-index:2;}
 .tt-class:hover{opacity:.85;}
 .tt-class-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -90,7 +93,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
     <a href="index.html?view=schedule" class="sb-item"><span class="icon">🔧</span> 보강·일정</a>
     <a href="index.html?view=memo" class="sb-item"><span class="icon">🗒️</span> 메모</a>
     <a href="index.html?view=exam" class="sb-item"><span class="icon">📅</span> 시험 일정</a>
-    <a href="planner.html" class="sb-item"><span class="icon">🗓️</span> 플래너</a>
+    <a href="index.html?view=planner" class="sb-item"><span class="icon">🗓️</span> 플래너</a>
     <a href="timetable.html" class="sb-item active"><span class="icon">📋</span> 수업 시간표</a>
     <a href="exam_upload.html" class="sb-item"><span class="icon">📄</span> 시험지 관리</a>
   </div>
