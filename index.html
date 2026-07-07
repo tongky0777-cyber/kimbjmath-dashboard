@@ -461,10 +461,10 @@ body.role-assistant .teacher-only{ display:none !important; }
 
     <!-- 학생 목록 -->
     <div class="view" id="view-students">
-      <div class="sec-hd"><h2>👥 학생 목록</h2><div class="actions"><div id="stu-status-filter" style="display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;">
-          <button type="button" data-v="active" onclick="setStuStatusFilter('active')" style="padding:5px 12px;border:none;background:var(--teal);color:#fff;cursor:pointer;font-size:12px;font-weight:700;">재원</button>
-          <button type="button" data-v="moved" onclick="setStuStatusFilter('moved')" style="padding:5px 12px;border:none;border-left:1px solid var(--line);background:var(--white);color:var(--ink2);cursor:pointer;font-size:12px;font-weight:700;">반이동</button>
-          <button type="button" data-v="withdrawn" onclick="setStuStatusFilter('withdrawn')" style="padding:5px 12px;border:none;border-left:1px solid var(--line);background:var(--white);color:var(--ink2);cursor:pointer;font-size:12px;font-weight:700;">퇴원</button>
+      <div class="sec-hd"><h2>👥 학생 목록</h2><div class="actions"><div id="stu-status-filter" style="display:inline-flex;flex:none;border:1px solid var(--line);border-radius:6px;overflow:hidden;align-self:center;">
+          <button type="button" data-v="active" onclick="setStuStatusFilter('active')" style="white-space:nowrap;line-height:1;padding:6px 10px;border:none;background:var(--teal);color:#fff;cursor:pointer;font-size:12px;font-weight:700;">재원</button>
+          <button type="button" data-v="moved" onclick="setStuStatusFilter('moved')" style="white-space:nowrap;line-height:1;padding:6px 10px;border:none;border-left:1px solid var(--line);background:var(--white);color:var(--ink2);cursor:pointer;font-size:12px;font-weight:700;">반이동</button>
+          <button type="button" data-v="withdrawn" onclick="setStuStatusFilter('withdrawn')" style="white-space:nowrap;line-height:1;padding:6px 10px;border:none;border-left:1px solid var(--line);background:var(--white);color:var(--ink2);cursor:pointer;font-size:12px;font-weight:700;">퇴원</button>
         </div>
 <select id="filter-class" onchange="renderStudents()" style="font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:3px;background:var(--white);cursor:pointer;font-family:var(--sans);"><option value="">전체 반</option></select>
         <button class="btn-sm" onclick="openStudentModal()">+ 학생 추가</button>
