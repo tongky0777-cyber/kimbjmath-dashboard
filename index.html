@@ -427,6 +427,7 @@ body.role-assistant .teacher-only{ display:none !important; }
     </div>
     <div class="topbar-right">
       <div class="today-badge" id="today-label"></div>
+      <button class="btn-sm sec" onclick="openWorklogModal()" style="white-space:nowrap;">🕐 출퇴근</button>
       <button class="btn-sm" onclick="openStudentModal()">+ 학생 추가</button>
     </div>
   </div>
@@ -965,6 +966,31 @@ body.role-assistant .teacher-only{ display:none !important; }
 
   </div>
 </div>
+</div>
+
+<!-- 모달: 조교 출퇴근 -->
+<div class="modal-bg" id="modal-worklog">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-hd"><h3>🕐 조교 출퇴근</h3><button class="modal-close" onclick="closeModal('modal-worklog')">×</button></div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:12px;">
+        <input id="wl-name" placeholder="이름" style="width:100px;padding:7px 9px;border:1px solid var(--line);border-radius:4px;font-size:13px;" onchange="renderWorklog()">
+        <button class="btn-sm" onclick="wlCheckIn()" style="white-space:nowrap;">▶ 출근 체크</button>
+        <button class="btn-sm sec" onclick="wlCheckOut()" style="white-space:nowrap;">■ 퇴근 체크</button>
+        <span id="wl-today-status" style="font-size:12px;color:var(--muted);"></span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 6px;flex-wrap:wrap;gap:6px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="btn-sm sec" onclick="wlShiftMonth(-1)" style="padding:3px 9px;">◀</button>
+          <span id="wl-month-label" style="font-size:14px;font-weight:700;"></span>
+          <button class="btn-sm sec" onclick="wlShiftMonth(1)" style="padding:3px 9px;">▶</button>
+        </div>
+        <div id="wl-totals" style="font-size:12px;color:var(--teal);font-weight:700;"></div>
+      </div>
+      <div id="wl-table"></div>
+      <div class="teacher-only" style="font-size:11px;color:var(--muted);margin-top:8px;">시간을 클릭하면 수정할 수 있어요 (체크를 깜빡한 날 보정)</div>
+    </div>
+  </div>
 </div>
 
 <!-- 모달: 학생 추가 -->
@@ -1506,7 +1532,7 @@ window._fbReady = false;
       : Promise.resolve());
     var PREFIX=window._FB_PREFIX;
     // 동기화 대상 키
-    var SYNC_KEYS=["students","attendance","homework","tests","progress","groups","schedules","exams","memo","memo_todo","examscores","planner_events","daily_problems","daily_subs"].map(function(k){return PREFIX+k;});
+    var SYNC_KEYS=["students","attendance","homework","tests","progress","groups","schedules","exams","memo","memo_todo","examscores","planner_events","daily_problems","daily_subs","worklog"].map(function(k){return PREFIX+k;});
 
     // 저장 시 서버에도 반영 (단, 동기화 준비 전에는 서버 덮어쓰기 금지)
     var _orig=localStorage.setItem.bind(localStorage);
@@ -2324,7 +2350,7 @@ function openDailyModal(){
   document.getElementById('daily-pdf').value='';
   document.getElementById('daily-pdf-status').textContent='';
   document.getElementById('daily-preview').style.display='none';
-  document.getElementById('daily-in-date').value = document.getElementById('daily-date').value || new Date().toISOString().slice(0,10);
+  document.getElementById('daily-in-date').value = _dailySelDate || new Date().toISOString().slice(0,10);
   document.getElementById('daily-type').value='mc';
   document.getElementById('daily-answer-mc').value='1';
   document.getElementById('daily-answer-short').value='';
@@ -3344,6 +3370,118 @@ function moveStudent(id){
     renderStudents(); renderDashboard(); updateGroupFilter();
     toast(s.name+' 학생이 반이동 처리되었습니다');
   }
+}
+
+// ===== 조교 출퇴근 (worklog) =====
+// 기록: { id, name, date:'YYYY-MM-DD', in:'HH:MM', out:'HH:MM' }
+var _wlMonth = new Date().toISOString().slice(0,7);
+function openWorklogModal(){
+  var inp = document.getElementById('wl-name');
+  if(inp) inp.value = localStorage.getItem('bjm_assist_name') || '';
+  _wlMonth = new Date().toISOString().slice(0,7);
+  renderWorklog();
+  openModal('modal-worklog');
+}
+function _wlToday(){ return new Date().toISOString().slice(0,10); }
+function _wlNow(){ var d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function _wlName(){
+  var inp=document.getElementById('wl-name');
+  var nm=(inp&&inp.value||'').trim();
+  if(!nm){ toast('이름을 먼저 입력해주세요'); return null; }
+  localStorage.setItem('bjm_assist_name', nm);
+  return nm;
+}
+function _wlMin(t){ if(!t) return null; var p=t.split(':'); return (+p[0])*60+(+p[1]); }
+function _wlDurMin(a,b){ var m1=_wlMin(a),m2=_wlMin(b); if(m1==null||m2==null) return 0; var d=m2-m1; if(d<0) d+=1440; return d; }
+function _wlDur(a,b){ var d=_wlDurMin(a,b); return Math.floor(d/60)+'시간 '+(d%60)+'분'; }
+function wlCheckIn(){
+  var nm=_wlName(); if(!nm) return;
+  var logs=DB.get('worklog');
+  var today=_wlToday(), now=_wlNow();
+  var rec=logs.find(function(r){ return r.date===today && r.name===nm; });
+  if(rec && rec.in){
+    if(!confirm('오늘 이미 '+rec.in+'에 출근 체크했어요. '+now+'로 바꿀까요?')) return;
+    rec.in=now;
+  } else if(rec){ rec.in=now; }
+  else { logs.push({ id:Date.now().toString(), name:nm, date:today, in:now, out:'' }); }
+  DB.set('worklog', logs);
+  renderWorklog();
+  toast(nm+' · '+now+' 출근 체크 완료');
+}
+function wlCheckOut(){
+  var nm=_wlName(); if(!nm) return;
+  var logs=DB.get('worklog');
+  var today=_wlToday(), now=_wlNow();
+  var rec=logs.find(function(r){ return r.date===today && r.name===nm; });
+  if(!rec || !rec.in){ toast('먼저 출근 체크를 해주세요'); return; }
+  if(rec.out && !confirm('오늘 이미 '+rec.out+'에 퇴근 체크했어요. '+now+'로 바꿀까요?')) return;
+  rec.out=now;
+  DB.set('worklog', logs);
+  renderWorklog();
+  toast(nm+' · '+now+' 퇴근 체크 완료 (근무 '+_wlDur(rec.in,rec.out)+')');
+}
+function wlShiftMonth(d){
+  var p=_wlMonth.split('-');
+  var dt=new Date(+p[0], (+p[1]-1)+d, 1);
+  _wlMonth = dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0');
+  renderWorklog();
+}
+function wlEditTime(id, field){
+  if(isAssistant()){ toast('시간 수정은 선생님만 할 수 있어요'); return; }
+  var logs=DB.get('worklog');
+  var rec=logs.find(function(r){ return r.id===id; });
+  if(!rec) return;
+  var v=prompt((field==='in'?'출근':'퇴근')+' 시각 (HH:MM, 비우면 삭제)', rec[field]||'');
+  if(v===null) return;
+  v=v.trim();
+  if(v && !/^([01]?\d|2[0-3]):[0-5]\d$/.test(v)){ toast('HH:MM 형식으로 입력해주세요'); return; }
+  rec[field]=v;
+  if(!rec.in && !rec.out){ logs=logs.filter(function(r){ return r.id!==id; }); }
+  DB.set('worklog', logs);
+  renderWorklog();
+}
+function renderWorklog(){
+  var lbl=document.getElementById('wl-month-label');
+  if(lbl){ var mp=_wlMonth.split('-'); lbl.textContent=mp[0]+'년 '+(+mp[1])+'월'; }
+  var all=DB.get('worklog');
+  var logs=all.filter(function(r){ return (r.date||'').slice(0,7)===_wlMonth; });
+  logs.sort(function(a,b){ return b.date.localeCompare(a.date) || (a.name||'').localeCompare(b.name||''); });
+  var today=_wlToday();
+  var DOW=['일','월','화','수','목','금','토'];
+  // 이름별 월 합계 (출·퇴근 둘 다 있는 날만)
+  var sum={};
+  logs.forEach(function(r){ if(r.in&&r.out){ sum[r.name]=(sum[r.name]||0)+_wlDurMin(r.in,r.out); } });
+  var totEl=document.getElementById('wl-totals');
+  if(totEl){
+    var parts=Object.keys(sum).map(function(n){ var m=sum[n]; return n+' '+Math.floor(m/60)+'시간 '+(m%60)+'분'; });
+    totEl.textContent = parts.length ? '합계 — '+parts.join(' · ') : '이 달 기록 없음';
+  }
+  // 오늘 상태 (이름칸 기준)
+  var stEl=document.getElementById('wl-today-status');
+  if(stEl){
+    var nm=((document.getElementById('wl-name')||{}).value||'').trim();
+    var t=all.find(function(r){ return r.date===today && r.name===nm; });
+    stEl.textContent = !nm ? '' : (!t||!t.in) ? '오늘 아직 출근 전' : t.out ? '오늘 '+t.in+' 출근 · '+t.out+' 퇴근 ('+_wlDur(t.in,t.out)+')' : '오늘 '+t.in+' 출근 · 근무 중';
+  }
+  var box=document.getElementById('wl-table');
+  if(!box) return;
+  if(!logs.length){
+    box.innerHTML='<div style="text-align:center;color:var(--muted);padding:24px;border:1px solid var(--line);border-radius:6px;background:var(--white);">이 달의 출퇴근 기록이 없어요</div>';
+    return;
+  }
+  var canEdit=!isAssistant();
+  var rows=logs.map(function(r){
+    var d=new Date(r.date+'T00:00:00');
+    var dur = (r.in&&r.out) ? _wlDur(r.in,r.out)
+            : (r.date===today && r.in) ? '<span style="color:var(--muted);font-weight:400;">근무 중</span>'
+            : '<span style="color:var(--red);font-weight:400;">미체크</span>';
+    var mkCell=function(field){
+      var t=r[field]||'—';
+      return canEdit ? '<span style="cursor:pointer;border-bottom:1px dotted var(--muted);" onclick="wlEditTime(\''+r.id+'\',\''+field+'\')">'+t+'</span>' : t;
+    };
+    return '<tr style="border-top:1px solid var(--line);"><td style="padding:7px 8px;">'+r.date.slice(5)+' ('+DOW[d.getDay()]+')</td><td>'+(r.name||'—')+'</td><td>'+mkCell('in')+'</td><td>'+mkCell('out')+'</td><td style="text-align:right;padding-right:8px;font-weight:700;">'+dur+'</td></tr>';
+  }).join('');
+  box.innerHTML='<table style="width:100%;font-size:12px;border-collapse:collapse;background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden;"><tr style="color:var(--muted);background:var(--bg2);"><td style="padding:6px 8px;">날짜</td><td>이름</td><td>출근</td><td>퇴근</td><td style="text-align:right;padding-right:8px;">근무시간</td></tr>'+rows+'</table>';
 }
 
 function editStudent(id) {
