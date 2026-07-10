@@ -405,7 +405,7 @@ body.role-assistant .teacher-only{ display:none !important; }
     <div class="sb-item" onclick="showView('planner',this)"><span class="sb-icon">🗓️</span> 플래너</div>
 <a href="timetable.html" class="sb-item"><span class="sb-icon">📋</span> 수업 시간표</a>
 <a href="exam_upload.html" class="sb-item" style="display:none;"><span class="sb-icon">📄</span> 시험지 관리</a>
-    <div class="sb-item teacher-only" id="tutor-lock-btn" onclick="toggleTutorLock()" style="opacity:0.75;"><span class="sb-icon">🔒</span> 과외 학생 (잠김)</div>
+    <div class="sb-item teacher-only" id="tutor-lock-btn" onclick="toggleTutorLock()" style="opacity:0.75;"><span class="sb-icon">🔒</span> 개인 업무 (잠김)</div>
   </nav>
   <div class="sb-footer">
     <div style="margin-bottom:8px;">🔄 여러 기기에서 동기화됩니다.</div>
@@ -444,9 +444,9 @@ body.role-assistant .teacher-only{ display:none !important; }
         <div class="stat-card"><div class="stat-card-top"><div class="stat-label">이번 주 출석률</div><div class="stat-icon">✅</div></div><div class="stat-num" id="dash-att">—</div><div class="stat-sub">이번 주 기준</div></div>
         <div class="stat-card"><div class="stat-card-top"><div class="stat-label">숙제 미제출</div><div class="stat-icon">📚</div></div><div class="stat-num" id="dash-hw">0</div><div class="stat-sub">명 미제출</div></div>
         <div class="stat-card"><div class="stat-card-top"><div class="stat-label">이번 달 보강</div><div class="stat-icon">📅</div></div><div class="stat-num" id="dash-sch">0</div><div class="stat-sub">건 예정</div></div>
-        <div class="stat-card"><div class="stat-card-top"><div class="stat-label">이번 달 신규</div><div class="stat-icon">🆕</div></div><div class="stat-num" id="dash-new">0</div><div class="stat-sub">명 입학</div></div>
+        <div class="stat-card" onclick="showMonthlyStudents('new')" style="cursor:pointer;" title="눌러서 명단 보기"><div class="stat-card-top"><div class="stat-label">이번 달 신규</div><div class="stat-icon">🆕</div></div><div class="stat-num" id="dash-new">0</div><div class="stat-sub">명 입학 · 눌러서 명단</div></div>
         <div class="stat-card"><div class="stat-card-top"><div class="stat-label">이번 달 반이동</div><div class="stat-icon">🔄</div></div><div class="stat-num" id="dash-moved" style="font-size:20px;">—</div><div class="stat-sub">들어옴 · 나감</div></div>
-        <div class="stat-card"><div class="stat-card-top"><div class="stat-label">이번 달 퇴원</div><div class="stat-icon">👋</div></div><div class="stat-num" id="dash-withdrawn">0</div><div class="stat-sub">명 퇴원</div></div>
+        <div class="stat-card" onclick="showMonthlyStudents('withdrawn')" style="cursor:pointer;" title="눌러서 명단 보기"><div class="stat-card-top"><div class="stat-label">이번 달 퇴원</div><div class="stat-icon">👋</div></div><div class="stat-num" id="dash-withdrawn">0</div><div class="stat-sub">명 퇴원 · 눌러서 명단</div></div>
       </div>
       <div class="sec-hd"><h2>📅 다가오는 일정</h2><div class="actions"><button class="btn-sm sec" onclick="showView('schedule',null)">전체 보기</button><button class="btn-sm" onclick="openScheduleModal()">+ 일정 추가</button></div></div>
       <div class="tbl-wrap" style="margin-bottom:24px;">
@@ -966,6 +966,14 @@ body.role-assistant .teacher-only{ display:none !important; }
 
   </div>
 </div>
+</div>
+
+<!-- 모달: 이번 달 신규/퇴원 명단 -->
+<div class="modal-bg" id="modal-statlist">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-hd"><h3 id="statlist-title">명단</h3><button class="modal-close" onclick="closeModal('modal-statlist')">×</button></div>
+    <div class="modal-body" id="statlist-body" style="max-height:60vh;overflow-y:auto;gap:0;"></div>
+  </div>
 </div>
 
 <!-- 모달: 조교 출퇴근 -->
@@ -1899,7 +1907,7 @@ function refreshTutorUI(){
   var unlocked=isTutorUnlocked();
   var lockBtn=document.getElementById('tutor-lock-btn');
   if(lockBtn){
-    lockBtn.innerHTML='<span class="sb-icon">'+(unlocked?'🔓':'🔒')+'</span> 과외 학생 '+(unlocked?'(표시 중)':'(잠김)');
+    lockBtn.innerHTML='<span class="sb-icon">'+(unlocked?'🔓':'🔒')+'</span> 개인 업무 '+(unlocked?'(표시 중)':'(잠김)');
     lockBtn.style.opacity=unlocked?'1':'0.75';
   }
   // 학생 등록창의 과외 체크박스 표시/숨김
@@ -3324,6 +3332,37 @@ function withdrawStudent(id) {
     renderDashboard();
     toast(s.name+' 학생이 퇴원 처리되었습니다');
   }
+}
+
+// 이번 달 신규/퇴원 명단 모달
+function showMonthlyStudents(kind){
+  var thisMonth=new Date().toISOString().slice(0,7);
+  var _m=function(d){ return (d||'').replace(/\./g,'-').replace(/ /g,'').slice(0,7); };
+  var students=DB.get('students');
+  var list, title;
+  if(kind==='new'){
+    title='🆕 이번 달 신규 입학';
+    list=students.filter(function(s){ return s.joinType!=='transfer' && s.createdAt && _m(s.createdAt)===thisMonth; })
+      .map(function(s){ return {s:s, d:s.createdAt}; });
+  } else {
+    title='👋 이번 달 퇴원';
+    list=students.filter(function(s){ return s.withdrawnAt && s.withdrawnAt.slice(0,7)===thisMonth; })
+      .map(function(s){ return {s:s, d:s.withdrawnAt}; });
+  }
+  document.getElementById('statlist-title').textContent=title+' ('+list.length+'명)';
+  var body=document.getElementById('statlist-body');
+  if(!list.length){
+    body.innerHTML='<div style="text-align:center;color:var(--muted);padding:20px;">이번 달 해당 학생이 없어요</div>';
+  } else {
+    list.sort(function(a,b){ return (a.d||'').localeCompare(b.d||''); });
+    body.innerHTML=list.map(function(o,i){
+      var border=(i<list.length-1)?'border-bottom:1px solid var(--line);':'';
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 4px;'+border+'font-size:13px;">'
+        +'<span style="font-weight:700;">'+esc2(o.s.name)+' <span style="font-weight:400;color:var(--muted);">('+(o.s.grade||'-')+')</span></span>'
+        +'<span style="color:var(--muted);font-size:12px;">'+(o.d||'')+'</span></div>';
+    }).join('');
+  }
+  openModal('modal-statlist');
 }
 
 // 재원생 판정 — 퇴원·반이동 학생 제외
@@ -9338,10 +9377,13 @@ function exportAttendanceExcel(){
   var STATUS_TEXT = { O:'출석', X:'결석', T:'지각', B:'보강', E:'공결' };
   var STATUS_MARK = { O:'O', X:'X', T:'지', B:'보', E:'공' }; // 칸 안 표기(짧게)
 
-  var students = DB.get('students').filter(isActiveStudent);
-  if(!students.length){ toast('등록된 학생이 없어요'); return; }
-
   var recs = DB.get('attendance');
+  // 이 달에 출결 기록이 있는 학생 (퇴원·반이동 학생도 그 달에 다녔으면 포함)
+  var _monthKey = year+'-'+String(month+1).padStart(2,'0');
+  var _hasRec = {};
+  recs.forEach(function(r){ if(r.date && r.date.slice(0,7)===_monthKey) _hasRec[r.sid]=true; });
+  var students = DB.get('students').filter(function(s){ return isActiveStudent(s) || _hasRec[s.id]; });
+  if(!students.length){ toast('등록된 학생이 없어요'); return; }
   // sid -> { 'YYYY-MM-DD': status }
   var byStudent = {};
   recs.forEach(function(r){
@@ -9388,7 +9430,8 @@ function exportAttendanceExcel(){
 
     // 학생별 행
     list.forEach(function(s){
-      var row = [s.name||''];
+      var mark = s.status==='withdrawn' ? ' (퇴원)' : s.status==='moved' ? ' (반이동)' : '';
+      var row = [(s.name||'')+mark];
       var cnt = { O:0, X:0, T:0, B:0, E:0 };
       for(var d=1; d<=daysInMonth; d++){
         var ds = year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
