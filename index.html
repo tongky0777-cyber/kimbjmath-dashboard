@@ -749,7 +749,7 @@ body.role-assistant .teacher-only{ display:none !important; }
     <div class="view" id="view-report">
       <!-- 카드 그리드 화면 -->
       <div id="report-grid-screen">
-        <div class="sec-hd"><h2>📄 학생 리포트</h2></div>
+        <div class="sec-hd"><h2>📄 학생 리포트</h2><div class="actions"><button class="btn-sm sec" onclick="openSentReports()">📤 보낸 리포트</button></div></div>
         <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">학생 카드를 누르면 학부모 전달용 월간 리포트가 열립니다. 기간을 정해 테스트·출석·과제 현황을 정리할 수 있어요.</div>
         <div id="report-card-grid"></div>
       </div>
@@ -973,6 +973,14 @@ body.role-assistant .teacher-only{ display:none !important; }
   <div class="modal" style="max-width:400px;">
     <div class="modal-hd"><h3 id="statlist-title">명단</h3><button class="modal-close" onclick="closeModal('modal-statlist')">×</button></div>
     <div class="modal-body" id="statlist-body" style="max-height:60vh;overflow-y:auto;gap:0;"></div>
+  </div>
+</div>
+
+<!-- 모달: 보낸 리포트 보관함 -->
+<div class="modal-bg" id="modal-sentreports">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-hd"><h3>📤 보낸 리포트</h3><button class="modal-close" onclick="closeModal('modal-sentreports')">×</button></div>
+    <div class="modal-body" id="sentreports-body" style="max-height:65vh;overflow-y:auto;"></div>
   </div>
 </div>
 
@@ -9680,7 +9688,9 @@ function renderStudentReport(sid){
   html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">'
     + '<div><div style="font-size:18px;font-weight:700;color:var(--ink);">'+esc2(s.name)+' 학습 리포트</div>'
     + '<div style="font-size:13px;color:var(--muted);margin-top:2px;">'+esc2(s.grade||'')+(s.school?' · '+esc2(s.school):'')+' · '+r.period.from+' ~ '+r.period.to+'</div></div>'
-    + '<div style="display:flex;gap:8px;align-items:center;">'
+    + '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">'
+    + '<label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;color:var(--ink2);"><input type="checkbox" id="rp-export-peer" style="width:auto;"> 반 평균 포함</label>'
+    + '<button class="btn-sm" onclick="exportParentReport(\''+sid+'\')">📤 학부모용 내보내기</button>'
     + '<button class="btn-sm sec" onclick="closeStudentReport()">← 목록</button>'
     + '</div></div>';
 
@@ -9746,17 +9756,18 @@ function renderStudentReport(sid){
   }
   html += '</div>';
 
-  // 중단원 정답률 (자리 표시 — 2단계)
-  html += '<div style="background:var(--white);border:1px dashed var(--line);border-radius:10px;padding:16px 18px;margin-bottom:12px;opacity:.6;">'
-    + '<div style="font-size:14px;font-weight:700;margin-bottom:6px;">단원별 강·약점 <span style="font-size:11px;color:var(--muted);font-weight:400;">(중단원 기준)</span></div>'
-    + '<div style="font-size:12px;color:var(--muted);">다음 단계에서 추가됩니다 (유형 집계가 있는 학생만 표시).</div></div>';
+  // 중단원 정답률 (자동채점 숙제 기반, 비동기 로드)
+  html += '<div style="background:var(--white);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:12px;">'
+    + '<div style="font-size:14px;font-weight:700;margin-bottom:10px;">단원별 강·약점 <span style="font-size:11px;color:var(--muted);font-weight:400;">(오답 수집 과제 기준)</span></div>'
+    + '<div id="rp-cats" style="font-size:13px;color:var(--muted);">집계 중…</div></div>';
 
-  // AI 의견 (자리 표시 — 3단계)
-  html += '<div style="background:var(--teal-bg);border:1px dashed var(--teal);border-radius:10px;padding:16px 18px;opacity:.7;">'
-    + '<div style="font-size:14px;font-weight:700;color:var(--teal);margin-bottom:6px;">✨ 선생님 종합 의견 (AI 초안)</div>'
-    + '<div style="font-size:12px;color:var(--teal);">다음 단계에서 추가됩니다.</div></div>';
+  // 선생님 종합 의견 — 데이터 기반 초안 자동 생성, 자유롭게 수정 후 내보내기에 포함
+  html += '<div style="background:var(--teal-bg);border:1px solid var(--teal);border-radius:10px;padding:16px 18px;">'
+    + '<div style="font-size:14px;font-weight:700;color:var(--teal);margin-bottom:8px;">✨ 선생님 종합 의견 <span style="font-size:11px;font-weight:400;">(초안이 자동으로 채워져요 — 수정한 내용이 학부모용에 들어갑니다)</span></div>'
+    + '<textarea id="rp-opinion" rows="4" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:13px;font-family:var(--sans);line-height:1.7;resize:vertical;box-sizing:border-box;">초안 만드는 중…</textarea></div>';
 
   screen.innerHTML = html;
+  _renderReportCats(sid, r);
 
   // 차트 렌더
   if(r.tests.length && window.Chart){
@@ -9776,6 +9787,267 @@ function renderStudentReport(sid){
       options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{min:0,max:100,ticks:{callback:function(v){return v+'점';}}}, x:{ticks:{font:{size:10}}}} }
     });
   }
+}
+
+
+// ===== 리포트: 중단원 정답률 + 의견 초안 (비동기) =====
+var _rpCatsCache = null;   // 내보내기에서 재사용 {sid, list:[{cat,name,total,wrong,rate}]}
+function _renderReportCats(sid, r){
+  _rpCatsCache = null;
+  var box = document.getElementById('rp-cats');
+  var op  = document.getElementById('rp-opinion');
+  // 기간 내 이 학생의 오답 수집(자동채점) 숙제
+  var from = _reportPeriod.from, to = _reportPeriod.to;
+  var hws = DB.get('homework').filter(function(h){
+    if(h.sid!==sid || !h.unitKey || h.qStart==null || h.qEnd==null) return false;
+    if(!AIO_BOOKS[h.book]) return false;
+    var d = h.due || h.date || '';
+    return d >= from && d <= to;
+  });
+  var finishOpinion = function(weakNames){
+    if(op && (op.value==='초안 만드는 중…' || !op.value)) op.value = _draftOpinion(r, weakNames||[]);
+  };
+  if(!hws.length){
+    if(box) box.innerHTML = '<span style="color:var(--muted);">이 기간에 오답 수집 과제가 없어 단원별 집계를 만들 수 없어요.</span>';
+    finishOpinion([]);
+    return;
+  }
+  var books = {};
+  hws.forEach(function(h){ books[h.book]=1; });
+  Promise.resolve(window._authReady).then(function(){
+    return Promise.all([
+      Promise.all(Object.keys(books).map(function(b){
+        return TypeMap.loadTypeMap(b).then(function(tm){ return [b,tm]; });
+      })),
+      firebase.database().ref('wronganswers').once('value')
+    ]);
+  }).then(function(arr){
+    var tms = {};
+    arr[0].forEach(function(pair){ tms[pair[0]]=pair[1]; });
+    var all = arr[1].val()||{};
+    var stat = {};   // cat → {name,total,wrong}
+    var catNames = (window.TypeMap && TypeMap.CAT_NAMES) || {};
+    var submitted = 0;
+    hws.forEach(function(h){
+      var sub = all[h.id] && all[h.id][sid];
+      if(!sub) return;
+      submitted++;
+      var wrongSet = {};
+      (sub.wrong||[]).forEach(function(q){ wrongSet[wrongBaseNo(q)] = true; });
+      var tm = tms[h.book];
+      if(!tm) return;
+      for(var n=h.qStart; n<=h.qEnd; n++){
+        var hit = TypeMap.lookup(tm, h.unitKey, n);
+        if(!hit || !hit.cat) continue;
+        if(!stat[hit.cat]) stat[hit.cat] = { total:0, wrong:0, name: catNames[hit.cat] || hit.cat };
+        stat[hit.cat].total++;
+        if(wrongSet[n]) stat[hit.cat].wrong++;
+      }
+    });
+    var list = Object.keys(stat).map(function(c){
+      var o = stat[c];
+      return { cat:c, name:o.name, total:o.total, wrong:o.wrong, rate: Math.round((o.total-o.wrong)/o.total*100) };
+    }).filter(function(o){ return o.total >= 3; })      // 3문항 미만은 통계 의미 없음
+      .sort(function(a,b){ return a.rate - b.rate; });   // 약한 단원부터
+    if(!list.length){
+      if(box) box.innerHTML = '<span style="color:var(--muted);">'+(submitted? '집계할 만큼 풀이가 모이지 않았어요 (단원당 3문항 이상 필요).' : '이 기간 과제 제출 기록이 아직 없어요.')+'</span>';
+      finishOpinion([]);
+      return;
+    }
+    _rpCatsCache = { sid:sid, list:list };
+    var rows = list.map(function(o){
+      var color = o.rate>=90?'var(--green)':o.rate>=70?'var(--gold)':'var(--red)';
+      return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">'
+        + '<div style="width:150px;font-size:12px;font-weight:700;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+esc2(o.name)+'">'+esc2(o.name)+'</div>'
+        + '<div style="flex:1;height:10px;background:var(--bg2);border-radius:5px;overflow:hidden;"><div style="width:'+o.rate+'%;height:100%;background:'+color+';"></div></div>'
+        + '<div style="width:90px;font-size:12px;text-align:right;color:'+color+';font-weight:700;">'+o.rate+'% <span style="color:var(--muted);font-weight:400;">('+(o.total-o.wrong)+'/'+o.total+')</span></div>'
+        + '</div>';
+    }).join('');
+    if(box) box.innerHTML = rows;
+    var weak = list.filter(function(o){ return o.rate < 70; }).slice(0,2).map(function(o){ return o.name; });
+    finishOpinion(weak);
+  }).catch(function(e){
+    if(box) box.innerHTML = '<span style="color:var(--red);">집계 실패: '+esc2(e && e.message || e)+'</span>';
+    finishOpinion([]);
+  });
+}
+
+// 데이터 기반 종합 의견 초안 (학부모가 읽는 글 — 쉬운 말)
+function _draftOpinion(r, weakNames){
+  var s = [];
+  if(r.tests.length >= 2){
+    var first = r.tests[0].score, last = r.tests[r.tests.length-1].score;
+    if(last > first + 3) s.push('이번 달 테스트 점수가 좋아지고 있습니다.');
+    else if(last < first - 3) s.push('최근 테스트 점수가 조금 내려가서 함께 살펴보고 있습니다.');
+    else s.push('테스트 점수를 꾸준히 잘 유지하고 있습니다.');
+  } else if(r.tests.length === 1){
+    s.push('이번 기간에는 테스트를 1회 진행했습니다.');
+  }
+  if(r.attRate != null){
+    if(r.attRate >= 95) s.push('수업 참여가 아주 성실합니다.');
+    else if(r.attRate >= 85) s.push('수업에 잘 참여하고 있습니다.');
+    else s.push('출석을 조금 더 챙기면 좋겠습니다.');
+  }
+  if(r.hwStat.total){
+    if(r.submitRate >= 90) s.push('숙제도 빠짐없이 잘 해 오고 있습니다.');
+    else if(r.submitRate >= 70) s.push('숙제 제출이 대체로 잘 되고 있습니다.');
+    else s.push('숙제를 조금 더 챙겨 주시면 좋겠습니다.');
+  }
+  if(weakNames && weakNames.length){
+    s.push('다음 달에는 "'+weakNames.join(', ')+'" 부분을 함께 더 연습하려고 합니다.');
+  }
+  return s.join(' ');
+}
+
+// ===== 학부모용 HTML 내보내기 + 보관 =====
+function _svgScoreChart(tests){
+  if(!tests.length) return '';
+  var W=560, H=180, PL=34, PR=14, PT=14, PB=30;
+  var n=tests.length;
+  var x=function(i){ return n===1 ? W/2 : PL + (W-PL-PR) * i/(n-1); };
+  var y=function(v){ return PT + (H-PT-PB) * (1 - v/100); };
+  var pts=tests.map(function(t,i){ return x(i)+','+y(t.score); }).join(' ');
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;">';
+  [0,25,50,75,100].forEach(function(v){
+    svg+='<line x1="'+PL+'" y1="'+y(v)+'" x2="'+(W-PR)+'" y2="'+y(v)+'" stroke="#eee4da" stroke-width="1"/>'
+       +'<text x="'+(PL-6)+'" y="'+(y(v)+4)+'" font-size="10" fill="#b3a89b" text-anchor="end">'+v+'</text>';
+  });
+  if(n>1) svg+='<polyline points="'+pts+'" fill="none" stroke="#c3b0e8" stroke-width="3" stroke-linejoin="round"/>';
+  tests.forEach(function(t,i){
+    var c=t.score>=90?'#8fd9c8':t.score>=70?'#f5cfa0':'#f0a8b8';
+    svg+='<circle cx="'+x(i)+'" cy="'+y(t.score)+'" r="5" fill="'+c+'"/>'
+       +'<text x="'+x(i)+'" y="'+(y(t.score)-10)+'" font-size="10" fill="#8a7f72" text-anchor="middle">'+t.score+'</text>'
+       +'<text x="'+x(i)+'" y="'+(H-10)+'" font-size="9" fill="#b3a89b" text-anchor="middle">'+esc2(t.date.slice(5))+'</text>';
+  });
+  return svg+'</svg>';
+}
+
+function exportParentReport(sid){
+  var r = _computeReport(sid, _reportPeriod);
+  if(!r){ toast('리포트 데이터를 만들 수 없어요'); return; }
+  var s = r.student;
+  var includePeer = !!(document.getElementById('rp-export-peer') && document.getElementById('rp-export-peer').checked);
+  var peer = includePeer ? _peerAverage(sid, _reportPeriod) : null;
+  var opinion = (document.getElementById('rp-opinion') && document.getElementById('rp-opinion').value.trim()) || '';
+  var cats = (_rpCatsCache && _rpCatsCache.sid===sid) ? _rpCatsCache.list : [];
+
+  var card=function(title, inner){
+    return '<div style="background:#fff;border-radius:16px;padding:20px 22px;margin-bottom:14px;box-shadow:0 2px 10px rgba(160,140,120,.08);">'
+      +'<div style="font-size:15px;font-weight:700;color:#6d5f8e;margin-bottom:12px;">'+title+'</div>'+inner+'</div>';
+  };
+  var body='';
+  // 요약
+  var sum=function(label,val,color){ return '<div style="flex:1;min-width:100px;text-align:center;background:#faf6ff;border-radius:12px;padding:14px 8px;"><div style="font-size:12px;color:#9a8fb0;">'+label+'</div><div style="font-size:22px;font-weight:700;color:'+color+';margin-top:4px;">'+val+'</div></div>'; };
+  body += card('이번 기간 한눈에',
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;">'
+    + sum('출석', r.attRate!=null? r.attRate+'%':'—', '#5fb8a5')
+    + sum('테스트 평균', r.avg!=null? r.avg+'점':'—', r.avg==null?'#b3a89b':(r.avg>=90?'#5fb8a5':r.avg>=70?'#d8a04c':'#d8798f'))
+    + sum('테스트 횟수', r.tests.length+'회', '#7f9fd8')
+    + '</div>');
+  // 점수 추이
+  if(r.tests.length){
+    var peerLine = peer && r.avg!=null ? '<div style="font-size:12px;color:#9a8fb0;margin-top:8px;">같은 반 친구들 평균은 '+peer.peerAvg+'점이에요.</div>' : '';
+    body += card('테스트 점수', _svgScoreChart(r.tests) + peerLine);
+  }
+  // 출석 + 과제
+  body += card('출석', '<div style="font-size:14px;color:#6b6156;line-height:1.9;">나온 날 '+r.attCnt.O+'번 · 늦은 날 '+r.attCnt.T+'번 · 빠진 날 '+r.attCnt.X+'번 · 보충 수업 '+r.attCnt.B+'번</div>');
+  if(r.hwStat.total){
+    body += card('숙제', '<div style="font-size:14px;color:#6b6156;line-height:1.9;">내 준 숙제 '+r.hwStat.total+'개 중 '+r.hwStat.submitted+'개 제출 ('+r.submitRate+'%)'
+      + (r.hwStat.ontime? ' · 기한 안에 '+r.hwStat.ontime+'개':'')
+      + (r.hwStat.late? ' · 기한 지나서 '+r.hwStat.late+'개':'')
+      + '</div>'
+      + '<div style="margin-top:10px;height:10px;background:#f3ede4;border-radius:5px;overflow:hidden;"><div style="width:'+r.submitRate+'%;height:100%;background:'+(r.submitRate>=90?'#8fd9c8':r.submitRate>=70?'#f5cfa0':'#f0a8b8')+';"></div></div>');
+  }
+  // 단원별
+  if(cats.length){
+    var catRows = cats.map(function(o){
+      var c=o.rate>=90?'#5fb8a5':o.rate>=70?'#d8a04c':'#d8798f';
+      return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:9px;">'
+        +'<div style="width:140px;font-size:13px;color:#6b6156;font-weight:700;">'+esc2(o.name)+'</div>'
+        +'<div style="flex:1;height:10px;background:#f3ede4;border-radius:5px;overflow:hidden;"><div style="width:'+o.rate+'%;height:100%;background:'+c+';"></div></div>'
+        +'<div style="width:50px;text-align:right;font-size:13px;font-weight:700;color:'+c+';">'+o.rate+'%</div></div>';
+    }).join('');
+    body += card('단원별 살펴보기 <span style="font-size:11px;font-weight:400;color:#9a8fb0;">숙제에서 맞힌 비율이에요</span>', catRows);
+  }
+  // 의견
+  if(opinion){
+    body += card('선생님 말씀', '<div style="font-size:14px;color:#6b6156;line-height:1.9;white-space:pre-wrap;">'+esc2(opinion)+'</div>');
+  }
+
+  var doc='<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+    +'<title>'+esc2(s.name)+' 학습 리포트</title></head>'
+    +'<body style="margin:0;background:#f7f2ea;font-family:\'Apple SD Gothic Neo\',\'Malgun Gothic\',sans-serif;">'
+    +'<div style="max-width:640px;margin:0 auto;padding:26px 16px 40px;">'
+    +'<div style="text-align:center;margin-bottom:20px;">'
+    +'<div style="font-size:13px;color:#9a8fb0;letter-spacing:.08em;">김병진수학연구소</div>'
+    +'<div style="font-size:22px;font-weight:700;color:#5c5470;margin-top:4px;">'+esc2(s.name)+' 학습 리포트</div>'
+    +'<div style="font-size:13px;color:#b3a89b;margin-top:4px;">'+r.period.from+' ~ '+r.period.to+'</div></div>'
+    + body
+    +'<div style="text-align:center;font-size:11px;color:#c4bab0;margin-top:20px;">궁금한 점은 언제든 문의해 주세요 · 김병진수학연구소</div>'
+    +'</div></body></html>';
+
+  // 다운로드
+  var fname='리포트_'+s.name+'_'+r.period.from+'~'+r.period.to+'.html';
+  var blob=new Blob([doc],{type:'text/html;charset=utf-8'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=fname;
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1000);
+
+  // 보관 (Firebase)
+  var recId=Date.now().toString();
+  Promise.resolve(window._authReady).then(function(){
+    return firebase.database().ref('bjm_sent_reports/'+recId).set({
+      sid:sid, name:s.name, grade:s.grade||'', from:r.period.from, to:r.period.to,
+      sentAt:new Date().toISOString(), withPeer:includePeer, html:doc
+    });
+  }).then(function(){ toast('학부모용 리포트를 내려받고 보관함에 저장했어요'); })
+    .catch(function(e){ toast('내려받기는 됐지만 보관 저장에 실패했어요'); });
+}
+
+function openSentReports(){
+  var body=document.getElementById('sentreports-body');
+  body.innerHTML='<div style="text-align:center;color:var(--muted);padding:24px;">불러오는 중…</div>';
+  openModal('modal-sentreports');
+  Promise.resolve(window._authReady).then(function(){
+    return firebase.database().ref('bjm_sent_reports').once('value');
+  }).then(function(snap){
+    var all=snap.val()||{};
+    var keys=Object.keys(all).sort(function(a,b){ return b.localeCompare(a); });
+    if(!keys.length){ body.innerHTML='<div style="text-align:center;color:var(--muted);padding:24px;">아직 보낸 리포트가 없어요.</div>'; return; }
+    body.innerHTML=keys.map(function(k){
+      var v=all[k];
+      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 4px;border-bottom:1px solid var(--line);font-size:13px;">'
+        +'<div><span style="font-weight:700;">'+esc2(v.name||'')+'</span> <span style="color:var(--muted);font-size:12px;">('+esc2(v.grade||'-')+')</span>'
+        +'<div style="font-size:12px;color:var(--muted);margin-top:2px;">'+esc2(v.from||'')+' ~ '+esc2(v.to||'')+' · 저장 '+esc2((v.sentAt||'').slice(0,10))+(v.withPeer?' · 반평균 포함':'')+'</div></div>'
+        +'<div style="display:flex;gap:4px;">'
+        +'<button class="btn-sm sec" style="font-size:11px;padding:3px 8px;" onclick="downloadSentReport(\''+k+'\')">받기</button>'
+        +'<button class="btn-sm sec" style="font-size:11px;padding:3px 8px;color:var(--red);" onclick="deleteSentReport(\''+k+'\')">삭제</button>'
+        +'</div></div>';
+    }).join('');
+  }).catch(function(e){
+    body.innerHTML='<div style="text-align:center;color:var(--red);padding:24px;">불러오기 실패: '+esc2(e&&e.message||e)+'</div>';
+  });
+}
+function downloadSentReport(id){
+  Promise.resolve(window._authReady).then(function(){
+    return firebase.database().ref('bjm_sent_reports/'+id).once('value');
+  }).then(function(snap){
+    var v=snap.val();
+    if(!v || !v.html){ toast('저장본을 찾을 수 없어요'); return; }
+    var blob=new Blob([v.html],{type:'text/html;charset=utf-8'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='리포트_'+(v.name||'학생')+'_'+(v.from||'')+'~'+(v.to||'')+'.html';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1000);
+  });
+}
+function deleteSentReport(id){
+  if(!confirm('이 리포트 저장본을 삭제할까요?')) return;
+  Promise.resolve(window._authReady).then(function(){
+    return firebase.database().ref('bjm_sent_reports/'+id).remove();
+  }).then(function(){ toast('삭제했어요'); openSentReports(); });
 }
 
 </script>
