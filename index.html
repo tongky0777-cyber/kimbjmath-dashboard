@@ -1432,7 +1432,7 @@ body.role-assistant .teacher-only{ display:none !important; }
       <!-- 최근 출결 -->
       <div>
         <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;">✅ 최근 출결</div>
-        <div id="detail-att" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+        <div id="detail-att" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
       </div>
       <!-- 미제출 숙제 -->
       <div>
@@ -4680,8 +4680,8 @@ function hwBlockHtml(n, data){
     +'<div class="form-group"><label>교재</label><select class="hw-book" onchange="onHwBlockSubjectChange(\''+n+'\')">'+_hwBookOptions(book, subj)+'</select></div>'
     +'</div>'
     +'<div class="form-row">'
-    +'<div class="form-group hw-unit-group" style="'+((isAioBook(book) && String(n).charAt(0)!=='g')?'display:none;':'')+'"><label>단원</label><select class="hw-unit">'+_hwUnitOptions(subj, book, data.unit)+'</select></div>'
-    +'<div class="form-group hw-range-group" style="'+((isAioBook(book) && String(n).charAt(0)!=='g')?'display:none;':'')+'"><label>페이지/범위</label><input class="hw-range" placeholder="p.45~50" value="'+(data.range||'')+'"></div>'
+    +'<div class="form-group hw-unit-group" style="'+(isAioBook(book)?'display:none;':'')+'"><label>단원</label><select class="hw-unit">'+_hwUnitOptions(subj, book, data.unit)+'</select></div>'
+    +'<div class="form-group hw-range-group" style="'+(isAioBook(book)?'display:none;':'')+'"><label>페이지/범위</label><input class="hw-range" placeholder="p.45~50" value="'+(data.range||'')+'"></div>'
     +'</div>'
     + _hwAioSectionHtml(n, data)
     +'<div class="form-row">'
@@ -4771,8 +4771,6 @@ function _hwAioUnitOptions(sel, book){
 }
 function _hwAioSectionHtml(n, data){
   data=data||{};
-  // 그룹 숙제 블록(n이 'g'로 시작)에서는 오답수집을 제공하지 않음 (개별 숙제 전용)
-  if(String(n).charAt(0)==='g') return '';
   var on=isAioBook(data.book);
   var bookForUnits=isAioBook(data.book)?data.book:AIO_BOOK_NAME;
   return '<div class="hw-aio" data-n="'+n+'" style="display:'+(on?'block':'none')+';border:1px dashed var(--teal,#0f5f5a);background:var(--teal-bg,#e8f5f4);border-radius:6px;padding:10px;margin-bottom:10px;">'
@@ -4787,8 +4785,6 @@ function _hwAioSectionHtml(n, data){
 }
 // 교재 select가 바뀔 때 All in one 영역 토글
 function _toggleHwAio(n){
-  // 그룹 숙제 블록은 오답수집 비대상 — 기존 단원 드롭다운 그대로 둠
-  if(String(n).charAt(0)==='g') return;
   var block=document.querySelector('.hw-block[data-n="'+n+'"]'); if(!block) return;
   var book=block.querySelector('.hw-book').value;
   var isAio=isAioBook(book);
@@ -4898,14 +4894,27 @@ function _refreshGhwBlockUI(){
 function _collectGhwBlocks(){
   var out=[];
   document.querySelectorAll('#ghw-blocks .hw-block').forEach(function(b){
-    out.push({
+    var rec={
       subject:b.querySelector('.hw-subject').value,
       book:b.querySelector('.hw-book').value,
       unit:b.querySelector('.hw-unit').value,
       range:(b.querySelector('.hw-range').value||'').trim(),
       status:b.querySelector('.hw-status').value,
       memo:(b.querySelector('.hw-memo').value||'').trim()
-    });
+    };
+    // [오답수집] All in one 계열이면 단원키 + 번호범위 추가 (개인 숙제와 동일)
+    if(isAioBook(rec.book)){
+      var uEl=b.querySelector('.hw-aio-unit');
+      var sEl=b.querySelector('.hw-aio-start');
+      var eEl=b.querySelector('.hw-aio-end');
+      var uk=uEl?uEl.value:'';
+      var qs=sEl&&sEl.value!==''?parseInt(sEl.value,10):null;
+      var qe=eEl&&eEl.value!==''?parseInt(eEl.value,10):null;
+      if(uk){ rec.unitKey=uk; }
+      if(qs!=null && !isNaN(qs)){ rec.qStart=qs; }
+      if(qe!=null && !isNaN(qe)){ rec.qEnd=qe; }
+    }
+    out.push(rec);
   });
   return out;
 }
@@ -6406,8 +6415,15 @@ function saveGroupHw() {
   var groups = DB.get('groups');
   var g = groups.find(function(x){ return x.id===gid; });
   if(!g||!g.students||!g.students.length) { toast('반에 학생이 없습니다'); return; }
-  var blocks=_collectGhwBlocks().filter(function(b){ return b.book && b.range; });
+  var blocks=_collectGhwBlocks().filter(function(b){ return b.book && (b.range || _isAioBlock(b)); });
   if(!blocks.length){ toast('교재·페이지를 입력해주세요'); return; }
+  // All in one 블록은 단원·번호범위 입력 검사 (개인 숙제와 동일)
+  for(var vi=0; vi<blocks.length; vi++){
+    if(isAioBook(blocks[vi].book)){
+      var chk=_validateAioBlock(blocks[vi]);
+      if(chk){ toast(chk); return; }
+    }
+  }
   var due = document.getElementById('ghw-due').value;
   var allStudents = DB.get('students');
   var recs = DB.get('homework');
@@ -6415,11 +6431,11 @@ function saveGroupHw() {
   g.students.forEach(function(sid){
     if(!allStudents.find(function(s){ return s.id===sid; })) return; // 퇴원 학생 제외
     blocks.forEach(function(b,bi){
-      recs.push({ id:(now+cnt)+'_'+sid+'_'+bi, sid:sid,
-        name:b.book+' '+(b.unit?b.unit+' ':'')+b.range,
+      recs.push(_applyAioFields({ id:(now+cnt)+'_'+sid+'_'+bi, sid:sid,
+        name:_hwName(b),
         subject:b.subject, unit:b.unit, book:b.book, range:b.range,
         status:b.status, due:due, memo:b.memo,
-        by:currentInputter(), byAt:new Date().toISOString() });
+        by:currentInputter(), byAt:new Date().toISOString() }, b));
       cnt++;
     });
   });
@@ -8794,8 +8810,15 @@ function openStudentDetail(sid) {
   var attEl = document.getElementById('detail-att');
   var recentAtt = att.sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,14);
   var dotCls = {O:'att-o',X:'att-x',T:'att-t',B:'att-b',E:'att-b'};
+  var attStatusText = {O:'출석',X:'결석',T:'지각',B:'보강',E:'공결'};
   attEl.innerHTML = recentAtt.length
-    ? recentAtt.map(function(r){ return '<span class="att-dot '+(dotCls[r.status]||'att-o')+'" title="'+r.date+'">'+r.status+'</span>'; }).join('')
+    ? recentAtt.map(function(r){
+        var md = r.date ? r.date.slice(5).replace('-','/') : '';
+        return '<span style="display:inline-flex;flex-direction:column;align-items:center;gap:3px;" title="'+r.date+' '+(attStatusText[r.status]||'')+'">'
+          + '<span class="att-dot '+(dotCls[r.status]||'att-o')+'">'+r.status+'</span>'
+          + '<span style="font-size:10px;color:var(--muted);white-space:nowrap;">'+md+'</span>'
+          + '</span>';
+      }).join('')
     : '<span style="color:var(--muted);font-size:12px;">출결 기록 없음</span>';
 
   // 미제출 숙제
