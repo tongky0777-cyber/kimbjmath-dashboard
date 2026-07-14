@@ -33,6 +33,9 @@ const CAT_NAMES = {
   function: '이차함수',
   application: '활용·종합',
   inequality: '부등식',
+  ineq: '부등식',
+  count: '경우의 수',
+  matrix: '행렬',
   // 공통수학1 중단원 (교재·기출 공통)
   calc_mul: '다항식-곱셈공식·변형',
   calc_div: '다항식-나눗셈·조립제법',
