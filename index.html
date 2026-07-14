@@ -9132,30 +9132,54 @@ function doRestore(label){
 }
 
 // ===== 공유 할 일 목록 =====
-function getMemoTodos(){ return DB.get('memo_todo'); }   // [{text,done}]
+function getMemoTodos(){ return DB.get('memo_todo'); }   // [{text,done,doneAt}]
+var _memoTodoShowOld = false;  // 완료된 지 오래된 항목 펼침 여부
+// 완료된 지 7일 넘은 항목인지 (완료 시각 doneAt 기준)
+function _memoTodoIsOld(t){
+  if(!t.done || !t.doneAt) return false;
+  var diff = Date.now() - new Date(t.doneAt).getTime();
+  return diff > 7*24*60*60*1000;
+}
+// 항목 한 줄 HTML (편집 모드 포함)
+function _memoTodoRowHtml(t,i){
+  if(_memoEditIdx===i){
+    // 편집 모드: 입력칸 + 저장/취소
+    return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);">'
+      +'<input id="memo-todo-edit-input" type="text" value="'+_slEsc(t.text).replace(/"/g,'&quot;')+'" onkeydown="if(event.key===\'Enter\')saveMemoTodoEdit('+i+');if(event.key===\'Escape\')cancelMemoTodoEdit();" style="flex:1;padding:6px 10px;border:1.5px solid var(--teal);border-radius:4px;font-size:13.5px;font-family:var(--sans);outline:none;">'
+      +'<button onclick="saveMemoTodoEdit('+i+')" class="btn-sm" style="flex-shrink:0;">저장</button>'
+      +'<button onclick="cancelMemoTodoEdit()" style="flex-shrink:0;background:none;border:1px solid var(--line);border-radius:4px;color:var(--muted);font-size:12px;padding:5px 10px;cursor:pointer;">취소</button>'
+      +'</div>';
+  }
+  return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);">'
+    +'<button onclick="toggleMemoTodo('+i+')" style="flex-shrink:0;width:22px;height:22px;border-radius:6px;border:1.5px solid '+(t.done?'var(--teal,#2a9d8f)':'var(--line)')+';background:'+(t.done?'var(--teal,#2a9d8f)':'#fff')+';color:#fff;cursor:pointer;font-size:13px;line-height:1;">'+(t.done?'✓':'')+'</button>'
+    +'<span style="flex:1;font-size:13.5px;'+(t.done?'text-decoration:line-through;color:var(--muted);':'color:var(--ink);')+'">'+_slEsc(t.text)+'</span>'
+    +'<button onclick="startMemoTodoEdit('+i+')" title="수정" style="flex-shrink:0;background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;">✏️</button>'
+    +'<button onclick="removeMemoTodo('+i+')" title="삭제" style="flex-shrink:0;background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;">×</button>'
+    +'</div>';
+}
 function renderMemoTodos(){
   var box=document.getElementById('memo-todo-list'); if(!box) return;
   var todos=getMemoTodos();
   if(!todos.length){ box.innerHTML='<div style="font-size:12px;color:var(--muted);padding:4px 0;">할 일이 없어요. 아래에 추가해보세요.</div>'; return; }
-  box.innerHTML=todos.map(function(t,i){
-    if(_memoEditIdx===i){
-      // 편집 모드: 입력칸 + 저장/취소
-      return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);">'
-        +'<input id="memo-todo-edit-input" type="text" value="'+_slEsc(t.text).replace(/"/g,'&quot;')+'" onkeydown="if(event.key===\'Enter\')saveMemoTodoEdit('+i+');if(event.key===\'Escape\')cancelMemoTodoEdit();" style="flex:1;padding:6px 10px;border:1.5px solid var(--teal);border-radius:4px;font-size:13.5px;font-family:var(--sans);outline:none;">'
-        +'<button onclick="saveMemoTodoEdit('+i+')" class="btn-sm" style="flex-shrink:0;">저장</button>'
-        +'<button onclick="cancelMemoTodoEdit()" style="flex-shrink:0;background:none;border:1px solid var(--line);border-radius:4px;color:var(--muted);font-size:12px;padding:5px 10px;cursor:pointer;">취소</button>'
-        +'</div>';
-    }
-    return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);">'
-      +'<button onclick="toggleMemoTodo('+i+')" style="flex-shrink:0;width:22px;height:22px;border-radius:6px;border:1.5px solid '+(t.done?'var(--teal,#2a9d8f)':'var(--line)')+';background:'+(t.done?'var(--teal,#2a9d8f)':'#fff')+';color:#fff;cursor:pointer;font-size:13px;line-height:1;">'+(t.done?'✓':'')+'</button>'
-      +'<span style="flex:1;font-size:13.5px;'+(t.done?'text-decoration:line-through;color:var(--muted);':'color:var(--ink);')+'">'+_slEsc(t.text)+'</span>'
-      +'<button onclick="startMemoTodoEdit('+i+')" title="수정" style="flex-shrink:0;background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;">✏️</button>'
-      +'<button onclick="removeMemoTodo('+i+')" title="삭제" style="flex-shrink:0;background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;">×</button>'
-      +'</div>';
-  }).join('');
+  var activeHtml='', oldHtml='', oldCount=0;
+  todos.forEach(function(t,i){
+    // 편집 중인 항목은 오래됐더라도 활성 목록에 보이게
+    if(_memoTodoIsOld(t) && _memoEditIdx!==i){ oldHtml+=_memoTodoRowHtml(t,i); oldCount++; }
+    else { activeHtml+=_memoTodoRowHtml(t,i); }
+  });
+  var html=activeHtml;
+  if(oldCount){
+    html+='<div style="padding:6px 0 2px;">'
+      +'<button onclick="toggleMemoTodoOld()" style="background:none;border:none;color:var(--muted);font-size:12.5px;cursor:pointer;padding:2px 0;">'
+      +(_memoTodoShowOld ? '▾ 완료된 지 오래된 항목 '+oldCount+'개 접기' : '▸ 완료된 지 오래된 항목 '+oldCount+'개 펼치기')
+      +'</button></div>';
+    if(_memoTodoShowOld) html+=oldHtml;
+  }
+  box.innerHTML=html;
   // 편집 모드면 입력칸에 포커스
   if(_memoEditIdx>-1){ var ei=document.getElementById('memo-todo-edit-input'); if(ei){ ei.focus(); ei.setSelectionRange(ei.value.length, ei.value.length); } }
 }
+function toggleMemoTodoOld(){ _memoTodoShowOld=!_memoTodoShowOld; renderMemoTodos(); }
 var _memoEditIdx = -1;
 function startMemoTodoEdit(i){ _memoEditIdx=i; renderMemoTodos(); }
 function cancelMemoTodoEdit(){ _memoEditIdx=-1; renderMemoTodos(); }
@@ -9180,7 +9204,12 @@ function addMemoTodo(){
 }
 function toggleMemoTodo(i){
   var todos=getMemoTodos();
-  if(todos[i]){ todos[i].done=!todos[i].done; DB.set('memo_todo', todos); renderMemoTodos(); }
+  if(todos[i]){
+    todos[i].done=!todos[i].done;
+    if(todos[i].done) todos[i].doneAt=new Date().toISOString();  // 완료 시각 기록(오래된 항목 접기용)
+    else delete todos[i].doneAt;
+    DB.set('memo_todo', todos); renderMemoTodos();
+  }
 }
 function removeMemoTodo(i){
   var todos=getMemoTodos();
