@@ -19,6 +19,7 @@ const TYPEMAP_PATH = {
   '온리원': './data/온리원_통합_typeMap.json',
   '올인원 미적분': './data/올인원미적분1_통합_typeMap.json',
   '온리원 미적분': './data/온리원미적분1_통합_typeMap.json',
+  '온리원 공수2': './data/온리원공수2_통합_typeMap.json',
   // 다른 교재 추가 시 여기에 한 줄씩:
   // '자이스토리': './data/자이스토리_통합_typeMap.json',
 };
@@ -67,6 +68,19 @@ const CAT_NAMES = {
   integ_area: '적분-넓이',
   integ_dist: '적분-속도와 거리',
   integ_app: '적분-종합·함수결정',
+  // 공통수학2 온리원 2권 중단원 (명제·함수·유리무리)
+  prop_cond: '명제-조건·진리집합',
+  prop_conv: '명제-참·거짓·역·대우',
+  prop_suff: '명제-충분·필요조건',
+  prop_abs: '명제-절대부등식·증명',
+  func_def: '함수-정의·판정·개수',
+  func_comp: '함수-합성함수',
+  func_inv: '함수-역함수',
+  func_graph: '함수-그래프·최대최소',
+  rat_calc: '유리식-계산·항등식',
+  rat_func: '유리함수-그래프·성질',
+  irr_calc: '무리식-계산·조건',
+  irr_func: '무리함수-그래프·성질',
   // 대수 중단원 (교재·기출 통합: 지수로그·삼각함수·수열)
   exp_calc: '지수-거듭제곱근·지수 계산',
   exp_fn: '지수함수-그래프·점·최대최소',
