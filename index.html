@@ -8647,10 +8647,10 @@ function renderClassLink(sid){
   if(s.classKey && CLASS_USERS[s.classKey]){
     var u = CLASS_USERS[s.classKey];
     box.innerHTML = '<div style="font-size:12px;"><span style="color:var(--teal);font-weight:700;">🔗 클래스룸 연결됨</span> · '
-      +'<b>'+(u.name||s.classKey)+'</b> <span style="color:var(--muted);">('+ (u.createdAt||'') +' 가입)</span></div>'
+      +'<b>'+esc2(u.name||s.classKey)+'</b> <span style="color:var(--muted);">('+ esc2(u.createdAt||'') +' 가입)</span></div>'
       +'<button class="btn-sm sec" onclick="unlinkClass(\''+sid+'\')">연결 해제</button>';
   } else if(s.classKey && !CLASS_USERS[s.classKey]){
-    box.innerHTML = '<div style="font-size:12px;color:var(--gold);">🔗 연결된 클래스룸 계정("'+s.classKey+'")을 찾을 수 없어요</div>'
+    box.innerHTML = '<div style="font-size:12px;color:var(--gold);">🔗 연결된 클래스룸 계정("'+esc2(s.classKey)+'")을 찾을 수 없어요</div>'
       +'<button class="btn-sm" onclick="openClassLinkPicker(\''+sid+'\')">다시 연결</button>';
   } else {
     box.innerHTML = '<div style="font-size:12px;color:var(--muted);">클래스룸 계정이 아직 연결되지 않았어요. 숙제 체크·학습기록 연동을 쓰려면 연결하세요.</div>'
@@ -8671,10 +8671,11 @@ function openClassLinkPicker(sid){
     var html = keys.sort(function(a,b){ return (CLASS_USERS[a].name||a).localeCompare(CLASS_USERS[b].name||b); }).map(function(k){
       var u=CLASS_USERS[k];
       var used=usedMap[k];
-      var gradeTag = u.grade ? '<span style="font-size:11px;color:var(--teal);font-weight:600;">'+u.grade+'</span> ' : '';
+      var safeKey=String(k).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      var gradeTag = u.grade ? '<span style="font-size:11px;color:var(--teal);font-weight:600;">'+esc2(u.grade)+'</span> ' : '';
       return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--line);border-radius:6px;margin-bottom:6px;'+(used?'opacity:.5;':'')+'">'
-        +'<div>'+gradeTag+'<b>'+(u.name||k)+'</b> <span style="font-size:11px;color:var(--muted);">'+(u.createdAt||'')+' 가입'+(used?' · 이미 '+used+'에 연결됨':'')+'</span></div>'
-        +(used?'<span style="font-size:11px;color:var(--muted);">사용중</span>':'<button class="btn-sm" onclick="linkClass(\''+sid+'\',\''+k.replace(/'/g,"\\'")+'\')">선택</button>')
+        +'<div>'+gradeTag+'<b>'+esc2(u.name||k)+'</b> <span style="font-size:11px;color:var(--muted);">'+esc2(u.createdAt||'')+' 가입'+(used?' · 이미 '+esc2(used)+'에 연결됨':'')+'</span></div>'
+        +(used?'<span style="font-size:11px;color:var(--muted);">사용중</span>':'<button class="btn-sm" onclick="linkClass(\''+sid+'\',\''+safeKey+'\')">선택</button>')
         +'</div>';
     }).join('');
     document.getElementById('class-link-list').innerHTML = html;
@@ -10120,7 +10121,6 @@ function deleteSentReport(id){
 </script>
 </body>
 </html>
-
 
 
 
