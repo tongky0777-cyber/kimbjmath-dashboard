@@ -18,6 +18,7 @@ node verify_before_upload.js
 
 - `api/classroom-admin.js`
 - `api/classroom-auth.js`
+- `api/classroom-push.js`
 - `api/telegram.js`
 - `index.html`
 - `sync_classroom_aio.js`
@@ -47,5 +48,6 @@ node verify_before_upload.js
 - `CLASSROOM_ALLOWED_ORIGINS` 또는 `NOTIFY_ALLOWED_ORIGINS`
 - `TELEGRAM_TOKEN`
 - `TELEGRAM_CHAT_ID`
+- `VAPID_PRIVATE_KEY`
 
 자세한 설명은 `DEPLOY_ENV.md`를 확인합니다.

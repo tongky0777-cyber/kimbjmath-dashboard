@@ -51,3 +51,14 @@
 ```bash
 node -e "const crypto=require('crypto'); console.log(crypto.createHash('sha256').update('kbjm.classroom.v1|'+'새비밀번호').digest('hex'))"
 ```
+
+## 학생 웹 푸시 알림
+
+- `VAPID_PRIVATE_KEY`
+  - 학생 브라우저 푸시 알림을 보낼 때 필요한 비밀키.
+  - GitHub에 올리는 파일에는 저장하지 말고, Vercel 환경변수에만 넣는다.
+- `VAPID_SUBJECT`
+  - 선택값. 기본값으로도 동작한다.
+  - 예: `mailto:teacher@example.com`
+
+학생이 클래스룸에서 `알림 켜기`를 누르면 구독 정보가 Firebase `push_subscriptions`에 저장된다. 이후 선생님/조교가 클래스룸 공지·자료를 올리면 반 학생에게 브라우저 푸시 알림을 보낼 수 있고, 질문 답변을 저장하면 질문한 학생에게 알림을 보낼 수 있다.

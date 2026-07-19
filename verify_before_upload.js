@@ -111,6 +111,7 @@ function main() {
   [
     path.join(ROOT, 'api', 'classroom-admin.js'),
     path.join(ROOT, 'api', 'classroom-auth.js'),
+    path.join(ROOT, 'api', 'classroom-push.js'),
     path.join(ROOT, 'api', 'telegram.js'),
     path.join(ROOT, 'sync_classroom_aio.js'),
     path.join(ROOT, 'validate_aio_data.js')
