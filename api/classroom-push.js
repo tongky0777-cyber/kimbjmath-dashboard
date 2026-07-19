@@ -361,18 +361,11 @@ async function sendToKeys(keys, body, credential, prefix) {
   const results = await Promise.all(targets.map((row) => sendOne(row.sub, message).then((r) => Object.assign({ key: row.key }, r))));
   const gone = results.filter((r) => r.gone).map((r) => r.key);
   await Promise.all(gone.map((key) => fbRequest('DELETE', cp(prefix, 'push_subscriptions/' + key), credential).catch(() => null)));
-  const failures = results.filter((r) => !r.ok);
   return {
     requested: cleanKeys(keys).length,
     subscribed: targets.length,
     sent: results.filter((r) => r.ok).length,
-    failed: failures.length,
-    failures: failures.slice(0, 5).map((r) => ({
-      key: r.key,
-      status: r.status || null,
-      error: r.error || '',
-      body: r.body || ''
-    }))
+    failed: results.filter((r) => !r.ok).length
   };
 }
 
