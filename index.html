@@ -520,6 +520,10 @@ body.role-assistant .teacher-only{ display:none !important; }
           <span style="display:flex;align-items:center;gap:4px;font-size:11px;"><span class="att-dot att-t">T</span>지각</span>
           <span style="display:flex;align-items:center;gap:4px;font-size:11px;"><span class="att-dot att-b">B</span>보강</span>
           <span style="display:flex;align-items:center;gap:4px;font-size:11px;"><span class="att-dot" style="background:var(--bg2);color:var(--muted);">—</span>미입력</span>
+          <span style="display:flex;align-items:center;gap:6px;margin-left:auto;font-size:12px;color:var(--ink2);">
+            <label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" id="att-day-special" onchange="reloadAttDayState()" style="width:auto;"> 특강 출석</label>
+            <input id="att-day-special-name" value="2026 여름특강" oninput="rememberSpecialCourseName(this.value)" style="width:130px;font-size:11px;padding:4px 7px;border:1px solid var(--line);border-radius:4px;">
+          </span>
         </div>
         <div id="att-day-list" style="padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;max-height:360px;overflow-y:auto;"></div>
       </div>
@@ -7687,6 +7691,7 @@ var attCalYear  = new Date().getFullYear();
 var attCalMonth = new Date().getMonth();
 var attSelectedDate = '';
 var attDayState = {}; // sid -> status (당일 임시 저장)
+var attDayStudentsCache = [];
 
 function changeAttMonth(dir) {
   attCalMonth += dir;
@@ -7800,17 +7805,32 @@ function selectAttDay(dateStr) {
   var dowNames = ['일','월','화','수','목','금','토'];
   title.textContent = (d.getMonth()+1)+'월 '+d.getDate()+'일 ('+dowNames[d.getDay()]+') 출결 체크';
 
-  // 임시 상태 초기화 - 기존 저장된 값 불러오기
-  attDayState = {};
   students = sortByGrade(students.filter(isActiveStudent));
-  students.forEach(function(s){
-    var existing = recs.find(function(r){ return r.sid===s.id && r.date===dateStr; });
-    attDayState[s.id] = existing ? existing.status : '';
-  });
+  attDayStudentsCache = students;
+  setCourseTagCheckbox('att-day-special', '');
+  loadAttDayState(students, dateStr, recs);
 
   renderAttDayList(students, dateStr);
   panel.style.display = 'block';
   panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function loadAttDayState(students, dateStr, recs){
+  var courseTag = getCourseTagFrom('att-day-special');
+  var courseName = courseTag ? getCourseNameFrom('att-day-special') : '';
+  attDayState = {};
+  (students||[]).forEach(function(s){
+    var existing = (recs||DB.get('attendance')).find(function(r){
+      return r.sid===s.id && r.date===dateStr && ((r.courseTag||'')===courseTag) && (!courseTag || specialLabelOf(r)===courseName);
+    });
+    attDayState[s.id] = existing ? existing.status : '';
+  });
+}
+
+function reloadAttDayState(){
+  if(!attSelectedDate) return;
+  loadAttDayState(attDayStudentsCache, attSelectedDate, DB.get('attendance'));
+  renderAttDayList(attDayStudentsCache, attSelectedDate);
 }
 
 function renderAttDayList(students, dateStr) {
@@ -7848,7 +7868,7 @@ function renderAttDayList(students, dateStr) {
 
     var nameEl = document.createElement('div');
     nameEl.style.cssText = 'font-size:13px;font-weight:700;';
-    nameEl.textContent = s.name;
+    nameEl.innerHTML = esc2(s.name) + specialStudentBadge(s);
 
     var gradeEl = document.createElement('div');
     gradeEl.style.cssText = 'font-size:10px;color:var(--muted);';
@@ -7926,18 +7946,23 @@ function saveAttDay() {
   if(!attSelectedDate) { toast('날짜를 선택해주세요'); return; }
   var recs = DB.get('attendance');
   var saved = 0;
+  var courseTag = getCourseTagFrom('att-day-special');
+  var courseName = courseTag ? getCourseNameFrom('att-day-special') : '';
   Object.keys(attDayState).forEach(function(sid){
     var status = attDayState[sid];
     if(!status) return; // 미입력은 저장 안함
-    var idx = recs.findIndex(function(r){ return r.sid===sid && r.date===attSelectedDate; });
+    var idx = recs.findIndex(function(r){
+      return r.sid===sid && r.date===attSelectedDate && ((r.courseTag||'')===courseTag) && (!courseTag || specialLabelOf(r)===courseName);
+    });
     var rec = {sid:sid, date:attSelectedDate, status:status, memo:''};
+    applyCourseTag(rec, courseTag, courseName);
     if(idx > -1) recs[idx] = rec; else recs.push(rec);
     saved++;
   });
   DB.set('attendance', recs);
   renderAttCalendar();
   renderAttendance();
-  toast(attSelectedDate+' 출결 '+saved+'명 저장 완료!');
+  toast(attSelectedDate+' '+(courseTag?courseName+' ':'')+'출결 '+saved+'명 저장 완료!');
 }
 
 
