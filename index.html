@@ -1048,6 +1048,14 @@ body.role-assistant .teacher-only{ display:none !important; }
           <span>🔒 과외 학생 (다른 선생님·조교에게 숨김)</span>
         </label>
       </div>
+      <div class="form-group full">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="s-special" style="width:auto;">
+          <span>방학특강 신청 학생</span>
+        </label>
+        <input id="s-special-name" placeholder="예: 2026 여름특강" style="margin-top:6px;font-size:12px;">
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">학생은 기존 기록 그대로 유지하고, 특강 입력·리포트에서만 따로 표시합니다.</div>
+      </div>
       <div class="form-group full"><label>메모</label><textarea id="s-memo" placeholder="특이사항, 취약 단원 등"></textarea></div>
     </div>
     <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-student')">취소</button><button class="btn-save" onclick="saveStudent()">저장</button></div>
@@ -1062,6 +1070,13 @@ body.role-assistant .teacher-only{ display:none !important; }
       <div class="form-row">
         <div class="form-group"><label>학생</label><select id="att-student"></select></div>
         <div class="form-group"><label>날짜</label><input type="date" id="att-date-input"></div>
+      </div>
+      <div class="form-group full">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="att-special" style="width:auto;">
+          <span>방학특강 출석</span>
+        </label>
+        <input id="att-special-name" placeholder="예: 2026 여름특강" style="margin-top:6px;font-size:12px;">
       </div>
       <div class="form-group"><label>출결 상태</label>
         <div class="att-input-grid">
@@ -1086,6 +1101,13 @@ body.role-assistant .teacher-only{ display:none !important; }
       <div class="form-row">
         <div class="form-group"><label>학생</label><select id="test-student"></select></div>
         <div class="form-group"><label>날짜</label><input type="date" id="test-date-input"></div>
+      </div>
+      <div class="form-group full">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="test-special" style="width:auto;">
+          <span>방학특강 기록</span>
+        </label>
+        <input id="test-special-name" placeholder="예: 2026 여름특강" style="margin-top:6px;font-size:12px;">
       </div>
       <div class="form-row">
         <div class="form-group"><label>테스트명</label><select id="test-name" onchange="onTestNameChange()"></select></div>
@@ -1162,6 +1184,13 @@ body.role-assistant .teacher-only{ display:none !important; }
       <div class="form-row">
         <div class="form-group"><label>학생</label><select id="hw-student"></select></div>
         <div class="form-group"><label>마감일</label><input type="date" id="hw-due"></div>
+      </div>
+      <div class="form-group full">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="hw-special" style="width:auto;">
+          <span>방학특강 기록</span>
+        </label>
+        <input id="hw-special-name" placeholder="예: 2026 여름특강" style="margin-top:6px;font-size:12px;">
       </div>
       <div id="hw-blocks"></div>
       <div id="hw-add-row" style="border:1px dashed var(--accent,#c0392b);border-radius:6px;padding:10px;text-align:center;color:var(--accent,#c0392b);font-size:13px;cursor:pointer;margin-top:6px;" onclick="addHwBlock()">+ 다른 숙제 추가</div>
@@ -1274,6 +1303,13 @@ body.role-assistant .teacher-only{ display:none !important; }
         <div class="form-group"><label>반 선택 *</label><select id="ghw-group" onchange="updateGhwStudents()"></select></div>
         <div class="form-group"><label>마감일</label><input type="date" id="ghw-due"></div>
       </div>
+      <div class="form-group full">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="ghw-special" style="width:auto;">
+          <span>방학특강 기록</span>
+        </label>
+        <input id="ghw-special-name" placeholder="예: 2026 여름특강" style="margin-top:6px;font-size:12px;">
+      </div>
       <div id="ghw-blocks"></div>
       <div id="ghw-add-row" style="border:1px dashed var(--accent,#c0392b);border-radius:6px;padding:10px;text-align:center;color:var(--accent,#c0392b);font-size:13px;cursor:pointer;margin:6px 0 12px;" onclick="addGhwBlock()">+ 다른 숙제 추가</div>
       <div id="ghw-students" style="background:var(--bg2);border-radius:4px;padding:12px;font-size:12px;color:var(--muted);">반을 선택하면 학생 목록이 표시됩니다.</div>
@@ -1291,6 +1327,13 @@ body.role-assistant .teacher-only{ display:none !important; }
       <div class="form-row">
         <div class="form-group"><label>학생</label><select id="prog-student"></select></div>
         <div class="form-group"><label>날짜</label><input type="date" id="prog-date"></div>
+      </div>
+      <div class="form-group full">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="prog-special" style="width:auto;">
+          <span>방학특강 기록</span>
+        </label>
+        <input id="prog-special-name" placeholder="예: 2026 여름특강" style="margin-top:6px;font-size:12px;">
       </div>
       <div class="form-row">
         <div class="form-group"><label>과목</label><select id="prog-subject" onchange="onSubjectChange('prog')"></select></div>
@@ -1349,6 +1392,13 @@ body.role-assistant .teacher-only{ display:none !important; }
       <div class="form-row">
         <div class="form-group"><label>반 선택 *</label><select id="gt-group" onchange="updateGroupTestList()"></select></div>
         <div class="form-group"><label>날짜</label><input type="date" id="gt-date"></div>
+      </div>
+      <div class="form-group full">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="gt-special" style="width:auto;">
+          <span>방학특강 기록</span>
+        </label>
+        <input id="gt-special-name" placeholder="예: 2026 여름특강" style="margin-top:6px;font-size:12px;">
       </div>
       <div class="form-row">
         <div class="form-group"><label>테스트명 *</label><select id="gt-name" onchange="onGroupTestNameChange()"></select></div>
@@ -1479,6 +1529,13 @@ body.role-assistant .teacher-only{ display:none !important; }
       <div class="form-row">
         <div class="form-group"><label>반 선택 *</label><select id="gp-group" onchange="updateGroupProgressList()"></select></div>
         <div class="form-group"><label>날짜</label><input type="date" id="gp-date"></div>
+      </div>
+      <div class="form-group full">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="gp-special" style="width:auto;">
+          <span>방학특강 기록</span>
+        </label>
+        <input id="gp-special-name" placeholder="예: 2026 여름특강" style="margin-top:6px;font-size:12px;">
       </div>
       <div class="form-row">
         <div class="form-group"><label>과목</label><select id="gp-subject" onchange="onSubjectChange('gp')"></select></div>
@@ -2957,10 +3014,16 @@ function openStudentModal() {
   // 과외 체크박스 초기화 + 잠금 상태에 따라 표시
   var tc=document.getElementById('s-tutoring'); if(tc) tc.checked=false;
   var tw=document.getElementById('s-tutoring-wrap'); if(tw) tw.style.display=isTutorUnlocked()?'':'none';
+  var sp=document.getElementById('s-special'); if(sp) sp.checked=false;
+  var spn=document.getElementById('s-special-name'); if(spn) spn.value=currentSpecialCourseName();
   populateStudentGroupList('');
   openModal('modal-student');
 }
-function openAttModal() { populateSel(); openModal('modal-att'); }
+function openAttModal() {
+  populateSel();
+  setCourseTagCheckbox('att-special', '');
+  openModal('modal-att');
+}
 function openTestModal() {
   populateSel(); fillTestNameSelect();
   fillSubjectBookSelects('test');
@@ -2971,6 +3034,7 @@ function openTestModal() {
   var fs=document.getElementById('test-fullscore'); if(fs) fs.value='';
   var gs=document.getElementById('test-gotscore'); if(gs) gs.value='';
   document.getElementById('test-memo').value='';
+  setCourseTagCheckbox('test-special', '');
   var wd=document.getElementById('test-date-input'); wd.value=new Date().toISOString().slice(0,10);
   var wn=document.getElementById('test-week-num'); if(wn) wn.value='';
   var mt=document.getElementById('test-mini-target'); if(mt) mt.selectedIndex=0;
@@ -2988,6 +3052,7 @@ function openHwModal() {
   var due = document.getElementById('hw-due');
   if(due) due.value = new Date().toISOString().slice(0,10);
   document.getElementById('hw-student').selectedIndex=0;
+  setCourseTagCheckbox('hw-special', '');
   // 블록 초기화 + 1개로 시작
   document.getElementById('hw-blocks').innerHTML='';
   _hwBlockSeq=0;
@@ -3256,6 +3321,60 @@ function sortByGrade(students){
   });
 }
 
+var SPECIAL_COURSE_TAG = 'special';
+var SPECIAL_COURSE_LABEL = '2026 여름특강';
+function isSpecialRecord(r){ return !!(r && r.courseTag === SPECIAL_COURSE_TAG); }
+function currentSpecialCourseName(){
+  try{ return (localStorage.getItem('bjm_special_course_name') || SPECIAL_COURSE_LABEL).trim() || SPECIAL_COURSE_LABEL; }
+  catch(e){ return SPECIAL_COURSE_LABEL; }
+}
+function rememberSpecialCourseName(name){
+  name = (name || '').trim();
+  if(!name) name = SPECIAL_COURSE_LABEL;
+  try{ localStorage.setItem('bjm_special_course_name', name); }catch(e){}
+  return name;
+}
+function specialLabelOf(rec){
+  if(typeof rec === 'string') return rec || currentSpecialCourseName();
+  return (rec && (rec.specialCourseName || rec.courseName)) || currentSpecialCourseName();
+}
+function specialBadge(rec){
+  return '<span style="display:inline-block;background:#fff3cd;color:#9a6700;border:1px solid rgba(154,103,0,.18);font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;margin-left:6px;vertical-align:middle;">'+esc2(specialLabelOf(rec))+'</span>';
+}
+function specialStudentBadge(s){ return s && s.specialCourse ? specialBadge(s) : ''; }
+function setCourseTagCheckbox(id, tag){
+  var el = document.getElementById(id);
+  if(el) el.checked = tag === SPECIAL_COURSE_TAG;
+  var nameEl = document.getElementById(id+'-name');
+  if(nameEl) nameEl.value = tag === SPECIAL_COURSE_TAG ? specialLabelOf(arguments[2]) : currentSpecialCourseName();
+}
+function getCourseTagFrom(id){
+  var el = document.getElementById(id);
+  return (el && el.checked) ? SPECIAL_COURSE_TAG : '';
+}
+function getCourseNameFrom(id){
+  var el = document.getElementById(id+'-name');
+  return rememberSpecialCourseName(el ? el.value : currentSpecialCourseName());
+}
+function applyCourseTag(rec, tag, name){
+  if(tag){
+    rec.courseTag = tag;
+    rec.specialCourseName = rememberSpecialCourseName(name || currentSpecialCourseName());
+  }
+  else { delete rec.courseTag; delete rec.specialCourseName; }
+  return rec;
+}
+function specialRecordCount(list){
+  return (list||[]).filter(isSpecialRecord).length;
+}
+function specialCourseNamesFrom(lists){
+  var map = {};
+  (lists||[]).forEach(function(list){
+    (list||[]).filter(isSpecialRecord).forEach(function(r){ map[specialLabelOf(r)] = true; });
+  });
+  return Object.keys(map);
+}
+
 // 학생 선택 셀렉트 채우기
 function populateSel() {
   var students = DB.get('students');
@@ -3295,6 +3414,10 @@ function saveStudent() {
   base.tutoring = isTutorUnlocked()
     ? document.getElementById('s-tutoring').checked
     : (idx!==-1 ? !!students[idx].tutoring : false);
+  var sp=document.getElementById('s-special');
+  base.specialCourse = !!(sp && sp.checked);
+  var spn=document.getElementById('s-special-name');
+  base.specialCourseName = base.specialCourse ? rememberSpecialCourseName(spn ? spn.value : currentSpecialCourseName()) : '';
   var student = base;
   if(idx===-1) students.push(student); else students[idx]=student;
   DB.set('students', students);
@@ -3568,6 +3691,10 @@ function editStudent(id) {
   if(tw) tw.style.display=isTutorUnlocked()?'':'none';
   var tc=document.getElementById('s-tutoring');
   if(tc) tc.checked=!!s.tutoring;
+  var sp=document.getElementById('s-special');
+  if(sp) sp.checked=!!s.specialCourse;
+  var spn=document.getElementById('s-special-name');
+  if(spn) spn.value=s.specialCourseName || currentSpecialCourseName();
   populateStudentGroupList(s.id);
   openModal('modal-student');
 }
@@ -3681,6 +3808,11 @@ function renderStudents() {
       var sid = s.id;
       nameBtn.onclick = function(){ openStudentDetail(sid); };
       nameTd.appendChild(nameBtn);
+      if(s.specialCourse){
+        var sb = document.createElement('span');
+        sb.innerHTML = specialBadge(s);
+        nameTd.appendChild(sb.firstChild);
+      }
       tr.appendChild(nameTd);
 
       // 학교
@@ -3750,8 +3882,13 @@ function saveAttendance() {
   var status = document.querySelector('input[name="att-status"]:checked');
   if(!sid||!date) { toast('학생과 날짜를 선택해주세요'); return; }
   var recs = DB.get('attendance');
-  var existing = recs.findIndex(function(r){ return r.sid===sid&&r.date===date; });
+  var courseTag = getCourseTagFrom('att-special');
+  var courseName = courseTag ? getCourseNameFrom('att-special') : '';
+  var existing = recs.findIndex(function(r){
+    return r.sid===sid && r.date===date && ((r.courseTag||'')===courseTag) && (!courseTag || specialLabelOf(r)===courseName);
+  });
   var rec = {sid:sid, date:date, status:status?status.value:'O', memo:document.getElementById('att-memo').value};
+  applyCourseTag(rec, courseTag, courseName);
   if(existing>-1) recs[existing]=rec; else recs.push(rec);
   DB.set('attendance', recs);
   closeModal('modal-att');
@@ -3790,7 +3927,7 @@ function renderAttendance() {
     // 이름 (+ 오늘 등원했는데 숙제 미출제 배지, 클릭 시 상세)
     var nameTd = document.createElement('td');
     nameTd.className = 'student-name';
-    var nameHtml = '<span style="cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);" onclick="openStudentDetail(\''+s.id+'\')">'+s.name+'</span>';
+    var nameHtml = '<span style="cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);" onclick="openStudentDetail(\''+s.id+'\')">'+s.name+'</span>'+specialStudentBadge(s);
     if(cameToday){
       if(_hwTodayA[s.id]) nameHtml += ' <span style="font-size:10px;color:var(--green);">숙제 출제됨 ✓</span>';
       else nameHtml += ' <span style="font-size:10px;font-weight:700;color:#9A6700;background:#FCEFD6;padding:1px 7px;border-radius:10px;">숙제 미출제</span>';
@@ -3872,6 +4009,7 @@ function collectTestData(){
     memo: document.getElementById('test-memo').value,
     total: total
   };
+  applyCourseTag(data, getCourseTagFrom('test-special'), getCourseNameFrom('test-special'));
   if(name==='미니모의고사'){
     var wn=document.getElementById('test-week-num').value;
     data.week = wn? (wn+'주차') : '';
@@ -4032,6 +4170,7 @@ function editTest(id) {
   document.getElementById('test-date-input').value = t.date||'';
   document.getElementById('test-total').value = t.total||'';
   document.getElementById('test-memo').value = t.memo||'';
+  setCourseTagCheckbox('test-special', t.courseTag, t);
   // 틀린 번호 복원 (옛 데이터엔 wrong 없을 수 있음)
   testWrongSet = {};
   if(Array.isArray(t.wrong)) t.wrong.forEach(function(n){ testWrongSet[n]=true; });
@@ -4116,7 +4255,7 @@ function renderTests() {
       var fillColor = t.score>=90?'var(--green)':t.score>=70?'var(--gold)':'var(--red)';
       scoreCell = '<span class="score '+cls+'">'+t.score+'점</span><div class="score-bar"><div class="score-fill" style="width:'+t.score+'%;background:'+fillColor+'"></div></div>';
     }
-    return '<tr'+((t.pending||t.score==null)?' style="background:#fffdf5;"':'')+'><td class="student-name">'+(student?student.name:'—')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+t.name+'</td><td style="font-size:12px;color:var(--muted);">'+(unitStr||'—')+'</td><td style="font-size:12px;color:var(--muted);">'+t.date+'</td><td>'+scoreCell+'</td><td style="font-size:12px;color:var(--muted);">'+(t.memo||'—')+'</td><td><div class="row-action"><button class="icon-btn" onclick="editTest(\''+t.id+'\')">✏️</button><button class="icon-btn" onclick="deleteTest(\''+t.id+'\')">🗑️</button></div></td></tr>';
+    return '<tr'+((t.pending||t.score==null)?' style="background:#fffdf5;"':'')+'><td class="student-name">'+(student?student.name:'—')+(student?specialStudentBadge(student):'')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+t.name+(isSpecialRecord(t)?specialBadge(t):'')+'</td><td style="font-size:12px;color:var(--muted);">'+(unitStr||'—')+'</td><td style="font-size:12px;color:var(--muted);">'+t.date+'</td><td>'+scoreCell+'</td><td style="font-size:12px;color:var(--muted);">'+(t.memo||'—')+'</td><td><div class="row-action"><button class="icon-btn" onclick="editTest(\''+t.id+'\')">✏️</button><button class="icon-btn" onclick="deleteTest(\''+t.id+'\')">🗑️</button></div></td></tr>';
   }).join('');
 }
 
@@ -4538,6 +4677,8 @@ function saveHw() {
     }
   }
   var recs = DB.get('homework');
+  var courseTag = getCourseTagFrom('hw-special');
+  var courseName = getCourseNameFrom('hw-special');
 
   if(_editingHwId){
     // 수정: 첫 블록만 반영
@@ -4545,11 +4686,11 @@ function saveHw() {
     var idx=recs.findIndex(function(x){ return x.id===_editingHwId; });
     if(idx>-1){
       var keepBy=recs[idx].by, keepByAt=recs[idx].byAt;
-      recs[idx]=_applyAioFields(Object.assign({}, recs[idx], {
+      recs[idx]=applyCourseTag(_applyAioFields(Object.assign({}, recs[idx], {
         sid:sid, name:_hwName(b),
         subject:b.subject, unit:b.unit, book:b.book, range:b.range,
         status:b.status, due:due, memo:b.memo, by:keepBy, byAt:keepByAt
-      }), b);
+      }), b), courseTag, courseName);
     }
     DB.set('homework', recs);
     _editingHwId=null;
@@ -4562,11 +4703,11 @@ function saveHw() {
   // 신규: 블록마다 한 건씩
   var now=Date.now();
   valid.forEach(function(b,i){
-    recs.push(_applyAioFields({ id:(now+i).toString(), sid:sid,
+    recs.push(applyCourseTag(_applyAioFields({ id:(now+i).toString(), sid:sid,
       name:_hwName(b),
       subject:b.subject, unit:b.unit, book:b.book, range:b.range,
       status:b.status, due:due, memo:b.memo,
-      by:currentInputter(), byAt:new Date().toISOString() }, b));
+      by:currentInputter(), byAt:new Date().toISOString() }, b), courseTag, courseName));
   });
   DB.set('homework', recs);
   closeModal('modal-hw');
@@ -4941,6 +5082,7 @@ function editHw(id) {
   populateSel();
   var stuSel=document.getElementById('hw-student'); if(stuSel) stuSel.value=r.sid||'';
   var dueEl=document.getElementById('hw-due'); if(dueEl) dueEl.value=r.due||'';
+  setCourseTagCheckbox('hw-special', r.courseTag, r);
   // 블록 1개에 기존 값 채움, 추가 버튼 숨김(수정은 한 개만)
   document.getElementById('hw-blocks').innerHTML='';
   _hwBlockSeq=0;
@@ -4994,7 +5136,7 @@ function renderHw() {
         + '<option value="done"'+(r.status==='done'?' selected':'')+'>제출 완료</option>'
         + '<option value="half"'+(r.status==='half'?' selected':'')+'>부분 제출</option></select>';
     }
-    return '<tr style="'+(overdue?'background:#fffaf9;':'')+'"><td class="student-name">'+(student?student.name:'—')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+r.name+(overdue?' <span style="color:var(--red);font-size:10px;">⚠ 기한 초과</span>':'')+'</td><td style="font-size:12px;color:'+(overdue?'var(--red)':'var(--muted)')+';">'+r.due+'</td><td style="text-align:center;">'+checkCell+'</td><td>'+statusCell+'</td><td style="font-size:12px;color:var(--muted);">'+(r.memo||'—')+'</td><td><div class="row-action">'+aioBtns+'<button class="icon-btn" onclick="deleteHw(\''+r.id+'\')">🗑️</button></div></td></tr>';
+    return '<tr style="'+(overdue?'background:#fffaf9;':'')+'"><td class="student-name">'+(student?student.name:'—')+(student?specialStudentBadge(student):'')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+r.name+(isSpecialRecord(r)?specialBadge(r):'')+(overdue?' <span style="color:var(--red);font-size:10px;">⚠ 기한 초과</span>':'')+'</td><td style="font-size:12px;color:'+(overdue?'var(--red)':'var(--muted)')+';">'+r.due+'</td><td style="text-align:center;">'+checkCell+'</td><td>'+statusCell+'</td><td style="font-size:12px;color:var(--muted);">'+(r.memo||'—')+'</td><td><div class="row-action">'+aioBtns+'<button class="icon-btn" onclick="deleteHw(\''+r.id+'\')">🗑️</button></div></td></tr>';
   }).join('');
 }
 
@@ -6394,6 +6536,7 @@ function openGroupHwModal() {
     ? groups.map(function(g){ return '<option value="'+g.id+'">'+g.name+'</option>'; }).join('')
     : '<option value="">반 없음 (반 관리에서 먼저 생성)</option>';
   var due = document.getElementById('ghw-due'); if(due) due.value = new Date().toISOString().slice(0,10);
+  setCourseTagCheckbox('ghw-special', '');
   // 블록 초기화 + 1개로 시작
   document.getElementById('ghw-blocks').innerHTML='';
   _ghwBlockSeq=0;
@@ -6442,15 +6585,17 @@ function saveGroupHw() {
   var due = document.getElementById('ghw-due').value;
   var allStudents = DB.get('students');
   var recs = DB.get('homework');
+  var courseTag = getCourseTagFrom('ghw-special');
+  var courseName = getCourseNameFrom('ghw-special');
   var now=Date.now(), cnt=0;
   g.students.forEach(function(sid){
     if(!allStudents.find(function(s){ return s.id===sid; })) return; // 퇴원 학생 제외
     blocks.forEach(function(b,bi){
-      recs.push(_applyAioFields({ id:(now+cnt)+'_'+sid+'_'+bi, sid:sid,
+      recs.push(applyCourseTag(_applyAioFields({ id:(now+cnt)+'_'+sid+'_'+bi, sid:sid,
         name:_hwName(b),
         subject:b.subject, unit:b.unit, book:b.book, range:b.range,
         status:b.status, due:due, memo:b.memo,
-        by:currentInputter(), byAt:new Date().toISOString() }, b));
+        by:currentInputter(), byAt:new Date().toISOString() }, b), courseTag, courseName));
       cnt++;
     });
   });
@@ -6473,6 +6618,7 @@ function openProgressModal() {
     var el = document.getElementById(i);
     if(el) el.value='';
   });
+  setCourseTagCheckbox('prog-special', '');
   document.getElementById('prog-student').selectedIndex=0;
   document.getElementById('prog-subject').selectedIndex=0;
   document.getElementById('prog-book').selectedIndex=0;
@@ -6496,6 +6642,7 @@ function editProgress(id) {
   setUnitValue('prog', (r.subject||''), r.unit);
   document.getElementById('prog-range').value = r.range || '';
   document.getElementById('prog-memo').value  = r.memo || '';
+  setCourseTagCheckbox('prog-special', r.courseTag, r);
   var titleEl = document.getElementById('prog-modal-title');
   if(titleEl) titleEl.textContent = '📖 진도 수정';
   openModal('modal-progress');
@@ -6518,6 +6665,7 @@ function saveProgress() {
     date:   document.getElementById('prog-date').value,
     memo:   document.getElementById('prog-memo').value
   };
+  applyCourseTag(record, getCourseTagFrom('prog-special'), getCourseNameFrom('prog-special'));
   if(!existingId){ record.by = currentInputter(); record.byAt = new Date().toISOString(); }
   if(existingId) {
     var idx = recs.findIndex(function(x){ return x.id===existingId; });
@@ -6560,9 +6708,9 @@ function renderProgress() {
 
   recs.forEach(function(r) {
     if(r.groupName) {
-      var key = r.groupName + '||' + r.date + '||' + r.book + '||' + r.unit + '||' + r.range;
+      var key = r.groupName + '||' + r.date + '||' + r.book + '||' + r.unit + '||' + r.range + '||' + (r.courseTag||'') + '||' + (isSpecialRecord(r)?specialLabelOf(r):'');
       if(!processed[key]) {
-        processed[key] = {type:'group', key:key, groupName:r.groupName, date:r.date, book:r.book, unit:r.unit, range:r.range, status:r.status, memo:r.memo, ids:[r.id], firstId:r.id};
+        processed[key] = {type:'group', key:key, groupName:r.groupName, date:r.date, book:r.book, unit:r.unit, range:r.range, status:r.status, memo:r.memo, courseTag:r.courseTag||'', ids:[r.id], firstId:r.id};
         rows.push(processed[key]);
       } else {
         processed[key].ids.push(r.id);
@@ -6579,7 +6727,7 @@ function renderProgress() {
       tr.innerHTML =
         '<td><span class="class-tag ct-1">'+row.groupName+'</span></td>'
         +'<td><span style="background:var(--gold-bg);color:var(--gold);font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;">반 전체</span></td>'
-        +'<td style="font-size:12px;">'+(row.book||'—')+'</td>'
+        +'<td style="font-size:12px;">'+(row.book||'—')+(isSpecialRecord(row)?specialBadge(row):'')+'</td>'
         +'<td style="font-size:12px;">'+(row.unit||'—')+'</td>'
         +'<td style="font-size:12px;font-weight:500;">'+(row.range||'—')+'</td>'
         +'<td style="font-size:11px;color:var(--muted);">'+(row.date||'—')+'</td>'
@@ -6621,9 +6769,9 @@ function renderProgress() {
         : '<span style="color:var(--muted);font-size:11px;">미배정</span>';
 
       tr.innerHTML =
-        '<td class="student-name">'+(s?s.name:'—')+'</td>'
+        '<td class="student-name">'+(s?s.name:'—')+(s?specialStudentBadge(s):'')+'</td>'
         +'<td>'+groupStr+'</td>'
-        +'<td style="font-size:12px;">'+(r.book||'—')+'</td>'
+        +'<td style="font-size:12px;">'+(r.book||'—')+(isSpecialRecord(r)?specialBadge(r):'')+'</td>'
         +'<td style="font-size:12px;">'+(r.unit||'—')+'</td>'
         +'<td style="font-size:12px;font-weight:500;">'+(r.range||'—')+'</td>'
         +'<td style="font-size:11px;color:var(--muted);">'+(r.date||'—')+'</td>'
@@ -6666,6 +6814,7 @@ function editGroupProgress(rowData) {
   if(matchGroup) sel.value = matchGroup.id;
 
   document.getElementById('gp-date').value  = rowData.date  || '';
+  setCourseTagCheckbox('gp-special', rowData.courseTag, rowData);
   if(rowData.book){ document.getElementById('gp-book').value = rowData.book; }
   if(rowData.subject){ document.getElementById('gp-subject').value = rowData.subject; }
   refreshUnits('gp');
@@ -6686,10 +6835,12 @@ function editGroupProgress(rowData) {
       var range = document.getElementById('gp-range').value;
       var date  = document.getElementById('gp-date').value;
       var memo  = document.getElementById('gp-memo').value;
+      var courseTag = getCourseTagFrom('gp-special');
+      var courseName = getCourseNameFrom('gp-special');
       if(!book) { toast('교재를 선택해주세요'); return; }
       recs = recs.map(function(r){
         if(ids.includes(r.id)){
-          return Object.assign({}, r, {subject:subject, book:book, unit:unit, range:range, date:date, memo:memo});
+          return applyCourseTag(Object.assign({}, r, {subject:subject, book:book, unit:unit, range:range, date:date, memo:memo}), courseTag, courseName);
         }
         return r;
       });
@@ -7005,6 +7156,7 @@ function fillGtExamTerms(){ var subj=document.getElementById('gt-exam-subject').
 function collectGtMeta(){
   var name=document.getElementById('gt-name').value;
   var m={ name:name, date:document.getElementById('gt-date').value, total:parseInt(document.getElementById('gt-total').value) };
+  applyCourseTag(m, getCourseTagFrom('gt-special'), getCourseNameFrom('gt-special'));
   if(name==='미니모의고사'){ var wn=document.getElementById('gt-week-num').value; m.week=wn?(wn+'주차'):''; m.miniTarget=document.getElementById('gt-mini-target').value; m.miniYear=document.getElementById('gt-mini-year')?document.getElementById('gt-mini-year').value:'2026'; m.subject=''; m.unit=''; }
   else if(name==='기출 Test'){ m.examYear=document.getElementById('gt-exam-year').value; m.examLevel=document.getElementById('gt-exam-level').value; m.examSchool=document.getElementById('gt-exam-school').value; m.examSubject=document.getElementById('gt-exam-subject').value; m.examTerm2=document.getElementById('gt-exam-term2').value; m.examTerm=document.getElementById('gt-exam-term').value; m.subject=m.examSubject; m.unit=''; }
   else if(name==='모의고사 기출'){ m.examYear=document.getElementById('gt-mock-year').value; m.mockRound=document.getElementById('gt-mock-round').value; m.subject=''; m.unit=''; }
@@ -7381,8 +7533,8 @@ function selectProgDay(dateStr) {
     var individuals = [];
     dayRecs.forEach(function(r){
       if(r.groupName) {
-        var key = r.groupName+'||'+r.book+'||'+r.unit+'||'+r.range;
-        if(!grouped[key]) grouped[key] = {groupName:r.groupName, book:r.book, unit:r.unit, range:r.range, status:r.status, memo:r.memo, ids:[r.id]};
+        var key = r.groupName+'||'+r.book+'||'+r.unit+'||'+r.range+'||'+(r.courseTag||'')+'||'+(isSpecialRecord(r)?specialLabelOf(r):'');
+        if(!grouped[key]) grouped[key] = {groupName:r.groupName, book:r.book, unit:r.unit, range:r.range, status:r.status, memo:r.memo, courseTag:r.courseTag||'', ids:[r.id]};
         else grouped[key].ids.push(r.id);
       } else {
         individuals.push(r);
@@ -7395,7 +7547,7 @@ function selectProgDay(dateStr) {
       card.style.cssText = 'background:var(--red-bg);border:1px solid rgba(180,40,30,.2);border-radius:6px;padding:12px 14px;';
       card.innerHTML = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
         +'<span style="background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;">반 전체</span>'
-        +'<span style="font-size:13px;font-weight:700;color:var(--ink);">'+g.groupName+'</span>'
+        +'<span style="font-size:13px;font-weight:700;color:var(--ink);">'+g.groupName+(isSpecialRecord(g)?specialBadge(g):'')+'</span>'
         +'</div>'
         +'<div style="font-size:12px;color:var(--ink2);">📚 '+(g.book||'—')+(g.unit?' · '+g.unit:'')+(g.range?' · <b>'+g.range+'</b>':'')+'</div>'
         +(g.memo?'<div style="display:flex;align-items:center;justify-content:flex-end;margin-top:6px;"><span style="font-size:11px;color:var(--muted);">'+g.memo+'</span></div>':'');
@@ -7429,7 +7581,7 @@ function selectProgDay(dateStr) {
         +'<span style="font-size:13px;font-weight:700;color:var(--ink);">'+(s?s.name:'—')+'</span>'
         +'<span style="font-size:11px;color:var(--muted);">'+(s?s.grade:'')+'</span>'
         +'</div>'
-        +'<div style="font-size:12px;color:var(--ink2);">📚 '+(r.book||'—')+(r.unit?' · '+r.unit:'')+(r.range?' · <b>'+r.range+'</b>':'')+'</div>'
+        +'<div style="font-size:12px;color:var(--ink2);">📚 '+(r.book||'—')+(isSpecialRecord(r)?specialBadge(r):'')+(r.unit?' · '+r.unit:'')+(r.range?' · <b>'+r.range+'</b>':'')+'</div>'
         +(r.memo?'<div style="display:flex;align-items:center;justify-content:flex-end;margin-top:6px;"><span style="font-size:11px;color:var(--muted);">'+r.memo+'</span></div>':'');
       var rEditBtn = document.createElement('button');
       rEditBtn.style.cssText='margin-top:8px;font-size:11px;padding:3px 10px;border:1px solid var(--line);border-radius:4px;background:var(--white);color:var(--ink);cursor:pointer;';
@@ -7474,6 +7626,7 @@ function openGroupProgressModal() {
   fillSubjectBookSelects('gp');
   ['gp-range','gp-memo'].forEach(function(i){ document.getElementById(i).value=''; });
   document.getElementById('gp-date').value = new Date().toISOString().slice(0,10);
+  setCourseTagCheckbox('gp-special', '');
   document.getElementById('gp-subject').selectedIndex=0;
   document.getElementById('gp-book').selectedIndex=0;
   onSubjectChange('gp');
@@ -7512,14 +7665,16 @@ function saveGroupProgress() {
   var range   = document.getElementById('gp-range').value;
   var memo    = document.getElementById('gp-memo').value;
   var gName   = g.name;
+  var courseTag = getCourseTagFrom('gp-special');
+  var courseName = getCourseNameFrom('gp-special');
   g.students.forEach(function(sid){
-    recs.push({
+    recs.push(applyCourseTag({
       id: Date.now().toString()+sid,
       sid: sid,
       book: book, subject: subject, unit: unit, range: range,
       date: date, memo: memo,
       groupName: gName
-    });
+    }, courseTag, courseName));
   });
   DB.set('progress', recs);
   closeModal('modal-group-progress');
@@ -7939,6 +8094,7 @@ function openGroupTestModal() {
   fillSubjectBookSelects('gt');
   document.getElementById('gt-date').value = new Date().toISOString().slice(0,10);
   document.getElementById('gt-total').value = '';
+  setCourseTagCheckbox('gt-special', '');
   // 메타 칸 초기화
   onGroupTestNameChange();
   updateGroupTestList();
@@ -8722,7 +8878,7 @@ function openStudentDetail(sid) {
   if(editBtn2) editBtn2.onclick = function(){ closeModal('modal-student-detail'); editStudent(sid); };
 
   document.getElementById('detail-name').textContent = s.name;
-  document.getElementById('detail-info').textContent = s.grade + ' · ' + (s.school||'') + (myGroups.length ? ' · '+myGroups.map(function(g){return g.name;}).join(', ') : '');
+  document.getElementById('detail-info').textContent = s.grade + ' · ' + (s.school||'') + (myGroups.length ? ' · '+myGroups.map(function(g){return g.name;}).join(', ') : '') + (s.specialCourse ? ' · 방학특강 신청' : '');
 
   // 클래스룸 연결 영역 (캐시 있으면 즉시, 없으면 로드 후)
   if(classUsersLoaded){ renderClassLink(sid); }
@@ -8757,7 +8913,7 @@ function openStudentDetail(sid) {
         var bg = t.score>=90?'var(--green-bg)':t.score>=70?'var(--gold-bg)':'var(--red-bg)';
         return '<div style="display:flex;align-items:center;justify-content:space-between;background:var(--white);border:1px solid var(--line);border-radius:6px;padding:10px 12px;">'
           +'<div style="min-width:0;">'
-          +'<div style="font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(t.name||'테스트')+'</div>'
+          +'<div style="font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(t.name||'테스트')+(isSpecialRecord(t)?specialBadge(t):'')+'</div>'
           +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+t.date+byBadge(t.by)+'</div>'
           +'</div>'
           +'<div style="flex-shrink:0;background:'+bg+';color:'+c+';font-weight:700;font-size:14px;padding:6px 12px;border-radius:6px;margin-left:10px;">'+t.score+'점</div>'
@@ -8860,7 +9016,7 @@ function openStudentDetail(sid) {
     progEl.innerHTML = progRecs.length
       ? progRecs.map(function(p){
           return '<div style="background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:6px;">'
-            +'<div style="font-size:12px;font-weight:700;color:var(--ink);">'+p.book+(p.unit?' · '+p.unit:'')+(p.range?' · '+p.range:'')+'</div>'
+            +'<div style="font-size:12px;font-weight:700;color:var(--ink);">'+p.book+(isSpecialRecord(p)?specialBadge(p):'')+(p.unit?' · '+p.unit:'')+(p.range?' · '+p.range:'')+'</div>'
             +'<div style="display:flex;justify-content:space-between;margin-top:4px;">'
             +'<span style="font-size:11px;color:var(--muted);">'+p.date+'</span>'
             +'</div>'
@@ -8889,7 +9045,7 @@ function openGroupDetail(gid) {
   var uniqueProg = [];
   var seen = {};
   gProgRecs.forEach(function(p){
-    var key = p.date+'||'+p.book+'||'+p.unit;
+    var key = p.date+'||'+p.book+'||'+p.unit+'||'+(p.courseTag||'')+'||'+(isSpecialRecord(p)?specialLabelOf(p):'');
     if(!seen[key]){ seen[key]=true; uniqueProg.push(p); }
   });
   var progEl = document.getElementById('gd-progress');
@@ -8897,7 +9053,7 @@ function openGroupDetail(gid) {
     ? uniqueProg.slice(0,5).map(function(p){
         return '<div style="background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">'
           +'<div>'
-          +'<div style="font-size:13px;font-weight:700;">'+p.book+(p.unit?' · '+p.unit:'')+(p.range?' · '+p.range:'')+'</div>'
+          +'<div style="font-size:13px;font-weight:700;">'+p.book+(isSpecialRecord(p)?specialBadge(p):'')+(p.unit?' · '+p.unit:'')+(p.range?' · '+p.range:'')+'</div>'
           +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+p.date+(p.memo?' · '+p.memo:'')+'</div>'
           +'</div>'
           +'</div>';
@@ -9631,13 +9787,22 @@ function _computeReport(sid, period){
   // 진도 (기간 내)
   var prog = DB.get('progress').filter(function(p){ return p.sid===sid && inRange(p.date); })
     .sort(function(a,b){ return b.date.localeCompare(a.date); });
+  var specialTests = tests.filter(isSpecialRecord);
+  var specialAtt = att.filter(isSpecialRecord);
+  var specialHw = hwAll.filter(isSpecialRecord);
+  var specialProg = prog.filter(isSpecialRecord);
+  var specialScored = specialTests.filter(function(t){ return t.score!=null && !isNaN(t.score); });
+  var specialAvg = specialScored.length ? Math.round(specialScored.reduce(function(a,t){return a+Number(t.score||0);},0)/specialScored.length) : null;
+  var specialNames = specialCourseNamesFrom([specialTests, specialAtt, specialHw, specialProg]);
+  if(s.specialCourse && s.specialCourseName && specialNames.indexOf(s.specialCourseName)===-1) specialNames.unshift(s.specialCourseName);
 
   return {
     student:s, period:period,
     tests:tests, avg:avg,
     att:att, attCnt:attCnt, attTotal:attTotal, attRate:attRate,
     hwStat:hwStat, submitRate:submitRate,
-    prog:prog
+    prog:prog,
+    special:{ tests:specialTests, attendance:specialAtt, homework:specialHw, progress:specialProg, avg:specialAvg, names:specialNames, name:(specialNames.length===1?specialNames[0]:'') }
   };
 }
 
@@ -9693,7 +9858,7 @@ function renderReportGrid(){
     list.forEach(function(s){
       html += '<div onclick="openStudentReport(\''+s.id+'\')" style="background:var(--white);border:0.5px solid var(--line);border-radius:10px;padding:14px 16px;cursor:pointer;transition:transform .08s;" '
         + 'onmouseover="this.style.transform=\'translateY(-2px)\';this.style.borderColor=\'var(--teal)\'" onmouseout="this.style.transform=\'\';this.style.borderColor=\'var(--line)\'">'
-        + '<div style="font-weight:700;font-size:15px;color:var(--ink);margin-bottom:4px;">'+esc2(s.name)+'</div>'
+        + '<div style="font-weight:700;font-size:15px;color:var(--ink);margin-bottom:4px;">'+esc2(s.name)+(s.specialCourse?specialBadge(s):'')+'</div>'
         + '<div style="font-size:12px;color:var(--muted);">'+esc2(s.school||g)+'</div>'
         + '<div style="font-size:11px;color:var(--teal);margin-top:8px;">리포트 보기 →</div>'
         + '</div>';
@@ -9777,6 +9942,20 @@ function renderStudentReport(sid){
     + '<div style="background:var(--white);border:1px solid var(--line);border-radius:10px;padding:16px;text-align:center;"><div style="font-size:12px;color:var(--muted);">테스트 평균</div><div style="font-size:24px;font-weight:700;color:'+(r.avg!=null?scoreColor(r.avg):'var(--muted)')+';">'+(r.avg!=null?r.avg+'점':'—')+'</div></div>'
     + '<div style="background:var(--white);border:1px solid var(--line);border-radius:10px;padding:16px;text-align:center;"><div style="font-size:12px;color:var(--muted);">테스트 횟수</div><div style="font-size:24px;font-weight:700;color:var(--blue);">'+r.tests.length+'회</div></div>'
     + '</div>';
+  if(s.specialCourse || (r.special && (r.special.tests.length || r.special.attendance.length || r.special.homework.length || r.special.progress.length))){
+    var sp = r.special || {tests:[], attendance:[], homework:[], progress:[], avg:null, names:[], name:''};
+    var spTitle = (sp.name || (sp.names && sp.names.length ? sp.names.join(', ') : '방학특강')) + ' 요약';
+    var spProg = sp.progress.slice(0,4).map(function(p){ return esc2((p.book||p.subject||'')+(p.unit?' · '+p.unit:'')+(p.range?' · '+p.range:'')); }).join('<br>');
+    html += '<div style="background:#fffaf0;border:1px solid rgba(154,103,0,.22);border-radius:10px;padding:16px 18px;margin-bottom:12px;">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;">'
+      + '<div style="font-size:14px;font-weight:700;color:#9a6700;">'+esc2(spTitle)+'</div>'
+      + '<div style="font-size:11px;color:#9a6700;">출석 '+sp.attendance.length+'회 · 테스트 '+sp.tests.length+'회 · 숙제 '+sp.homework.length+'건 · 진도 '+sp.progress.length+'건</div>'
+      + '</div>'
+      + '<div style="font-size:13px;color:var(--ink2);line-height:1.8;">'
+      + (sp.avg!=null ? '특강 테스트 평균 '+sp.avg+'점<br>' : '')
+      + (spProg ? spProg : '아직 방학특강으로 표시된 학습 기록이 없습니다.')
+      + '</div></div>';
+  }
 
   // 점수 추이 그래프
   html += '<div style="background:var(--white);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:12px;">'
@@ -10012,6 +10191,19 @@ function exportParentReport(sid){
     + sum('테스트 평균', r.avg!=null? r.avg+'점':'—', r.avg==null?'#b3a89b':(r.avg>=90?'#5fb8a5':r.avg>=70?'#d8a04c':'#d8798f'))
     + sum('테스트 횟수', r.tests.length+'회', '#7f9fd8')
     + '</div>');
+  if(s.specialCourse || (r.special && (r.special.tests.length || r.special.attendance.length || r.special.homework.length || r.special.progress.length))){
+    var sp = r.special || {tests:[], attendance:[], homework:[], progress:[], avg:null, names:[], name:''};
+    var spTitle = (sp.name || (sp.names && sp.names.length ? sp.names.join(', ') : '방학특강')) + ' 수업 요약';
+    var spProg = sp.progress.slice(0,5).map(function(p){
+      return '· '+esc2((p.book||p.subject||'')+(p.unit?' · '+p.unit:'')+(p.range?' · '+p.range:''));
+    }).join('<br>');
+    body += card(esc2(spTitle),
+      '<div style="font-size:14px;color:#6b6156;line-height:1.9;">'
+      + '특강 기록: 출석 '+sp.attendance.length+'회 · 테스트 '+sp.tests.length+'회 · 숙제 '+sp.homework.length+'건 · 진도 '+sp.progress.length+'건'
+      + (sp.avg!=null ? '<br>특강 테스트 평균 '+sp.avg+'점' : '')
+      + (spProg ? '<div style="margin-top:8px;">'+spProg+'</div>' : '<div style="margin-top:8px;color:#9a8fb0;">아직 방학특강으로 표시된 학습 기록이 없습니다.</div>')
+      + '</div>');
+  }
   // 점수 추이
   if(r.tests.length){
     var peerLine = peer && r.avg!=null ? '<div style="font-size:12px;color:#9a8fb0;margin-top:8px;">같은 반 친구들 평균은 '+peer.peerAvg+'점이에요.</div>' : '';
@@ -10121,6 +10313,3 @@ function deleteSentReport(id){
 </script>
 </body>
 </html>
-
-
-
