@@ -3381,7 +3381,7 @@ function specialCourseNamesFrom(lists){
 
 // 학생 선택 셀렉트 채우기
 function populateSel() {
-  var students = DB.get('students');
+  var students = DB.get('students').filter(isActiveStudent);   // 퇴원생은 배정 대상에서 제외
   var sorted = sortByGrade(students);
   var opts = sorted.length
     ? sorted.map(function(s){ return '<option value="'+s.id+'">'+s.name+' ('+s.grade+')</option>'; }).join('')
@@ -3518,6 +3518,21 @@ function showMonthlyStudents(kind){
 
 // 재원생 판정 — 퇴원·반이동 학생 제외
 function isActiveStudent(s){ return !!s && s.status!=='withdrawn' && s.status!=='moved' && !s.withdrawn; }
+// 반 소속 학생 id 중 '현재 재원생'만 (퇴원 기록은 반에 남겨두고 배정에서만 제외)
+function activeMemberIds(g){
+  var all = DB.getRaw('students');
+  return ((g && g.students) || []).filter(function(sid){
+    return isActiveStudent(all.find(function(s){ return s.id===sid; }));
+  });
+}
+// 반 소속 재원생 객체 목록 (학년 정렬)
+function activeMembersOf(g){
+  var all = DB.get('students');
+  return sortByGrade(((g && g.students) || []).map(function(sid){
+    var s = all.find(function(x){ return x.id===sid; });
+    return isActiveStudent(s) ? s : null;
+  }).filter(Boolean));
+}
 
 // 반이동 처리 / 복귀 — 기록은 전부 보존, 반 배정만 백업 후 해제
 function moveStudent(id){
@@ -6399,7 +6414,8 @@ function openGroupModal(id) {
   var g = id ? groups.find(function(x){ return x.id===id; }) : null;
   var selected = g ? (g.students||[]) : [];
   var listEl = document.getElementById('g-students-list');
-  students = students.filter(function(s){ return s.status!=='moved'; });
+  // 퇴원·반이동 학생은 반 편성 목록에 노출하지 않는다 (기존 소속 기록은 유지)
+  students = students.filter(isActiveStudent);
   listEl.innerHTML = students.length ? sortByGrade(students).map(function(s){
     var checked = selected.includes(s.id) ? 'checked' : '';
     return '<label style="display:flex;align-items:center;gap:5px;background:var(--white);padding:5px 10px;border-radius:3px;border:1px solid var(--line);cursor:pointer;font-size:12px;"><input type="checkbox" value="'+s.id+'" '+checked+' style="width:auto;"> '+s.name+' <span style="color:var(--muted);font-size:10px;">('+s.class+')</span></label>';
@@ -6447,10 +6463,7 @@ function renderGroups() {
     return;
   }
   groups.forEach(function(g) {
-    var sNames = (g.students||[]).map(function(sid){
-      var s = students.find(function(x){ return x.id===sid; });
-      return s ? s.name : null;
-    }).filter(Boolean);
+    var sNames = activeMembersOf(g).map(function(s){ return s.name; });
     var nameChips = sNames.length
       ? sNames.map(function(n){ return '<span style="background:var(--bg2);padding:3px 8px;border-radius:100px;font-size:11px;">'+n+'</span>'; }).join('')
       : '<span style="color:var(--muted);font-size:12px;">학생 없음</span>';
@@ -6562,13 +6575,10 @@ function updateGhwStudents() {
   var g = groups.find(function(x){ return x.id===gid; });
   var el = document.getElementById('ghw-students');
   if(!g) { el.innerHTML='반을 선택하면 학생 목록이 표시됩니다.'; return; }
-  var sNames = (g.students||[]).map(function(sid){
-    var s = students.find(function(x){ return x.id===sid; });
-    return s ? s.name : null;
-  }).filter(Boolean);
+  var sNames = activeMembersOf(g).map(function(s){ return s.name; });
   el.innerHTML = sNames.length
     ? '등록 대상: <b>' + sNames.join(', ') + '</b> (총 '+sNames.length+'명)'
-    : '이 반에 학생이 없습니다.';
+    : '이 반에 재원 중인 학생이 없습니다.';
 }
 
 function saveGroupHw() {
@@ -6592,8 +6602,8 @@ function saveGroupHw() {
   var courseTag = getCourseTagFrom('ghw-special');
   var courseName = getCourseNameFrom('ghw-special');
   var now=Date.now(), cnt=0;
-  g.students.forEach(function(sid){
-    if(!allStudents.find(function(s){ return s.id===sid; })) return; // 퇴원 학생 제외
+  activeMemberIds(g).forEach(function(sid){
+    if(!allStudents.find(function(s){ return s.id===sid; })) return; // 삭제된 학생 제외
     blocks.forEach(function(b,bi){
       recs.push(applyCourseTag(_applyAioFields({ id:(now+cnt)+'_'+sid+'_'+bi, sid:sid,
         name:_hwName(b),
@@ -7648,7 +7658,8 @@ function updateGroupProgressList() {
     el.innerHTML = '반에 학생이 없습니다.';
     return;
   }
-  var gpStudents = sortByGrade(g.students.map(function(sid){ return students.find(function(x){ return x.id===sid; }); }).filter(Boolean));
+  var gpStudents = activeMembersOf(g);
+  if(!gpStudents.length){ el.innerHTML='이 반에 재원 중인 학생이 없습니다.'; return; }
   var sNames = gpStudents.map(function(s){
     return '<span style="background:var(--white);padding:3px 8px;border-radius:100px;font-size:11px;font-weight:500;">'+s.name+'</span>';
   }).join(' ');
@@ -7671,7 +7682,9 @@ function saveGroupProgress() {
   var gName   = g.name;
   var courseTag = getCourseTagFrom('gp-special');
   var courseName = getCourseNameFrom('gp-special');
-  g.students.forEach(function(sid){
+  var gpIds = activeMemberIds(g);
+  if(!gpIds.length){ toast('이 반에 재원 중인 학생이 없습니다'); return; }
+  gpIds.forEach(function(sid){
     recs.push(applyCourseTag({
       id: Date.now().toString()+sid,
       sid: sid,
@@ -7683,7 +7696,7 @@ function saveGroupProgress() {
   DB.set('progress', recs);
   closeModal('modal-group-progress');
   renderProgress(); renderProgCalendar();
-  toast(g.name+' '+g.students.length+'명 진도 저장 완료!');
+  toast(g.name+' '+gpIds.length+'명 진도 저장 완료!');
 }
 
 // ══ 출결 달력 ════════════════════════════════════
@@ -8178,7 +8191,7 @@ function updateGroupTestList() {
       hint.textContent = (!isNaN(total)&&total>0 ? ('학생별 틀린 번호를 클릭하세요 (전체 '+total+'문항)') : '위에서 전체 문항을 입력하면 틀린 번호로 채점됩니다');
     }
   }
-  var gtStudents = sortByGrade(g.students.map(function(sid){ return students.find(function(x){ return x.id===sid; }); }).filter(Boolean));
+  var gtStudents = activeMembersOf(g);
   gtStudents.forEach(function(s) {
     var sid = s.id;
     var row = document.createElement('div');
@@ -8264,8 +8277,8 @@ function saveGroupTest() {
   var recs = DB.get('tests');
   var allStudents = DB.get('students');
   var saved = 0;
-  g.students.forEach(function(sid){
-    // 삭제된(퇴원) 학생 id는 건너뜀
+  activeMemberIds(g).forEach(function(sid){
+    // 삭제된 학생 id는 건너뜀
     if(!allStudents.find(function(s){ return s.id===sid; })) return;
     var memoEl = document.getElementById('gt-memo-'+sid);
     var rec = Object.assign({}, meta, { id:Date.now().toString()+sid, sid:sid, memo:memoEl?memoEl.value:'', by:currentInputter(), byAt:new Date().toISOString() });
@@ -8316,8 +8329,8 @@ function saveGroupTestPending(){
   var recs = DB.get('tests');
   var allStudents = DB.get('students');
   var saved = 0;
-  g.students.forEach(function(sid){
-    if(!allStudents.find(function(s){ return s.id===sid; })) return;  // 퇴원 학생 제외
+  activeMemberIds(g).forEach(function(sid){
+    if(!allStudents.find(function(s){ return s.id===sid; })) return;  // 삭제된 학생 제외
     var rec = Object.assign({}, meta, { id:Date.now().toString()+sid, sid:sid, score:null, correct:null, pending:true, memo:'', by:currentInputter(), byAt:new Date().toISOString() });
     recs.push(rec);
     saved++;
