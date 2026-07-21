@@ -3918,9 +3918,9 @@ function renderAttendance() {
 
   sortByGrade(students.filter(isActiveStudent)).forEach(function(s) {
     var sRecs   = recs.filter(function(r){ return r.sid===s.id; }).sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,10);
-    var total   = recs.filter(function(r){ return r.sid===s.id; }).length;
-    var present = recs.filter(function(r){ return r.sid===s.id && (r.status==='O'||r.status==='B'); }).length;
-    var absent  = recs.filter(function(r){ return r.sid===s.id && r.status==='X'; }).length;
+    var total   = recs.filter(function(r){ return r.sid===s.id && !isSpecialRecord(r); }).length;
+    var present = recs.filter(function(r){ return r.sid===s.id && !isSpecialRecord(r) && (r.status==='O'||r.status==='B'); }).length;
+    var absent  = recs.filter(function(r){ return r.sid===s.id && !isSpecialRecord(r) && r.status==='X'; }).length;
     var rate    = total ? Math.round(present/total*100)+'%' : '—';
     // 오늘 등원했는지(출석/지각/보강)
     var todayRec = recs.find(function(r){ return r.sid===s.id && r.date===_todayA; });
@@ -6323,7 +6323,7 @@ function renderDashboard() {
 
   var today = new Date();
   var weekAgo = new Date(today-7*86400000).toISOString().slice(0,10);
-  var weekRecs = recs.filter(function(r){ return r.date>=weekAgo; });
+  var weekRecs = recs.filter(function(r){ return r.date>=weekAgo && !isSpecialRecord(r); });
   var weekRate = weekRecs.length ? Math.round(weekRecs.filter(function(r){ return r.status==='O'||r.status==='B'; }).length/weekRecs.length*100)+'%' : '—';
   if(el('dash-att')) el('dash-att').textContent = weekRate;
 
@@ -8892,8 +8892,8 @@ function openStudentDetail(sid) {
   var s = students.find(function(x){ return x.id===sid; });
   if(!s) return;
 
-  var tests = DB.get('tests').filter(function(t){ return t.sid===sid; }).sort(function(a,b){ return a.date.localeCompare(b.date); });
-  var att   = DB.get('attendance').filter(function(r){ return r.sid===sid; });
+  var tests = DB.get('tests').filter(function(t){ return t.sid===sid && !isSpecialRecord(t); }).sort(function(a,b){ return a.date.localeCompare(b.date); });
+  var att   = DB.get('attendance').filter(function(r){ return r.sid===sid && !isSpecialRecord(r); });
   var hw    = DB.get('homework').filter(function(h){ return h.sid===sid && !isHwSubmitted(h); });
   var myGroups = getStudentGroups(sid);
 
@@ -9778,12 +9778,14 @@ function _computeReport(sid, period){
   function inRange(dateStr){ return dateStr && dateStr>=from && dateStr<=to; }
 
   // 테스트 (기간 내)
-  var tests = DB.get('tests').filter(function(t){ return t.sid===sid && inRange(t.date); })
+  var testsAll = DB.get('tests').filter(function(t){ return t.sid===sid && inRange(t.date); })
     .sort(function(a,b){ return a.date.localeCompare(b.date); });
+  var tests = testsAll.filter(function(t){ return !isSpecialRecord(t); });
   var avg = tests.length ? Math.round(tests.reduce(function(a,t){return a+t.score;},0)/tests.length) : null;
 
   // 출석 (기간 내)
-  var att = DB.get('attendance').filter(function(r){ return r.sid===sid && inRange(r.date); });
+  var attAll = DB.get('attendance').filter(function(r){ return r.sid===sid && inRange(r.date); });
+  var att = attAll.filter(function(r){ return !isSpecialRecord(r); });
   var attCnt = {O:0,X:0,T:0,B:0,E:0};
   att.forEach(function(r){ if(attCnt[r.status]!==undefined) attCnt[r.status]++; });
   var attTotal = att.length;
@@ -9791,7 +9793,8 @@ function _computeReport(sid, period){
   var attRate = attTotal ? Math.round(present/attTotal*100) : null;
 
   // 과제 성실도 (기간 내 마감인 숙제 기준)
-  var hwAll = DB.get('homework').filter(function(h){ return h.sid===sid && inRange(h.due); });
+  var hwAllRaw = DB.get('homework').filter(function(h){ return h.sid===sid && inRange(h.due); });
+  var hwAll = hwAllRaw.filter(function(h){ return !isSpecialRecord(h); });
   var todayStr = new Date().toISOString().slice(0,10);
   var hwStat = {total:0, submitted:0, ontime:0, late:0, unknown:0, notsubmitted:0, pending:0};
   hwAll.forEach(function(h){
@@ -9810,12 +9813,14 @@ function _computeReport(sid, period){
   var submitRate = hwStat.total ? Math.round(hwStat.submitted/hwStat.total*100) : null;
 
   // 진도 (기간 내)
-  var prog = DB.get('progress').filter(function(p){ return p.sid===sid && inRange(p.date); })
+  var progAll = DB.get('progress').filter(function(p){ return p.sid===sid && inRange(p.date); })
     .sort(function(a,b){ return b.date.localeCompare(a.date); });
-  var specialTests = tests.filter(isSpecialRecord);
-  var specialAtt = att.filter(isSpecialRecord);
-  var specialHw = hwAll.filter(isSpecialRecord);
-  var specialProg = prog.filter(isSpecialRecord);
+  var prog = progAll.filter(function(p){ return !isSpecialRecord(p); });
+  // 특강 기록은 정규 통계(출석률·평균·성실도)에서 제외하고 '특강 요약'에서만 집계한다
+  var specialTests = testsAll.filter(isSpecialRecord);
+  var specialAtt = attAll.filter(isSpecialRecord);
+  var specialHw = hwAllRaw.filter(isSpecialRecord);
+  var specialProg = progAll.filter(isSpecialRecord);
   var specialScored = specialTests.filter(function(t){ return t.score!=null && !isNaN(t.score); });
   var specialAvg = specialScored.length ? Math.round(specialScored.reduce(function(a,t){return a+Number(t.score||0);},0)/specialScored.length) : null;
   var specialNames = specialCourseNamesFrom([specialTests, specialAtt, specialHw, specialProg]);
