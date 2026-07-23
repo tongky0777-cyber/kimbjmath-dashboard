@@ -1588,6 +1588,7 @@ body.role-assistant .teacher-only{ display:none !important; }
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(window.pdfjsLib){ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }</script>
 <script src="./typemap.js"></script>
@@ -1600,9 +1601,10 @@ window._CLS_PREFIX = "";
 window._fbReady = false;
 (function(){
   try{
-    var FBCONFIG={apiKey:"AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",databaseURL:"https://kimbjmath-default-rtdb.firebaseio.com",projectId:"kimbjmath",appId:"1:664889936709:web:2df1494b0cd978c64e4c2c"};
+    var FBCONFIG={apiKey:"AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",databaseURL:"https://kimbjmath-default-rtdb.firebaseio.com",projectId:"kimbjmath",appId:"1:664889936709:web:2df1494b0cd978c64e4c2c",storageBucket:"kimbjmath.firebasestorage.app"};
     if(!firebase.apps.length)firebase.initializeApp(FBCONFIG);
     var db=firebase.database();window._fbDb=db;
+    try{ window._fbStorage = firebase.storage ? firebase.storage() : null; }catch(e){ window._fbStorage=null; }
     // 익명 로그인 (wronganswers 등 auth!=null 규칙이 걸린 노드 접근용)
     window._authReady = (firebase.auth ? firebase.auth().signInAnonymously()
       .catch(function(e){ console.error('익명 로그인 실패:', e&&e.code, e&&e.message); })
@@ -2504,6 +2506,34 @@ function onDailyPdfPick(ev){
 function getDailyProblems(){ return DB.get('daily_problems')||[]; }
 function getDailySubs(){ return DB.getOne('daily_subs')||{}; }  // {probId:{sid:{answer,correct,at}}}
 
+// dataURL → Storage 업로드 후 다운로드 URL 반환
+function _uploadDailyImg(id, kind, dataURL){
+  var st=window._fbStorage;
+  if(!st) return Promise.reject(new Error('storage 미초기화'));
+  var ref=st.ref('daily/'+id+'/'+kind+'.jpg');
+  return ref.putString(dataURL, 'data_url', {contentType:'image/jpeg'})
+    .then(function(snap){ return snap.ref.getDownloadURL(); });
+}
+// probs 배열에 넣고 저장(로컬+동기화). 이제 imgQ/imgA는 짧은 URL이라 용량 문제 없음.
+function _commitDailyProblem(prob, date){
+  var probs=getDailyProblems();
+  probs.push(prob);
+  try {
+    DB.set('daily_problems', probs);
+  } catch(e){
+    var isQuota = e && (e.name==='QuotaExceededError' || /quota|exceeded/i.test(e.message||''));
+    alert(isQuota
+      ? '⚠️ 저장 공간이 가득 찼어요.\n오래된 문제를 몇 개 지우면 다시 저장할 수 있어요.'
+      : '저장에 실패했어요. 다시 시도해 주세요.\n('+(e&&e.message||e)+')');
+    return false;
+  }
+  closeModal('modal-daily');
+  toast('오늘의 문제를 등록했어요');
+  var dt=new Date(date+'T00:00:00');
+  _dailyCalY=dt.getFullYear(); _dailyCalM=dt.getMonth();
+  dailySelectDate(date);
+  return true;
+}
 function saveDailyProblem(){
   if(isAssistant()){ toast('문제 등록은 선생님만 할 수 있어요'); return; }
   if(!_dailyImgs.q || !_dailyImgs.a){ toast('PDF를 올려주세요'); return; }
@@ -2513,27 +2543,49 @@ function saveDailyProblem(){
   var answer = (type==='mc') ? document.getElementById('daily-answer-mc').value
                              : document.getElementById('daily-answer-short').value.trim();
   if(type==='short' && !answer){ toast('정답을 입력해주세요'); return; }
-  var probs=getDailyProblems();
+  var id='dp'+Date.now();
   var prob={
-    id:'dp'+Date.now(),
+    id:id,
     date:date, type:type, answer:answer,
     tag:document.getElementById('daily-tag').value.trim(),
-    imgQ:_dailyImgs.q, imgA:_dailyImgs.a,
+    imgQ:null, imgA:null,
     createdAt:new Date().toISOString()
   };
-  probs.push(prob);
-  DB.set('daily_problems', probs);
-  closeModal('modal-daily');
-  toast('오늘의 문제를 등록했어요');
-  // 등록한 날짜로 캘린더 이동 + 선택
-  var dt=new Date(date+'T00:00:00');
-  _dailyCalY=dt.getFullYear(); _dailyCalM=dt.getMonth();
-  dailySelectDate(date);
+  var btn=document.getElementById('daily-save-btn');
+  var st=document.getElementById('daily-pdf-status');
+  // Storage 사용 가능하면 이미지를 업로드하고 주소만 저장 (base64를 localStorage에 넣지 않음)
+  if(window._fbStorage){
+    if(btn){ btn.disabled=true; btn.textContent='이미지 업로드 중…'; }
+    if(st) st.textContent='이미지 업로드 중… (잠시만요)';
+    _uploadDailyImg(id,'q',_dailyImgs.q)
+      .then(function(qUrl){ prob.imgQ=qUrl; return _uploadDailyImg(id,'a',_dailyImgs.a); })
+      .then(function(aUrl){
+        prob.imgA=aUrl; prob.storage=true;
+        _commitDailyProblem(prob, date);
+        if(btn){ btn.disabled=false; btn.textContent='등록'; }
+      })
+      .catch(function(e){
+        if(btn){ btn.disabled=false; btn.textContent='등록'; }
+        if(st) st.textContent='';
+        alert('이미지 업로드에 실패했어요.\n인터넷 연결을 확인하고 다시 시도해 주세요.\n('+(e&&e.message||e)+')');
+      });
+    return;
+  }
+  // Storage 미사용(구버전)일 땐 기존처럼 base64로 저장(용량 안전장치 포함)
+  prob.imgQ=_dailyImgs.q; prob.imgA=_dailyImgs.a;
+  _commitDailyProblem(prob, date);
 }
 
 function deleteDailyProblem(id){
   if(isAssistant()){ toast('삭제는 선생님만 할 수 있어요'); return; }
   if(!confirm('이 문제를 삭제할까요? (학생 제출 기록도 함께 사라집니다)')) return;
+  var prob=getDailyProblems().find(function(p){ return p.id===id; });
+  // Storage에 올린 이미지면 파일도 정리 (실패해도 무시 — 데이터 삭제가 우선)
+  if(prob && prob.storage && window._fbStorage){
+    ['q','a'].forEach(function(kind){
+      try{ window._fbStorage.ref('daily/'+id+'/'+kind+'.jpg')['delete']().catch(function(){}); }catch(e){}
+    });
+  }
   DB.set('daily_problems', getDailyProblems().filter(function(p){ return p.id!==id; }));
   var subs=getDailySubs(); delete subs[id]; DB.setOne('daily_subs', subs);
   renderDailyCalendar();
