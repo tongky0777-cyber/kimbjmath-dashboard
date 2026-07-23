@@ -2325,6 +2325,15 @@ function examScoreKeyOfRecord(t){
     }, total:22, full:100 };
     changed=true;
   }
+  // 2025 경북고 미적분Ⅰ 1학기 중간 (20문항, 만점 100 / 17~20번 서술형)
+  var KEY24='gicul||2025||경북고||미적분Ⅰ||1학기||중간';
+  if(!tables[KEY24]){
+    tables[KEY24]={ points:{
+      1:3.0, 2:3.2, 3:3.3, 4:3.5, 5:3.7, 6:3.7, 7:3.8, 8:4.0, 9:4.0, 10:4.2,
+      11:4.3, 12:4.3, 13:4.5, 14:4.7, 15:5.3, 16:5.5, 17:8.0, 18:9.0, 19:9.0, 20:9.0
+    }, total:20, full:100 };
+    changed=true;
+  }
   if(changed) setExamScoreTables(tables);
 })();
 
@@ -4104,6 +4113,12 @@ function collectTestData(){
     data.unit=document.getElementById('test-unit').value;
   }
   var isGicul = (name==='기출 Test' || name==='모의고사 기출');
+  // 안전장치: 기출이고 배점표가 있는데 전체 문항이 비어 있으면 배점표 문항수로 자동 채움
+  // (전체 문항을 깜빡해 '미채점'으로 빠지던 문제 방지)
+  if(isGicul && (isNaN(total) || total<=0)){
+    var _autoTbl = getExamScoreTables()[currentExamScoreKey()];
+    if(_autoTbl && _autoTbl.total){ total = _autoTbl.total; data.total = total; }
+  }
   // 저장용 틀린목록 — 소문항("17-2") 포함, total 넘는 부모번호만 제외
   var wrong = getWrongList().filter(function(k){ return wrongBaseNo(k)<=total; });
   data.wrong = wrong;
