@@ -35,6 +35,21 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 
 /* 카드 */
 .card{background:var(--white);border-radius:10px;border:1px solid var(--line);margin-bottom:12px;overflow:hidden;}
+/* 달력 */
+.cal-wrap{background:var(--white);border:1px solid var(--line);border-radius:12px;padding:10px 8px;margin-bottom:12px;}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding:0 4px;}
+.cal-nav button{background:none;border:none;font-size:20px;padding:2px 14px;cursor:pointer;color:var(--navy);}
+.cal-title{font-size:15px;font-weight:700;color:var(--navy);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-dow{text-align:center;font-size:10px;color:var(--muted);padding:3px 0;}
+.cal-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12.5px;border-radius:8px;cursor:pointer;color:var(--ink);}
+.cal-cell.empty{visibility:hidden;}
+.cal-cell.has{font-weight:700;}
+.cal-cell .dot{width:5px;height:5px;border-radius:50%;background:var(--navy);margin-top:2px;}
+.cal-cell.sel{background:var(--navy);color:#fff;}
+.cal-cell.sel .dot{background:#fff;}
+.cal-cell.today{box-shadow:inset 0 0 0 1.5px var(--navy);}
+.cal-detail-date{font-size:13px;font-weight:700;color:var(--navy);margin:4px 2px 8px;}
 .card-header{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;}
 .card-title{font-size:13px;font-weight:700;}
 .card-body{padding:12px 14px;}
@@ -122,7 +137,6 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 
 <!-- 출석 -->
 <div class="view" id="view-attendance">
-  <input class="search-box" type="date" id="att-date-picker" onchange="renderAttendance()">
   <div id="attendance-body"></div>
 </div>
 
@@ -246,6 +260,38 @@ function switchTab(name, el){
 
 // 재원생 판정 (퇴원·반이동 제외)
 function isActive(s){ return s && s.status!=='withdrawn' && s.status!=='moved' && !s.withdrawn && !s.left; }
+
+// ===== 공용 달력 =====
+var _cal = {
+  attendance:{ y:today.getFullYear(), m:today.getMonth(), sel:fmt(today) },
+  tests:{ y:today.getFullYear(), m:today.getMonth(), sel:fmt(today) },
+  planner:{ y:today.getFullYear(), m:today.getMonth(), sel:fmt(today) }
+};
+function moveCalMonth(kind,dir){ var c=_cal[kind]; var d=new Date(c.y,c.m+dir,1); c.y=d.getFullYear(); c.m=d.getMonth(); rerenderCal(kind); }
+function pickCal(kind,ds){ _cal[kind].sel=ds; rerenderCal(kind); }
+function rerenderCal(kind){ if(kind==='attendance')renderAttendance(); else if(kind==='tests')renderTests(); else if(kind==='planner')renderPlanner(); }
+// markSet: {'YYYY-MM-DD':true} 데이터 있는 날 표시
+function buildCalendar(kind, markSet){
+  var c=_cal[kind], y=c.y, m=c.m, sel=c.sel;
+  var startDow=new Date(y,m,1).getDay();
+  var daysIn=new Date(y,m+1,0).getDate();
+  var todayStr=fmt(new Date());
+  var dows=['일','월','화','수','목','금','토'];
+  var h='<div class="cal-wrap"><div class="cal-nav">'
+    +'<button onclick="moveCalMonth(\''+kind+'\',-1)">‹</button>'
+    +'<span class="cal-title">'+y+'년 '+(m+1)+'월</span>'
+    +'<button onclick="moveCalMonth(\''+kind+'\',1)">›</button></div>';
+  h+='<div class="cal-grid">'+dows.map(function(d){return '<div class="cal-dow">'+d+'</div>';}).join('');
+  for(var i=0;i<startDow;i++) h+='<div class="cal-cell empty"></div>';
+  for(var d=1;d<=daysIn;d++){
+    var ds=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var cls='cal-cell'+(markSet[ds]?' has':'')+(ds===sel?' sel':'')+(ds===todayStr?' today':'');
+    h+='<div class="'+cls+'" onclick="pickCal(\''+kind+'\',\''+ds+'\')">'+d+(markSet[ds]?'<span class="dot"></span>':'')+'</div>';
+  }
+  h+='</div></div>';
+  return h;
+}
+function _dowLabel(ds){ var d=new Date(ds+'T00:00:00'); return ds+' ('+DAYS[d.getDay()]+')'; }
 var STATUS_MAP={'O':'출석','X':'결석','T':'지각','B':'보강','E':'조퇴'};
 function statusColor(st){ return st==='O'||st==='B'?'var(--green)':st==='X'?'var(--red)':'var(--gold)'; }
 
@@ -281,13 +327,13 @@ function renderOverview(){
   document.getElementById('overview-body').innerHTML=html;
 }
 
-// ===== 출석 (날짜별) =====
+// ===== 출석 (달력 + 그날 학생별) =====
 function renderAttendance(){
-  var picker=document.getElementById('att-date-picker');
-  var date=picker && picker.value ? picker.value : fmt(new Date());
-  if(picker && !picker.value) picker.value=date;
+  var allAtt=get('bjm_attendance').filter(function(r){ return r && r.date && !r.courseTag; });
+  var marks={}; allAtt.forEach(function(r){ marks[r.date]=true; });
+  var sel=_cal.attendance.sel;
   var students=get('bjm_students').filter(isActive);
-  var att=get('bjm_attendance').filter(function(r){ return r.date===date && !r.courseTag; });
+  var att=allAtt.filter(function(r){ return r.date===sel; });
   var byId={}; att.forEach(function(r){ byId[r.sid]=r.status; });
   var cnt={O:0,X:0,T:0,B:0,E:0,none:0};
   var sorted=students.slice().sort(function(a,b){ return (a.grade||'').localeCompare(b.grade||'')||(a.name||'').localeCompare(b.name||''); });
@@ -297,25 +343,32 @@ function renderAttendance(){
       +'<span style="font-size:13px;">'+s.name+' <span style="color:var(--muted);font-size:11px;">'+(s.grade||'')+'</span></span>'
       +'<span style="font-weight:700;font-size:13px;color:'+(st?statusColor(st):'var(--muted)')+';">'+(st?STATUS_MAP[st]||st:'미입력')+'</span></div>';
   }).join('');
-  var head='<div style="font-size:12px;color:var(--muted);margin-bottom:10px;">출석 '+cnt.O+' · 지각 '+cnt.T+' · 결석 '+cnt.X+' · 보강 '+cnt.B+' · 미입력 '+cnt.none+'</div>';
-  document.getElementById('attendance-body').innerHTML=head+(rows||'<div class="empty">학생이 없습니다</div>');
+  var head='<div class="cal-detail-date">'+_dowLabel(sel)+'</div>'
+    +'<div style="font-size:12px;color:var(--muted);margin-bottom:10px;">출석 '+cnt.O+' · 지각 '+cnt.T+' · 결석 '+cnt.X+' · 보강 '+cnt.B+' · 미입력 '+cnt.none+'</div>';
+  document.getElementById('attendance-body').innerHTML=buildCalendar('attendance',marks)+head+(rows||'<div class="empty">학생이 없습니다</div>');
 }
 
-// ===== 테스트 (최근 점수) =====
+// ===== 테스트 (달력 + 그날 점수) =====
 function renderTests(){
   var students=get('bjm_students');
   var nameOf={}; students.forEach(function(s){ nameOf[s.id]=s.name; });
-  var tests=get('bjm_tests').filter(function(t){ return t && t.date; }).sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); }).slice(0,60);
-  if(!tests.length){ document.getElementById('tests-body').innerHTML='<div class="empty">테스트 기록이 없습니다</div>'; return; }
-  document.getElementById('tests-body').innerHTML=tests.map(function(t){
+  var all=get('bjm_tests').filter(function(t){ return t && t.date; });
+  var marks={}; all.forEach(function(t){ marks[t.date]=true; });
+  var sel=_cal.tests.sel;
+  var tests=all.filter(function(t){ return t.date===sel; })
+    .sort(function(a,b){ return (b.score||0)-(a.score||0); });
+  var detail;
+  if(!tests.length){ detail='<div class="empty" style="padding:20px 0;">이 날 테스트 기록이 없어요</div>'; }
+  else detail=tests.map(function(t){
     var sc=(t.score!=null?t.score+'점':(t.pending?'미채점':'—'));
     var col=t.score==null?'var(--muted)':(t.score>=90?'var(--green)':t.score>=70?'var(--gold)':'var(--red)');
     var numer=(t.fullScore!=null&&t.gotScore!=null)?' ('+t.gotScore+'/'+t.fullScore+')':'';
     return '<div class="card" style="padding:11px 13px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;">'
       +'<div style="min-width:0;flex:1;"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(nameOf[t.sid]||'—')+'</div>'
-      +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+(t.name||'')+' · '+(t.date||'')+'</div></div>'
+      +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+(t.name||'')+'</div></div>'
       +'<div style="font-weight:700;font-size:15px;color:'+col+';flex-shrink:0;">'+sc+'<span style="font-size:10px;font-weight:400;color:var(--muted);">'+numer+'</span></div></div>';
   }).join('');
+  document.getElementById('tests-body').innerHTML=buildCalendar('tests',marks)+'<div class="cal-detail-date">'+_dowLabel(sel)+'</div>'+detail;
 }
 
 // 학생 조회
@@ -435,40 +488,25 @@ function renderExam(){
   }).join('');
 }
 
-// 플래너
+// 플래너 (달력 + 그날 일정)
 function renderPlanner(){
-  var events = get('planner_events');
+  var events = get('planner_events').filter(function(e){ return e && e.date; });
   var el = document.getElementById('planner-list');
-  if(!events.length){ el.innerHTML='<div class="empty">등록된 일정이 없습니다<br><small>플래너 페이지에서 추가해주세요</small></div>'; return; }
-  var today = fmt(new Date());
-  var upcoming = events.filter(function(e){ return e.date>=today; }).sort(function(a,b){ return a.date.localeCompare(b.date)||a.time.localeCompare(b.time); });
-  var past = events.filter(function(e){ return e.date<today; }).sort(function(a,b){ return b.date.localeCompare(a.date)||b.time.localeCompare(a.time); }).slice(0,10);
-  var TYPE_COLOR={'study':'var(--blue)','class':'var(--green)','admin':'var(--gold)','personal':'var(--pink-bg)','prep':'var(--red)'};
-  var TYPE_LABEL={'study':'스터디','class':'수업','admin':'행정','personal':'개인','prep':'수업준비'};
-  function renderEvents(evs){
-    var grouped = {};
-    evs.forEach(function(e){
-      if(!grouped[e.date]) grouped[e.date]=[];
-      grouped[e.date].push(e);
-    });
-    return Object.keys(grouped).map(function(date){
-      var d = new Date(date);
-      var dayStr = date+' ('+DAYS[d.getDay()]+')';
-      return '<div class="planner-day">'+
-        '<div class="planner-day-title">'+dayStr+'</div>'+
-        grouped[date].map(function(e){
-          var col = TYPE_COLOR[e.type]||'var(--navy)';
-          return '<div class="planner-event" style="border-left-color:'+col+';">'+
-            '<div class="planner-event-title">'+e.title+'</div>'+
-            '<div class="planner-event-meta">'+e.time+' · '+(TYPE_LABEL[e.type]||e.type)+(e.memo?' · '+e.memo.slice(0,20):'')+' </div>'+
-            '</div>';
-        }).join('')+'</div>';
-    }).join('');
-  }
-  el.innerHTML = '<div class="section-title">다가오는 일정</div>'+
-    (upcoming.length ? renderEvents(upcoming) : '<div class="empty">다가오는 일정이 없습니다</div>')+
-    '<div class="section-title" style="margin-top:8px;">지난 일정</div>'+
-    (past.length ? renderEvents(past) : '<div class="empty">지난 일정이 없습니다</div>');
+  var marks={}; events.forEach(function(e){ marks[e.date]=true; });
+  var sel=_cal.planner.sel;
+  var TYPE_COLOR={'study':'var(--blue)','class':'var(--green)','admin':'var(--gold)','personal':'var(--navy)','prep':'var(--red)','studyprep':'var(--green)'};
+  var TYPE_LABEL={'study':'스터디','class':'수업','admin':'행정','personal':'개인','prep':'수업준비','studyprep':'스터디 준비'};
+  var day=events.filter(function(e){ return e.date===sel; }).sort(function(a,b){ return (a.time||'').localeCompare(b.time||''); });
+  var detail;
+  if(!day.length){ detail='<div class="empty" style="padding:20px 0;">이 날 일정이 없어요</div>'; }
+  else detail=day.map(function(e){
+    var col=TYPE_COLOR[e.type]||'var(--navy)';
+    return '<div class="planner-event" style="border-left-color:'+col+';">'+
+      '<div class="planner-event-title">'+(e.title||'')+'</div>'+
+      '<div class="planner-event-meta">'+(e.time||'')+' · '+(TYPE_LABEL[e.type]||e.type||'')+(e.memo?' · '+e.memo.slice(0,30):'')+'</div>'+
+      '</div>';
+  }).join('');
+  el.innerHTML=buildCalendar('planner',marks)+'<div class="cal-detail-date">'+_dowLabel(sel)+'</div>'+detail;
 }
 
 loadFromFirebase();
