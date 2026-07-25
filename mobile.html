@@ -145,6 +145,11 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
   <div id="tests-body"></div>
 </div>
 
+<!-- 숙제 -->
+<div class="view" id="view-homework">
+  <div id="homework-body"></div>
+</div>
+
 <!-- 보강 -->
 <div class="view" id="view-makeup">
   <div class="section-title">예정된 보강</div>
@@ -181,6 +186,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
   <div class="tab-item" onclick="switchTab('students',this)"><div class="icon">👥</div>학생</div>
   <div class="tab-item" onclick="switchTab('attendance',this)"><div class="icon">✅</div>출석</div>
   <div class="tab-item" onclick="switchTab('tests',this)"><div class="icon">📝</div>테스트</div>
+  <div class="tab-item" onclick="switchTab('homework',this)"><div class="icon">📚</div>숙제</div>
   <div class="tab-item" onclick="switchTab('planner',this)"><div class="icon">🗓️</div>플래너</div>
 </div>
 
@@ -214,7 +220,7 @@ function loadFromFirebase(){
   var FBCONFIG={apiKey:"AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",databaseURL:"https://kimbjmath-default-rtdb.firebaseio.com",projectId:"kimbjmath",appId:"1:664889936709:web:2df1494b0cd978c64e4c2c"};
   if(!firebase.apps.length)firebase.initializeApp(FBCONFIG);
   var db=firebase.database();
-  var keys=["bjm_students","bjm_attendance","bjm_homework","bjm_tests","bjm_progress","bjm_groups","bjm_schedules","bjm_exams","tt_classes","planner_events"];
+  var keys=["bjm_students","bjm_attendance","bjm_homework","bjm_tests","bjm_progress","bjm_groups","bjm_schedules","bjm_exams","bjm_planner_events"];
   function doLoad(){
     var loaded=0;
     keys.forEach(function(k){
@@ -242,6 +248,7 @@ function renderAll(){
   renderStudents('');
   renderAttendance();
   renderTests();
+  renderHomework();
   renderPlanner();
 }
   function fmt(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -255,6 +262,7 @@ function switchTab(name, el){
   if(name==='students') renderStudents('');
   if(name==='attendance') renderAttendance();
   if(name==='tests') renderTests();
+  if(name==='homework') renderHomework();
   if(name==='planner') renderPlanner();
 }
 
@@ -265,11 +273,12 @@ function isActive(s){ return s && s.status!=='withdrawn' && s.status!=='moved' &
 var _cal = {
   attendance:{ y:today.getFullYear(), m:today.getMonth(), sel:fmt(today) },
   tests:{ y:today.getFullYear(), m:today.getMonth(), sel:fmt(today) },
+  homework:{ y:today.getFullYear(), m:today.getMonth(), sel:fmt(today) },
   planner:{ y:today.getFullYear(), m:today.getMonth(), sel:fmt(today) }
 };
 function moveCalMonth(kind,dir){ var c=_cal[kind]; var d=new Date(c.y,c.m+dir,1); c.y=d.getFullYear(); c.m=d.getMonth(); rerenderCal(kind); }
 function pickCal(kind,ds){ _cal[kind].sel=ds; rerenderCal(kind); }
-function rerenderCal(kind){ if(kind==='attendance')renderAttendance(); else if(kind==='tests')renderTests(); else if(kind==='planner')renderPlanner(); }
+function rerenderCal(kind){ if(kind==='attendance')renderAttendance(); else if(kind==='tests')renderTests(); else if(kind==='homework')renderHomework(); else if(kind==='planner')renderPlanner(); }
 // markSet: {'YYYY-MM-DD':true} 데이터 있는 날 표시
 function buildCalendar(kind, markSet){
   var c=_cal[kind], y=c.y, m=c.m, sel=c.sel;
@@ -332,20 +341,20 @@ function renderAttendance(){
   var allAtt=get('bjm_attendance').filter(function(r){ return r && r.date && !r.courseTag; });
   var marks={}; allAtt.forEach(function(r){ marks[r.date]=true; });
   var sel=_cal.attendance.sel;
-  var students=get('bjm_students').filter(isActive);
+  var nameOf={},gradeOf={}; get('bjm_students').forEach(function(s){ nameOf[s.id]=s.name; gradeOf[s.id]=s.grade||''; });
   var att=allAtt.filter(function(r){ return r.date===sel; });
-  var byId={}; att.forEach(function(r){ byId[r.sid]=r.status; });
-  var cnt={O:0,X:0,T:0,B:0,E:0,none:0};
-  var sorted=students.slice().sort(function(a,b){ return (a.grade||'').localeCompare(b.grade||'')||(a.name||'').localeCompare(b.name||''); });
-  var rows=sorted.map(function(s){
-    var st=byId[s.id]; if(st&&cnt[st]!=null)cnt[st]++; else cnt.none++;
+  var cnt={O:0,X:0,T:0,B:0,E:0};
+  att.forEach(function(r){ if(cnt[r.status]!=null)cnt[r.status]++; });
+  var sorted=att.slice().sort(function(a,b){ return (gradeOf[a.sid]||'').localeCompare(gradeOf[b.sid]||'')||(nameOf[a.sid]||'').localeCompare(nameOf[b.sid]||''); });
+  var rows=sorted.map(function(r){
+    var st=r.status;
     return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);">'
-      +'<span style="font-size:13px;">'+s.name+' <span style="color:var(--muted);font-size:11px;">'+(s.grade||'')+'</span></span>'
-      +'<span style="font-weight:700;font-size:13px;color:'+(st?statusColor(st):'var(--muted)')+';">'+(st?STATUS_MAP[st]||st:'미입력')+'</span></div>';
+      +'<span style="font-size:13px;">'+(nameOf[r.sid]||'—')+' <span style="color:var(--muted);font-size:11px;">'+(gradeOf[r.sid]||'')+'</span></span>'
+      +'<span style="font-weight:700;font-size:13px;color:'+statusColor(st)+';">'+(STATUS_MAP[st]||st)+'</span></div>';
   }).join('');
   var head='<div class="cal-detail-date">'+_dowLabel(sel)+'</div>'
-    +'<div style="font-size:12px;color:var(--muted);margin-bottom:10px;">출석 '+cnt.O+' · 지각 '+cnt.T+' · 결석 '+cnt.X+' · 보강 '+cnt.B+' · 미입력 '+cnt.none+'</div>';
-  document.getElementById('attendance-body').innerHTML=buildCalendar('attendance',marks)+head+(rows||'<div class="empty">학생이 없습니다</div>');
+    +'<div style="font-size:12px;color:var(--muted);margin-bottom:10px;">출석 '+cnt.O+' · 지각 '+cnt.T+' · 결석 '+cnt.X+' · 보강 '+cnt.B+' · 조퇴 '+cnt.E+'</div>';
+  document.getElementById('attendance-body').innerHTML=buildCalendar('attendance',marks)+head+(rows||'<div class="empty" style="padding:20px 0;">이 날 출결 기록이 없어요</div>');
 }
 
 // ===== 테스트 (달력 + 그날 점수) =====
@@ -363,12 +372,37 @@ function renderTests(){
     var sc=(t.score!=null?t.score+'점':(t.pending?'미채점':'—'));
     var col=t.score==null?'var(--muted)':(t.score>=90?'var(--green)':t.score>=70?'var(--gold)':'var(--red)');
     var numer=(t.fullScore!=null&&t.gotScore!=null)?' ('+t.gotScore+'/'+t.fullScore+')':'';
+    var total=(t.total!=null&&!isNaN(t.total))?Number(t.total):null;
+    var wrongN=Array.isArray(t.wrong)?t.wrong.length:0;
+    var qtext=(total!=null&&!t.pending)?'<div style="font-size:11px;color:var(--navy);margin-top:2px;font-weight:600;">'+total+'문항 중 '+(total-wrongN)+'문항 정답</div>':'';
     return '<div class="card" style="padding:11px 13px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;">'
       +'<div style="min-width:0;flex:1;"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(nameOf[t.sid]||'—')+'</div>'
-      +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+(t.name||'')+'</div></div>'
+      +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+(t.name||'')+'</div>'+qtext+'</div>'
       +'<div style="font-weight:700;font-size:15px;color:'+col+';flex-shrink:0;">'+sc+'<span style="font-size:10px;font-weight:400;color:var(--muted);">'+numer+'</span></div></div>';
   }).join('');
   document.getElementById('tests-body').innerHTML=buildCalendar('tests',marks)+'<div class="cal-detail-date">'+_dowLabel(sel)+'</div>'+detail;
+}
+
+// ===== 숙제 (달력 + 그날 마감 숙제) =====
+function renderHomework(){
+  var nameOf={}; get('bjm_students').forEach(function(s){ nameOf[s.id]=s.name; });
+  var all=get('bjm_homework').filter(function(h){ return h && h.due; });
+  var marks={}; all.forEach(function(h){ marks[h.due]=true; });
+  var sel=_cal.homework.sel;
+  var hws=all.filter(function(h){ return h.due===sel; })
+    .sort(function(a,b){ return (nameOf[a.sid]||'').localeCompare(nameOf[b.sid]||''); });
+  var detail;
+  if(!hws.length){ detail='<div class="empty" style="padding:20px 0;">이 날 마감인 숙제가 없어요</div>'; }
+  else detail=hws.map(function(h){
+    var done=h.status==='done';
+    var info=[h.book,h.unit,h.range].filter(Boolean).join(' · ');
+    return '<div class="card" style="padding:11px 13px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;">'
+      +'<div style="min-width:0;flex:1;"><div style="font-size:13px;font-weight:600;">'+(nameOf[h.sid]||'—')+'</div>'
+      +'<div style="font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(h.name||info||'숙제')+'</div>'
+      +((info&&h.name)?'<div style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+info+'</div>':'')+'</div>'
+      +'<span style="font-weight:700;font-size:12px;flex-shrink:0;color:'+(done?'var(--green)':'var(--red)')+';">'+(done?'제출':'미제출')+'</span></div>';
+  }).join('');
+  document.getElementById('homework-body').innerHTML=buildCalendar('homework',marks)+'<div class="cal-detail-date">'+_dowLabel(sel)+' 마감</div>'+detail;
 }
 
 // 학생 조회
@@ -490,7 +524,7 @@ function renderExam(){
 
 // 플래너 (달력 + 그날 일정)
 function renderPlanner(){
-  var events = get('planner_events').filter(function(e){ return e && e.date; });
+  var events = get('bjm_planner_events').filter(function(e){ return e && e.date; });
   var el = document.getElementById('planner-list');
   var marks={}; events.forEach(function(e){ marks[e.date]=true; });
   var sel=_cal.planner.sel;
