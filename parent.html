@@ -260,42 +260,8 @@ function renderData(sid, data, app){
     + '</div>'
     + '</div>';
 
-  // 최근 진도
-  html += '<div class="section"><div class="section-title">최근 진도</div>';
-  if(!progress.length){
-    html += '<div class="empty">진도 데이터가 없습니다</div>';
-  } else {
-    progress.forEach(function(p){
-      html += '<div class="prog-item">'
-        + '<div class="prog-book">'+p.book+(p.unit?' · '+p.unit:'')+'</div>'
-        + (p.range?'<div class="prog-unit">범위: '+p.range+'</div>':'')
-        + '<div class="prog-meta">'+p.date+(p.groupName?' · '+p.groupName:'')+'</div>'
-        + '</div>';
-    });
-  }
-  html += '</div>';
-
-  // 보강 일정
-  html += '<div class="section"><div class="section-title">보강 일정</div>';
-  if(!schedules.length){
-    html += '<div class="empty">보강 일정이 없습니다</div>';
-  } else {
-    schedules.slice(0,10).forEach(function(s){
-      var isDone = s.done || s.date < today;
-      var statusTag = isDone
-        ? '<span class="schedule-done">완료</span>'
-        : '<span class="schedule-upcoming">예정</span>';
-      html += '<div class="schedule-item">'
-        + '<div class="schedule-date">'+s.date.slice(5)+'</div>'
-        + '<div class="schedule-info">'
-        + '<div class="schedule-content">'+(s.content||'보강')+'</div>'
-        + (s.time ? '<div class="schedule-time">'+s.time+'</div>' : '')
-        + '</div>'
-        + statusTag
-        + '</div>';
-    });
-  }
-  html += '</div>';
+  // 최근 진도 섹션 제거됨 (학부모 요청)
+  // 보강 일정은 맨 아래(테스트 결과 뒤)로 이동함
 
   // 출결
   html += '<div class="section"><div class="section-title">출결 현황</div>';
@@ -326,6 +292,9 @@ function renderData(sid, data, app){
         + '</div>';
     });
   }
+  html += '<div style="font-size:11.5px;color:var(--muted);line-height:1.7;margin-top:12px;padding:11px 13px;background:var(--purple-bg,#f3f0fb);border-radius:12px;">'
+    + '※ 숙제는 학생이 앱에서 직접 <b>‘숙제 제출’ 버튼</b>을 눌러야 ‘제출’로 표시됩니다. 학원에서 숙제를 확인했더라도 학생이 앱에서 제출 버튼을 누르지 않으면 <b>‘미제출’로 보일 수 있습니다.</b>'
+    + '</div>';
   html += '</div>';
 
   // 테스트
@@ -350,6 +319,28 @@ function renderData(sid, data, app){
         + '<div class="test-score" style="color:'+scoreColor+'">'+t.score+'점</div>'
         + '<div class="test-date">'+t.date+'</div>'
         + '</div>'
+        + '</div>';
+    });
+  }
+  html += '</div>';
+
+  // 보강 일정 (맨 아래 배치)
+  html += '<div class="section"><div class="section-title">보강 일정</div>';
+  if(!schedules.length){
+    html += '<div class="empty">보강 일정이 없습니다</div>';
+  } else {
+    schedules.slice(0,10).forEach(function(s){
+      var isDone = s.done || s.date < today;
+      var statusTag = isDone
+        ? '<span class="schedule-done">완료</span>'
+        : '<span class="schedule-upcoming">예정</span>';
+      html += '<div class="schedule-item">'
+        + '<div class="schedule-date">'+s.date.slice(5)+'</div>'
+        + '<div class="schedule-info">'
+        + '<div class="schedule-content">'+(s.content||'보강')+'</div>'
+        + (s.time ? '<div class="schedule-time">'+s.time+'</div>' : '')
+        + '</div>'
+        + statusTag
         + '</div>';
     });
   }
