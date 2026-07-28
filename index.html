@@ -4806,6 +4806,41 @@ function saveHw() {
       if(chk){ toast(chk); return; }
     }
   }
+  // 끝번호가 단원 마지막 번호(정답표 totalCount)를 넘으면 저장을 막는다.
+  _checkAioRange(valid, function(rangeErr){
+    if(rangeErr){ toast(rangeErr); return; }
+    _saveHwCommit(sids, valid, due);
+  });
+}
+
+// All in one/온리원 블록의 끝번호가 단원 마지막 문항을 넘는지 검사(정답표 totalCount 기준)
+// 문제 있으면 안내 문구를, 없으면 '' 를 cb 로 넘긴다. (정답표 로드 실패 시엔 통과시켜 기존 동작 유지)
+function _checkAioRange(valid, cb){
+  var aioBlocks = (valid||[]).filter(function(b){ return isAioBook(b.book) && b.unitKey && b.qEnd!=null; });
+  if(!aioBlocks.length || !window.Grader){ cb(''); return; }
+  var jobs = aioBlocks.map(function(b){
+    var tmKey = aioTmKeyOf(b.book);
+    return Grader.loadAnswerKey(tmKey).then(function(ak){
+      var u = ak && ak.units && ak.units[b.unitKey];
+      return { b:b, max:(u && typeof u.totalCount==='number') ? u.totalCount : null };
+    }).catch(function(){ return { b:b, max:null }; });
+  });
+  Promise.all(jobs).then(function(results){
+    for(var i=0;i<results.length;i++){
+      var r=results[i];
+      if(r.max==null) continue;  // 정답표를 못 읽으면 이 블록은 범위검사 생략
+      if(r.b.qEnd>r.max || r.b.qStart>r.max){
+        var u=aioUnitsOf(r.b.book).filter(function(x){return x.key===r.b.unitKey;})[0];
+        var uname=u?u.name:r.b.unitKey;
+        cb(r.b.book+' '+uname+'은(는) '+r.max+'번까지 있어요. 끝번호를 '+r.max+' 이하로 입력해주세요.');
+        return;
+      }
+    }
+    cb('');
+  }).catch(function(){ cb(''); });
+}
+
+function _saveHwCommit(sids, valid, due){
   var recs = DB.get('homework');
   var courseTag = getCourseTagFrom('hw-special');
   var courseName = getCourseNameFrom('hw-special');
