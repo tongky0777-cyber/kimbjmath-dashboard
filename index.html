@@ -3340,11 +3340,48 @@ function refreshUnits(prefix){
   var units = getUnitsFor(subj, book);
   unitSel.innerHTML = units.map(function(u){ return '<option value="'+u+'">'+u+'</option>'; }).join('');
   if(prev && units.indexOf(prev)>-1) unitSel.value = prev;
+  // 유형표 있는 데일리 테스트면 단원을 유형표 테스트 목록으로 다시 덮어씀
+  if(typeof maybeFillDailyUnits==='function') maybeFillDailyUnits(prefix);
 }
 
 // 과목 선택 시 단원 드롭다운 채우기 (교재별 단원 우선)
+// 데일리 테스트명 → 반(className) 매핑 (유형표가 있는 것만)
+var DAILY_CLASS_BY_TESTNAME = { '개념반 Daily Test':'개념반', '문풀반 Daily Test - 실전':'문풀반(실력)' };
+function dailyClassOf(testName){ return DAILY_CLASS_BY_TESTNAME[testName] || null; }
+var _dailyTMByKey = {};  // 'subject||className' -> 로드된 유형표 데이터
+// 데일리(유형표 있는 반)면 단원 드롭다운을 유형표의 테스트 목록(교과순)으로 교체
+function maybeFillDailyUnits(prefix){
+  var nameEl=document.getElementById(prefix+'-name'); var subjEl=document.getElementById(prefix+'-subject'); var unitSel=document.getElementById(prefix+'-unit');
+  if(!nameEl||!subjEl||!unitSel) return;
+  var cls=dailyClassOf(nameEl.value); var subj=subjEl.value;
+  if(!cls || !subj || !(window.TypeMap && TypeMap.loadDailyTypeMap)) return;
+  var prevUnit = unitSel.value;
+  TypeMap.loadDailyTypeMap(subj, cls).then(function(d){
+    if(!d || !d.tests) return;  // 이 과목·반은 유형표 없음 → 기존 단원 유지
+    _dailyTMByKey[subj+'||'+cls]=d;
+    var list=TypeMap.dailyTestList(d);
+    unitSel.innerHTML='<option value="">(테스트 선택)</option>'+list.map(function(e){
+      return '<option value="'+e.name+'"'+(e.name===prevUnit?' selected':'')+'>'+e.name+' ('+e.totalCount+'문항)</option>';
+    }).join('');
+    unitSel.onchange=function(){ onDailyTestPick(prefix); };
+    if(unitSel.value) onDailyTestPick(prefix);
+  });
+}
+// 데일리 테스트 선택 시 전체 문항 자동 입력 + 오답 그리드 생성
+function onDailyTestPick(prefix){
+  var cls=dailyClassOf(document.getElementById(prefix+'-name').value); var subj=document.getElementById(prefix+'-subject').value;
+  var d=_dailyTMByKey[subj+'||'+cls]; if(!d) return;
+  var entry=TypeMap.dailyTestByName(d, document.getElementById(prefix+'-unit').value);
+  if(entry){
+    var totalEl=document.getElementById(prefix+'-total');
+    if(totalEl){ totalEl.value=entry.totalCount; }
+    if(prefix==='test') buildWrongGrid();
+    else if(typeof buildGtWrongGrid==='function') buildGtWrongGrid();
+  }
+}
 function onSubjectChange(prefix){
   refreshUnits(prefix);
+  maybeFillDailyUnits(prefix);
 }
 // 단원 select 변경 시: '직접 입력' 고르면 텍스트칸 표시
 function onUnitChange(prefix){
@@ -4127,6 +4164,9 @@ function collectTestData(){
   } else {
     data.subject=document.getElementById('test-subject').value;
     data.unit=document.getElementById('test-unit').value;
+    // 유형표가 있는 데일리(개념반/문풀 실전)면 유형분석용 키 저장
+    var _dcls=dailyClassOf(name);
+    if(_dcls && data.subject && data.unit){ data.dailyKey='daily||'+data.subject+'||'+_dcls+'||'+data.unit; }
   }
   var isGicul = (name==='기출 Test' || name==='모의고사 기출');
   // 안전장치: 기출이고 배점표가 있는데 전체 문항이 비어 있으면 배점표 문항수로 자동 채움
@@ -4357,8 +4397,40 @@ function renderTests() {
       var fillColor = t.score>=90?'var(--green)':t.score>=70?'var(--gold)':'var(--red)';
       scoreCell = '<span class="score '+cls+'">'+t.score+'점</span><div class="score-bar"><div class="score-fill" style="width:'+t.score+'%;background:'+fillColor+'"></div></div>';
     }
-    return '<tr'+((t.pending||t.score==null)?' style="background:#fffdf5;"':'')+'><td class="student-name">'+(student?student.name:'—')+(student?specialStudentBadge(student):'')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+t.name+(isSpecialRecord(t)?specialBadge(t):'')+'</td><td style="font-size:12px;color:var(--muted);">'+(unitStr||'—')+'</td><td style="font-size:12px;color:var(--muted);">'+t.date+'</td><td>'+scoreCell+'</td><td style="font-size:12px;color:var(--muted);">'+(t.memo||'—')+'</td><td><div class="row-action"><button class="icon-btn" onclick="editTest(\''+t.id+'\')">✏️</button><button class="icon-btn" onclick="deleteTest(\''+t.id+'\')">🗑️</button></div></td></tr>';
+    return '<tr'+((t.pending||t.score==null)?' style="background:#fffdf5;"':'')+'><td class="student-name">'+(student?student.name:'—')+(student?specialStudentBadge(student):'')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+t.name+(isSpecialRecord(t)?specialBadge(t):'')+'</td><td style="font-size:12px;color:var(--muted);">'+(unitStr||'—')+'</td><td style="font-size:12px;color:var(--muted);">'+t.date+'</td><td>'+scoreCell+'</td><td style="font-size:12px;color:var(--muted);">'+(t.memo||'—')+'</td><td><div class="row-action">'+(t.dailyKey?'<button class="icon-btn" title="유형 분석" onclick="showDailyType(\''+t.id+'\')">📊</button>':'')+'<button class="icon-btn" onclick="editTest(\''+t.id+'\')">✏️</button><button class="icon-btn" onclick="deleteTest(\''+t.id+'\')">🗑️</button></div></td></tr>';
   }).join('');
+}
+
+// 데일리 테스트 유형 분석 보기 (dailyKey 있는 레코드) — modal-wrong 재사용
+function showDailyType(testId){
+  var t=DB.get('tests').find(function(x){ return x.id===testId; });
+  if(!t || !t.dailyKey){ toast('유형 정보가 없는 테스트예요'); return; }
+  var parts=t.dailyKey.split('||');  // daily || subject || className || testName
+  var subject=parts[1], className=parts[2], testName=parts[3];
+  var body=document.getElementById('wrong-body'); var titleEl=document.getElementById('wrong-title');
+  if(titleEl) titleEl.textContent='📊 유형 분석 · '+(t.unit||testName);
+  if(body) body.innerHTML='<div style="text-align:center;color:var(--muted);padding:32px;">불러오는 중…</div>';
+  openModal('modal-wrong');
+  TypeMap.loadDailyTypeMap(subject, className).then(function(d){
+    if(!d){ body.innerHTML='<div style="padding:24px;color:var(--muted);">유형표를 불러오지 못했어요.</div>'; return; }
+    var bd=TypeMap.dailyBreakdown(d, testName, t.wrong||[]);
+    if(!bd){ body.innerHTML='<div style="padding:24px;color:var(--muted);">이 테스트의 유형표를 찾지 못했어요.</div>'; return; }
+    var student=DB.get('students').find(function(s){ return s.id===t.sid; });
+    var html='<div style="font-size:13px;color:var(--muted);margin-bottom:12px;">'+(student?student.name+' · ':'')+bd.name+' · '+bd.total+'문항 중 '+bd.wrongCount+'문항 오답</div>';
+    html+='<div style="font-size:12px;font-weight:700;color:var(--ink2,#333);margin:8px 0 6px;">대분류별 정답</div>';
+    Object.keys(bd.byCat).forEach(function(c){
+      var o=bd.byCat[c]; var correct=o.total-o.wrong; var pct=Math.round(correct/o.total*100);
+      var col=pct>=80?'var(--green)':pct>=50?'var(--gold)':'var(--red)';
+      html+='<div style="display:flex;align-items:center;gap:8px;margin:5px 0;font-size:12px;">'
+        +'<span style="width:150px;">'+o.name+'</span>'
+        +'<div style="flex:1;background:var(--line);border-radius:4px;height:8px;overflow:hidden;"><div style="width:'+pct+'%;height:100%;background:'+col+';"></div></div>'
+        +'<span style="width:78px;text-align:right;color:'+col+';font-weight:700;">'+correct+'/'+o.total+' ('+pct+'%)</span></div>';
+    });
+    html+='<div style="font-size:12px;font-weight:700;color:var(--ink2,#333);margin:14px 0 6px;">틀린 문항 유형</div>';
+    if(!bd.wrongTypes.length){ html+='<div style="color:var(--green);font-size:13px;">전부 맞았어요! 🎉</div>'; }
+    else { html+=bd.wrongTypes.map(function(w){ return '<div style="padding:6px 0;border-bottom:1px solid var(--line);font-size:13px;"><b>'+w.no+'번</b> · '+w.type+' <span style="color:var(--muted);font-size:11px;">['+w.catName+']</span></div>'; }).join(''); }
+    body.innerHTML=html;
+  });
 }
 
 // ===== 시험지별 집계 (폴더 → 과목 → 카드) =====
@@ -7192,6 +7264,7 @@ function onTestNameChange(){
     // 데일리류 — 교재 + 과목/단원
     if(bookCell) bookCell.style.display='';
     unitRow.style.display='flex';
+    maybeFillDailyUnits('test');   // 유형표 있는 반이면 단원=유형표 테스트 목록으로
   }
   buildWrongGrid();
 }

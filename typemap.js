@@ -165,9 +165,65 @@ function unitList(typeMapData) {
   });
 }
 
+// ===== 데일리 테스트(개념반/문풀반 실전) 유형표 =====
+// 구조: { subject, className, categories:{code:name}, tests:{ key:{ name, unit, order, totalCount, typeMap:{ "1":{type,cat} } } } }
+const DAILY_TYPEMAP_PATH = {
+  '공통수학2||개념반': './data/데일리_공수2_개념반_typeMap.json',
+  '공통수학1||개념반': './data/데일리_공수1_개념반_typeMap.json',
+  '공통수학1||문풀반(실력)': './data/데일리_공수1_문풀실력_typeMap.json',
+  '대수||개념반': './data/데일리_대수_개념반_typeMap.json',
+  '미적분1||개념반': './data/데일리_미적분1_개념반_typeMap.json',
+};
+const _dailyCache = {};
+async function loadDailyTypeMap(subject, className) {
+  const key = subject + '||' + className;
+  if (_dailyCache[key]) return _dailyCache[key];
+  const path = DAILY_TYPEMAP_PATH[key];
+  if (!path) return null;
+  try {
+    const res = await fetch(path);
+    if (!res.ok) return null;
+    const data = await res.json();
+    _dailyCache[key] = data;
+    return data;
+  } catch (e) { return null; }
+}
+// 유형표 안에서 테스트 하나를 이름으로 찾기
+function dailyTestByName(dailyData, testName) {
+  if (!dailyData || !dailyData.tests) return null;
+  const keys = Object.keys(dailyData.tests);
+  for (let i = 0; i < keys.length; i++) {
+    if (dailyData.tests[keys[i]].name === testName) return dailyData.tests[keys[i]];
+  }
+  return null;
+}
+// 교과 순서로 정렬된 테스트 목록 [{name, order, totalCount, unit}]
+function dailyTestList(dailyData) {
+  if (!dailyData || !dailyData.tests) return [];
+  return Object.keys(dailyData.tests).map(function (k) { return dailyData.tests[k]; })
+    .sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
+}
+// 데일리 테스트: 틀린 번호 → 대분류(cat)별 정답/오답 집계 + 틀린 유형 목록
+function dailyBreakdown(dailyData, testName, wrongNumbers) {
+  const test = dailyTestByName(dailyData, testName);
+  if (!test) return null;
+  const catNames = dailyData.categories || {};
+  const wset = {}; (wrongNumbers || []).forEach(function (k) { wset[parseInt(String(k), 10)] = true; });
+  const byCat = {}; const wrongTypes = [];
+  const n = test.totalCount;
+  for (let no = 1; no <= n; no++) {
+    const ent = test.typeMap[String(no)];
+    if (!ent) continue;
+    if (!byCat[ent.cat]) byCat[ent.cat] = { name: catNames[ent.cat] || ent.cat, total: 0, wrong: 0 };
+    byCat[ent.cat].total++;
+    if (wset[no]) { byCat[ent.cat].wrong++; wrongTypes.push({ no: no, type: ent.type, cat: ent.cat, catName: catNames[ent.cat] || ent.cat }); }
+  }
+  return { name: test.name, unit: test.unit, total: n, wrongCount: wrongTypes.length, byCat: byCat, wrongTypes: wrongTypes };
+}
+
 // ES module / 브라우저 전역 둘 다 지원
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { loadTypeMap, lookup, aggregateWrong, totalCount, unitCategories, unitList, CAT_NAMES };
+  module.exports = { loadTypeMap, lookup, aggregateWrong, totalCount, unitCategories, unitList, CAT_NAMES, loadDailyTypeMap, dailyTestByName, dailyTestList, dailyBreakdown };
 } else if (typeof window !== 'undefined') {
-  window.TypeMap = { loadTypeMap, lookup, aggregateWrong, totalCount, unitCategories, unitList, CAT_NAMES };
+  window.TypeMap = { loadTypeMap, lookup, aggregateWrong, totalCount, unitCategories, unitList, CAT_NAMES, loadDailyTypeMap, dailyTestByName, dailyTestList, dailyBreakdown };
 }
