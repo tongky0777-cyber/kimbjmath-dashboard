@@ -252,6 +252,126 @@
      "grade": "int"
     }
    }
+  },
+  "gicul||2025||경신고||미적분Ⅰ||1학기||중간": {
+   "school": "경신고",
+   "subject": "미적분Ⅰ",
+   "year": "2025",
+   "term2": "1학기",
+   "term": "중간",
+   "totalCount": 22,
+   "typeMap": {
+    "1": {
+     "type": "접선의 기울기(미분계수)",
+     "cat": "diff_tan",
+     "grade": "mc"
+    },
+    "2": {
+     "type": "함수의 극한(∞·유리화 미정계수 n)",
+     "cat": "diff_ext",
+     "grade": "mc"
+    },
+    "3": {
+     "type": "그래프에서 좌·우극한 값 계산",
+     "cat": "diff_ext",
+     "grade": "mc"
+    },
+    "4": {
+     "type": "조각함수 미분가능 조건(b−a)",
+     "cat": "diff_ext",
+     "grade": "mc"
+    },
+    "5": {
+     "type": "미분계수 정의 극한(f(5+5h)−f(5−2h))",
+     "cat": "diff_tan",
+     "grade": "mc"
+    },
+    "6": {
+     "type": "극한 조건 다항함수 결정(최고차·상수 곱)",
+     "cat": "diff_ext",
+     "grade": "mc"
+    },
+    "7": {
+     "type": "불연속·극한 조건 삼차함수 f(1)",
+     "cat": "diff_ext",
+     "grade": "mc"
+    },
+    "8": {
+     "type": "평균변화율=k 정수 개수(미분계수 범위)",
+     "cat": "diff_ext",
+     "grade": "mc"
+    },
+    "9": {
+     "type": "극한 조건 다항함수 결정 f(2)+a",
+     "cat": "diff_ext",
+     "grade": "mc"
+    },
+    "10": {
+     "type": "그래프 g=f(x+1)+f(−x) 극한·연속 보기",
+     "cat": "diff_ext",
+     "grade": "mc"
+    },
+    "11": {
+     "type": "그래프 두 함수 극한값 보기",
+     "cat": "diff_ext",
+     "grade": "mc"
+    },
+    "12": {
+     "type": "곱함수 미분·접선의 방정식(b²−a²)",
+     "cat": "diff_tan",
+     "grade": "mc"
+    },
+    "13": {
+     "type": "조각함수 미분가능·불연속 보기",
+     "cat": "diff_ext",
+     "grade": "mc"
+    },
+    "14": {
+     "type": "곱꼴 함수 연속 조건(모든 a의 합)",
+     "cat": "diff_ext",
+     "grade": "mc"
+    },
+    "15": {
+     "type": "|x²−4|와 직선 교점 개수의 극한",
+     "cat": "diff_ext",
+     "grade": "self"
+    },
+    "16": {
+     "type": "접선과 삼각형 넓이의 최댓값",
+     "cat": "diff_ext",
+     "grade": "self"
+    },
+    "17": {
+     "type": "원·부채꼴에서의 극한(α×β)",
+     "cat": "diff_ext",
+     "grade": "self"
+    },
+    "18": {
+     "type": "절댓값 조각함수 미분가능 f(−3)",
+     "cat": "diff_ext",
+     "grade": "self"
+    },
+    "19": {
+     "type": "주기함수·합성함수 연속(k 최솟값)",
+     "cat": "diff_ext",
+     "grade": "self"
+    },
+    "20": {
+     "type": "연속·극한 조건 정수 m 최댓값",
+     "cat": "diff_ext",
+     "grade": "self"
+    },
+    "21": {
+     "type": "곡선 위 점과 삼각형 넓이 최댓값",
+     "cat": "diff_ext",
+     "grade": "self"
+    },
+    "22": {
+     "type": "f″(x) 조건·극솟값→폐구간 최대·최소 합",
+     "cat": "diff_ext",
+     "grade": "self"
+    }
+   }
   }
  }
 }

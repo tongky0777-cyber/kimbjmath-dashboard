@@ -2348,6 +2348,16 @@ function examScoreKeyOfRecord(t){
     }, total:23, full:100 };
     changed=true;
   }
+  // 2025 경신고 미적분Ⅰ 1학기 중간 (22문항 / 15~22번 서답형 / 학원 분석배점 합 118 → 만점 118로 비율 환산)
+  var KEY26='gicul||2025||경신고||미적분Ⅰ||1학기||중간';
+  if(!tables[KEY26]){
+    tables[KEY26]={ points:{
+      1:4.6, 2:4.6, 3:4.6, 4:4.8, 5:4.8, 6:4.8, 7:4.8, 8:5.0, 9:5.0, 10:5.0,
+      11:5.0, 12:5.0, 13:5.0, 14:5.2, 15:5.2, 16:5.2, 17:5.2, 18:5.4, 19:5.4, 20:5.4,
+      21:9.0, 22:9.0
+    }, total:22, full:118 };
+    changed=true;
+  }
   if(changed) setExamScoreTables(tables);
 })();
 
