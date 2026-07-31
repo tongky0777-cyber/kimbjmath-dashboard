@@ -8200,10 +8200,14 @@ function saveAttDay() {
   var courseName = courseTag ? getCourseNameFrom('att-day-special') : '';
   Object.keys(attDayState).forEach(function(sid){
     var status = attDayState[sid];
-    if(!status) return; // 미입력은 저장 안함
     var idx = recs.findIndex(function(r){
       return r.sid===sid && r.date===attSelectedDate && ((r.courseTag||'')===courseTag) && (!courseTag || specialLabelOf(r)===courseName);
     });
+    if(!status){
+      // 미입력으로 바꿈 → 기존 기록이 있으면 삭제(그래야 실제로 미입력으로 되돌아감)
+      if(idx > -1){ recs.splice(idx,1); saved++; }
+      return;
+    }
     var rec = {sid:sid, date:attSelectedDate, status:status, memo:''};
     applyCourseTag(rec, courseTag, courseName);
     if(idx > -1) recs[idx] = rec; else recs.push(rec);
