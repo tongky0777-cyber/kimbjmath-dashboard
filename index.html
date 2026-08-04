@@ -2358,6 +2358,16 @@ function examScoreKeyOfRecord(t){
     }, total:22, full:118 };
     changed=true;
   }
+  // 2025 정화여고 공통수학2 2학기 중간 (22문항 / 16~22번 서답형 / 배점 합 100)
+  var KEY27='gicul||2025||정화여고||공통수학2||2학기||중간';
+  if(!tables[KEY27]){
+    tables[KEY27]={ points:{
+      1:3.3, 2:3.4, 3:3.5, 4:3.6, 5:3.7, 6:3.8, 7:3.9, 8:4.0, 9:4.1, 10:4.2,
+      11:4.3, 12:4.4, 13:4.5, 14:4.6, 15:4.7, 16:5.0, 17:5.0, 18:6.0, 19:6.0, 20:6.0,
+      21:6.0, 22:6.0
+    }, total:22, full:100 };
+    changed=true;
+  }
   if(changed) setExamScoreTables(tables);
 })();
 
