@@ -1,0 +1,507 @@
+{
+  "subject": "미적분Ⅰ",
+  "categories": {
+    "diff_tan": "미분-접선",
+    "diff_ext": "미분-극값·그래프",
+    "diff_app": "미분-방정식·부등식·실근",
+    "diff_rate": "미분-속도·가속도",
+    "integ_calc": "적분-부정·정적분 계산",
+    "integ_def": "적분-정적분으로 정의된 함수",
+    "integ_area": "적분-넓이",
+    "integ_dist": "적분-속도와 거리",
+    "integ_app": "적분-종합·함수결정",
+    "limit": "함수의 극한·연속",
+    "diff": "미분-미분계수·미분가능·평균변화율"
+  },
+  "exams": {
+    "gicul||2025||남산고||미적분Ⅰ||1학기||기말": {
+      "school": "남산고",
+      "year": "2025",
+      "term": "기말",
+      "totalCount": 25,
+      "typeMap": {
+        "1": {
+          "type": "부정적분→함숫값",
+          "cat": "integ_calc",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "정적분 계산(다항)",
+          "cat": "integ_calc",
+          "grade": "mc"
+        },
+        "3": {
+          "type": "정적분으로 정의된 함수(상수구간)",
+          "cat": "integ_def",
+          "grade": "mc"
+        },
+        "4": {
+          "type": "속도의 최댓값(속력)",
+          "cat": "diff_rate",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "정적분 정의 함수→f 결정",
+          "cat": "integ_def",
+          "grade": "mc"
+        },
+        "6": {
+          "type": "부정적분 관계식→최댓값",
+          "cat": "integ_calc",
+          "grade": "mc"
+        },
+        "7": {
+          "type": "미적분 종합(대칭+부정적분 조건)",
+          "cat": "integ_app",
+          "grade": "mc"
+        },
+        "8": {
+          "type": "두 곡선 교점 개수→정수 개수",
+          "cat": "diff_app",
+          "grade": "mc"
+        },
+        "9": {
+          "type": "접선 기울기 곱→최솟값",
+          "cat": "diff_tan",
+          "grade": "mc"
+        },
+        "10": {
+          "type": "연속·부등식 조건→정적분값",
+          "cat": "integ_app",
+          "grade": "mc"
+        },
+        "11": {
+          "type": "부정적분 관계식→함숫값 합",
+          "cat": "integ_calc",
+          "grade": "mc"
+        },
+        "12": {
+          "type": "절댓값 함수 미분가능 조건",
+          "cat": "diff_ext",
+          "grade": "mc"
+        },
+        "13": {
+          "type": "정적분 정의 함수 극값 조건",
+          "cat": "diff_ext",
+          "grade": "mc"
+        },
+        "14": {
+          "type": "삼차함수 실근 개수 조건",
+          "cat": "diff_app",
+          "grade": "mc"
+        },
+        "15": {
+          "type": "폐구간 최대·최소",
+          "cat": "diff_ext",
+          "grade": "self"
+        },
+        "16": {
+          "type": "움직인 거리→속도 결정",
+          "cat": "integ_dist",
+          "grade": "self"
+        },
+        "17": {
+          "type": "정적분 정의 함수→f(a−b)",
+          "cat": "integ_def",
+          "grade": "self"
+        },
+        "18": {
+          "type": "주기함수 정적분",
+          "cat": "integ_app",
+          "grade": "self"
+        },
+        "19": {
+          "type": "두 곡선 넓이(대칭조건)",
+          "cat": "integ_area",
+          "grade": "self"
+        },
+        "20": {
+          "type": "절댓값 삼차+실근 조건→자연수 합",
+          "cat": "diff_app",
+          "grade": "self"
+        },
+        "21": {
+          "type": "미분가능 조각함수+절댓값 미분불가",
+          "cat": "diff_ext",
+          "grade": "self"
+        },
+        "22": {
+          "type": "원뿔 부피 최대(미분 최적화)",
+          "cat": "diff_app",
+          "grade": "self"
+        },
+        "23": {
+          "type": "도함수 조건→정적분(사차)",
+          "cat": "integ_calc",
+          "grade": "self"
+        },
+        "24": {
+          "type": "절댓값 도함수→정적분",
+          "cat": "integ_dist",
+          "grade": "self"
+        },
+        "25": {
+          "type": "조각함수 그래프 넓이 최대",
+          "cat": "integ_area",
+          "grade": "self"
+        }
+      }
+    },
+    "gicul||2025||경북고||미적분Ⅰ||1학기||중간": {
+      "school": "경북고",
+      "year": "2025",
+      "term": "1학기 중간",
+      "totalCount": 20,
+      "typeMap": {
+        "1": {
+          "type": "함수의 극한값 계산(그래프 좌우극한)",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "함수의 극한값 계산(∞/∞·0/0 유리식)",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "3": {
+          "type": "곱함수의 미분·극값 조건(도함수)",
+          "cat": "diff_ext",
+          "grade": "mc"
+        },
+        "4": {
+          "type": "함수의 극한 대소관계(샌드위치 정리)",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "극한값 존재 미정계수(0/0꼴)",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "6": {
+          "type": "미분계수의 정의·접선의 y절편",
+          "cat": "diff_tan",
+          "grade": "mc"
+        },
+        "7": {
+          "type": "도함수 그래프 해석(극대·극소·증감)",
+          "cat": "diff_ext",
+          "grade": "mc"
+        },
+        "8": {
+          "type": "닫힌구간 최대·최소(분수함수)",
+          "cat": "diff_ext",
+          "grade": "mc"
+        },
+        "9": {
+          "type": "평균변화율·미분계수의 정의",
+          "cat": "diff",
+          "grade": "mc"
+        },
+        "10": {
+          "type": "평균값 정리·접선 기울기 조건(최댓값)",
+          "cat": "diff",
+          "grade": "mc"
+        },
+        "11": {
+          "type": "함수의 연속(곱함수·구간함수)",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "12": {
+          "type": "삼차함수 절댓값 미분가능·극값(미정계수)",
+          "cat": "diff",
+          "grade": "mc"
+        },
+        "13": {
+          "type": "미분계수의 정의·대칭 이차함수 결정",
+          "cat": "diff",
+          "grade": "mc"
+        },
+        "14": {
+          "type": "곱함수의 연속·미분가능(구간함수 평행이동)",
+          "cat": "diff",
+          "grade": "mc"
+        },
+        "15": {
+          "type": "그래프와 직선 교점 개수·불연속점",
+          "cat": "diff_app",
+          "grade": "mc"
+        },
+        "16": {
+          "type": "역함수·교점 개수·연속(불연속점 분석)",
+          "cat": "diff_app",
+          "grade": "mc"
+        },
+        "17": {
+          "type": "사잇값 정리로 실근 존재 증명(서술형)",
+          "cat": "limit",
+          "grade": "self"
+        },
+        "18": {
+          "type": "삼각형 넓이의 비 극한값",
+          "cat": "limit",
+          "grade": "int"
+        },
+        "19": {
+          "type": "삼각형 넓이의 최댓값(접선 평행)",
+          "cat": "diff_ext",
+          "grade": "int"
+        },
+        "20": {
+          "type": "도함수 그래프·극값·닫힌구간 최대최소",
+          "cat": "diff_ext",
+          "grade": "int"
+        }
+      }
+    },
+    "gicul||2025||경신고||미적분Ⅰ||1학기||중간": {
+      "school": "경신고",
+      "subject": "미적분Ⅰ",
+      "year": "2025",
+      "term2": "1학기",
+      "term": "중간",
+      "totalCount": 22,
+      "typeMap": {
+        "1": {
+          "type": "접선의 기울기(미분계수)",
+          "cat": "diff_tan",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "함수의 극한(∞·유리화 미정계수 n)",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "3": {
+          "type": "그래프에서 좌·우극한 값 계산",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "4": {
+          "type": "조각함수 미분가능 조건(b−a)",
+          "cat": "diff",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "미분계수 정의 극한(f(5+5h)−f(5−2h))",
+          "cat": "diff",
+          "grade": "mc"
+        },
+        "6": {
+          "type": "극한 조건 다항함수 결정(최고차·상수 곱)",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "7": {
+          "type": "불연속·극한 조건 삼차함수 f(1)",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "8": {
+          "type": "평균변화율=k 정수 개수(미분계수 범위)",
+          "cat": "diff",
+          "grade": "mc"
+        },
+        "9": {
+          "type": "극한 조건 다항함수 결정 f(2)+a",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "10": {
+          "type": "그래프 g=f(x+1)+f(−x) 극한·연속 보기",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "11": {
+          "type": "그래프 두 함수 극한값 보기",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "12": {
+          "type": "곱함수 미분·접선의 방정식(b²−a²)",
+          "cat": "diff_tan",
+          "grade": "mc"
+        },
+        "13": {
+          "type": "조각함수 미분가능·불연속 보기",
+          "cat": "diff",
+          "grade": "mc"
+        },
+        "14": {
+          "type": "곱꼴 함수 연속 조건(모든 a의 합)",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "15": {
+          "type": "|x²−4|와 직선 교점 개수의 극한",
+          "cat": "limit",
+          "grade": "self"
+        },
+        "16": {
+          "type": "접선과 삼각형 넓이의 최댓값",
+          "cat": "diff_ext",
+          "grade": "self"
+        },
+        "17": {
+          "type": "원·부채꼴에서의 극한(α×β)",
+          "cat": "limit",
+          "grade": "self"
+        },
+        "18": {
+          "type": "절댓값 조각함수 미분가능 f(−3)",
+          "cat": "diff",
+          "grade": "self"
+        },
+        "19": {
+          "type": "주기함수·합성함수 연속(k 최솟값)",
+          "cat": "limit",
+          "grade": "self"
+        },
+        "20": {
+          "type": "연속·극한 조건 정수 m 최댓값",
+          "cat": "limit",
+          "grade": "self"
+        },
+        "21": {
+          "type": "곡선 위 점과 삼각형 넓이 최댓값",
+          "cat": "diff_ext",
+          "grade": "self"
+        },
+        "22": {
+          "type": "f″(x) 조건·극솟값→폐구간 최대·최소 합",
+          "cat": "diff_ext",
+          "grade": "self"
+        }
+      }
+    },
+    "gicul||2025||대구여고||미적분Ⅰ||1학기||중간": {
+      "school": "대구여고",
+      "year": "2025",
+      "term": "중간",
+      "totalCount": 24,
+      "typeMap": {
+        "1": {
+          "type": "좌우극한일치-미정계수",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "2": {
+          "type": "0/0꼴-미정계수",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "3": {
+          "type": "근호+절댓값=0",
+          "cat": "diff_ext",
+          "grade": "mc"
+        },
+        "4": {
+          "type": "0/0꼴-미분계수",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "5": {
+          "type": "유리화-연속조건",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "6": {
+          "type": "극한의성질-치환",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "7": {
+          "type": "그래프-좌우극한",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "8": {
+          "type": "불연속점-곱의연속",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "9": {
+          "type": "가우스-합성-참거짓",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "10": {
+          "type": "평행이동-미분가능",
+          "cat": "diff_ext",
+          "grade": "mc"
+        },
+        "11": {
+          "type": "접선-판별식-최댓값",
+          "cat": "diff_tan",
+          "grade": "mc"
+        },
+        "12": {
+          "type": "차수결정-인수분해-최솟값",
+          "cat": "limit",
+          "grade": "mc"
+        },
+        "13": {
+          "type": "구간나눔-미분가능성",
+          "cat": "diff_ext",
+          "grade": "mc"
+        },
+        "14": {
+          "type": "정수조건-부등식",
+          "cat": "diff_ext",
+          "grade": "mc"
+        },
+        "15": {
+          "type": "절댓값극한-판별식",
+          "cat": "diff_app",
+          "grade": "mc"
+        },
+        "16": {
+          "type": "합성함수-치환-최댓값",
+          "cat": "diff_ext",
+          "grade": "mc"
+        },
+        "17": {
+          "type": "미분가능-실근개수",
+          "cat": "diff_app",
+          "grade": "mc"
+        },
+        "18": {
+          "type": "절댓값함수-교점개수",
+          "cat": "diff_app",
+          "grade": "mc"
+        },
+        "19": {
+          "type": "차수·계수결정-서술",
+          "cat": "limit",
+          "grade": "self"
+        },
+        "20": {
+          "type": "일대일대응-판별식-서술",
+          "cat": "diff_ext",
+          "grade": "self"
+        },
+        "21": {
+          "type": "사잇값정리-실근개수-서술",
+          "cat": "limit",
+          "grade": "self"
+        },
+        "22": {
+          "type": "극값조건-구간최대최소-서술",
+          "cat": "diff_ext",
+          "grade": "self"
+        },
+        "23": {
+          "type": "항등식-도함수연속-서술",
+          "cat": "diff_ext",
+          "grade": "self"
+        },
+        "24": {
+          "type": "제곱함수연속-경우나누기-서술",
+          "cat": "limit",
+          "grade": "self"
+        }
+      }
+    }
+  }
+}
