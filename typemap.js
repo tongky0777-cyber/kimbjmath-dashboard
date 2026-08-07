@@ -173,6 +173,8 @@ const DAILY_TYPEMAP_PATH = {
   '공통수학1||문풀반(실력)': './data/데일리_공수1_문풀실력_typeMap.json',
   '대수||개념반': './data/데일리_대수_개념반_typeMap.json',
   '미적분1||개념반': './data/데일리_미적분1_개념반_typeMap.json',
+  '공통수학1||미니모의': './data/데일리_공수1_미니모의_typeMap.json',
+  '공통수학2||미니모의': './data/데일리_공수2_미니모의_typeMap.json',
 };
 const _dailyCache = {};
 async function loadDailyTypeMap(subject, className) {
