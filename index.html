@@ -2023,6 +2023,10 @@ function saveExamScoreTable(key, points){
 // ===== 서술형 소문항(부분점수) 공통 헬퍼 =====
 // 배점표 한 칸의 값: 숫자(3.0) 또는 소문항객체 {sub:[{label:"(1)",pt:3.0},...]}
 function examIsSub(v){ return v && typeof v==='object' && Array.isArray(v.sub); }
+// 문항 표시 라벨 — labels 가 없으면 지금까지처럼 숫자를 그대로 쓴다 (하위호환)
+function examLabel(tbl, n){
+  return (tbl && tbl.labels && tbl.labels[n] != null) ? String(tbl.labels[n]) : String(n);
+}
 // 한 문항의 전체 배점 (소문항이면 sub 합)
 function examEntryPt(v){
   if(examIsSub(v)) return v.sub.reduce(function(s,x){return s+(+x.pt||0);},0);
@@ -2335,13 +2339,15 @@ function examScoreKeyOfRecord(t){
   // 2025 남산고 공통수학2 2학기 중간 (25문항, 만점 100 / 23~25번 서술형)
   // 출처: 01 원본·정답방 25-2중간_남산고_공수2__정답표.csv (배점 열, 260807 발행)
   var KEY29='gicul||2025||남산고||공통수학2||2학기||중간';
-  if(!tables[KEY29]){
+  // 이미 저장된 기기에도 labels 가 들어가도록 강제갱신 조건을 건다 (260806 시지고 교훈)
+  if(!tables[KEY29] || !tables[KEY29].labels){
     tables[KEY29]={ points:{
       1:2.0, 2:2.0, 3:2.0, 4:2.0, 5:2.4, 6:2.5, 7:2.5, 8:2.5, 9:2.6, 10:2.9,
       11:3.0, 12:3.0, 13:3.3, 14:3.3, 15:3.5, 16:3.5, 17:3.0, 18:3.0, 19:3.0, 20:4.0,
       21:4.0, 22:5.0,
       23:10.0, 24:12.0, 25:13.0
-    }, total:25, full:100 };
+    }, total:25, full:100,
+      labels:{ 23:'서술 1', 24:'서술 2', 25:'서술 3' } };
     changed=true;
   }
   // 2025 대구여고 공통수학2 2학기 중간 (23문항, 만점 100 / 18~23번 서답형, 18번 (1)(2)(3) 소문항)
@@ -3384,7 +3390,62 @@ function refreshUnits(prefix){
 
 // 과목 선택 시 단원 드롭다운 채우기 (교재별 단원 우선)
 // 데일리 테스트명 → 반(className) 매핑 (유형표가 있는 것만)
-var DAILY_CLASS_BY_TESTNAME = { '개념반 Daily Test':'개념반', '문풀반 Daily Test - 실전':'문풀반(실력)', '미니모의':'미니모의' };
+var DAILY_CLASS_BY_TESTNAME = { '개념반 Daily Test':'개념반', '문풀반 Daily Test - 실전':'문풀반(실력)' };
+// ===== 미니모의고사 유형표 연결 =====
+// 미니모의고사는 데일리와 그룹핑이 다르다(mini||연도||대상||주차). 단원 드롭다운을 쓰지 않으므로
+// 데일리 경로(maybeFillDailyUnits)를 탈 수 없다. 대상+주차로 직접 조회한다.
+// MINI_TARGETS 표기('공수1')와 유형표 키('공통수학1')가 달라 매핑표가 필요하다.
+var MINI_TARGET_SUBJECT = {
+  '공수1':'공통수학1', '공수2':'공통수학2', '대수':'대수',
+  '미적분Ⅰ':'미적분1', '미적분Ⅱ':'미적분2', '기하':'기하', '확률과 통계':'확률과 통계'
+};
+var _miniTMByKey = {};
+function miniWeekNo(v){ var m=String(v==null?'':v).match(/(\d+)/); return m? parseInt(m[1],10) : null; }
+// 유형표에서 그 주차 항목 찾기 — '9주차'와 '09주차'를 숫자로 맞춘다
+function miniTestByWeek(d, week){
+  if(!d || !d.tests) return null;
+  var w = miniWeekNo(week); if(w==null) return null;
+  var keys = Object.keys(d.tests);
+  for(var i=0;i<keys.length;i++){
+    var e=d.tests[keys[i]];
+    if(miniWeekNo(e.name)===w) return { key:keys[i], entry:e };
+  }
+  return null;
+}
+// 대상·주차가 정해지면 전체 문항수를 자동 입력하고 오답 그리드를 만든다
+function maybeFillMiniFromTypeMap(){
+  var nameEl=document.getElementById('test-name');
+  if(!nameEl || nameEl.value!=='미니모의고사') return;
+  var tg=document.getElementById('test-mini-target');
+  var wk=document.getElementById('test-week-num');
+  if(!tg || !wk || !tg.value || !wk.value) return;
+  var subj = MINI_TARGET_SUBJECT[tg.value]; if(!subj) return;
+  if(!(window.TypeMap && TypeMap.loadDailyTypeMap)) return;
+  var ck = subj+'||미니모의';
+  function apply(d){
+    if(!d) return;                      // 유형표 없는 과목 — 지금까지처럼 수동 입력
+    _miniTMByKey[ck]=d;
+    var hit=miniTestByWeek(d, wk.value);
+    if(!hit) return;                    // 그 주차만 아직 없음 — 수동 입력
+    var totalEl=document.getElementById('test-total');
+    if(totalEl && String(totalEl.value)!==String(hit.entry.totalCount)){
+      totalEl.value=hit.entry.totalCount;
+      buildWrongGrid();
+    }
+  }
+  if(_miniTMByKey[ck]) apply(_miniTMByKey[ck]);
+  else TypeMap.loadDailyTypeMap(subj,'미니모의').then(apply).catch(function(){});
+}
+// 유형분석용 키 — 저장 구조(mini||…)는 그대로 두고 분석 키만 따로 붙인다
+function miniDailyKey(){
+  var tg=document.getElementById('test-mini-target');
+  var wk=document.getElementById('test-week-num');
+  if(!tg || !wk || !tg.value || !wk.value) return '';
+  var subj=MINI_TARGET_SUBJECT[tg.value]; if(!subj) return '';
+  var d=_miniTMByKey[subj+'||미니모의']; if(!d) return '';
+  var hit=miniTestByWeek(d, wk.value);
+  return hit? hit.key : '';
+}
 function dailyClassOf(testName){ return DAILY_CLASS_BY_TESTNAME[testName] || null; }
 var _dailyTMByKey = {};  // 'subject||className' -> 로드된 유형표 데이터
 // 데일리(유형표 있는 반)면 단원 드롭다운을 유형표의 테스트 목록(교과순)으로 교체
@@ -4187,6 +4248,8 @@ function collectTestData(){
     data.miniTarget = document.getElementById('test-mini-target').value;
     data.miniYear = document.getElementById('test-mini-year') ? document.getElementById('test-mini-year').value : '2026';
     data.subject=''; data.unit='';
+    var _mk = (typeof miniDailyKey==='function') ? miniDailyKey() : '';
+    if(_mk) data.dailyKey=_mk;   // 유형분석용. 저장 구조(mini||…)는 그대로다
   } else if(name==='기출 Test'){
     data.examYear=document.getElementById('test-exam-year').value;
     data.examLevel=document.getElementById('test-exam-level').value;
@@ -7157,11 +7220,11 @@ function buildWrongGrid() {
     (function(n){
       var ent = (tbl&&tbl.points)?tbl.points[n]:null;
       if(examIsSub(ent)){
-        grid.appendChild(buildSubBox(n, ent, testWrongSet, calcTestPct));
+        grid.appendChild(buildSubBox(n, ent, testWrongSet, calcTestPct, examLabel(tbl, n)));
       } else {
         var b=document.createElement('button');
         b.type='button';
-        b.textContent=n;
+        b.textContent=examLabel(tbl, n);
         b.dataset.num=n;
         var on=!!testWrongSet[n];
         styleWrongBtn(b,on);
@@ -7178,13 +7241,13 @@ function buildWrongGrid() {
 }
 // 소문항 펼침 박스 생성 (개인/반별 공용)
 // num: 문항번호, ent: {sub:[{label,pt}]}, wset: 틀린집합(키 "num-idx"), onChange: 갱신콜백
-function buildSubBox(num, ent, wset, onChange){
+function buildSubBox(num, ent, wset, onChange, dispLabel){
   var box=document.createElement('div');
   box.style.cssText='display:inline-flex;flex-direction:column;gap:4px;border:1.5px solid var(--teal);border-radius:8px;padding:5px 6px;background:var(--bg2);vertical-align:top;';
   var head=document.createElement('div');
   head.style.cssText='display:flex;align-items:center;gap:6px;';
   var tag=document.createElement('span');
-  tag.textContent=num;
+  tag.textContent=(dispLabel!=null?dispLabel:num);
   tag.style.cssText='min-width:28px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:12px;font-weight:700;background:var(--white);border:1.5px solid var(--teal);color:var(--teal);';
   var lab=document.createElement('span'); lab.textContent='서술형'; lab.style.cssText='font-size:10px;color:var(--teal);font-weight:700;';
   head.appendChild(tag); head.appendChild(lab);
@@ -7243,7 +7306,9 @@ function calcTestPct() {
     preview.style.display='block';
     preview.style.background = pct>=90?'var(--green-bg)':pct>=70?'var(--gold-bg)':'var(--red-bg)';
     preview.style.color = pct>=90?'var(--green)':pct>=70?'var(--gold)':'var(--red)';
-    preview.textContent = '배점 적용: '+got+' / '+full+'점 = '+pct+'점 (틀린 '+wrong+'개'+(wrong?': '+wrongNums.join(', ')+'번':'')+')';
+    var wrongDisp = wrongNums.map(function(n){ return examLabel(tbl, n); });
+    var hasLabel = !!(tbl && tbl.labels);
+    preview.textContent = '배점 적용: '+got+' / '+full+'점 = '+pct+'점 (틀린 '+wrong+'개'+(wrong?': '+wrongDisp.join(', ')+(hasLabel?'':'번'):'')+')';
     return;
   }
 
@@ -7295,6 +7360,7 @@ function onTestNameChange(){
   if(name==='미니모의고사'){
     weekRow.style.display='flex'; fillMiniTargets();
     document.getElementById('test-week-label').style.display='block'; syncWeekLabel();
+    maybeFillMiniFromTypeMap();
   }
   else if(name==='기출 Test'){ giculRows.style.display='block'; fillExamYears(); fillExamLevels(); }
   else if(name==='모의고사 기출'){ mockRow.style.display='flex'; fillMockYears(); }
@@ -7361,6 +7427,7 @@ function syncWeekLabel(){
   var tg=document.getElementById('test-mini-target') ? document.getElementById('test-mini-target').value : '';
   var yr=document.getElementById('test-mini-year') ? document.getElementById('test-mini-year').value : '';
   document.getElementById('test-week-label').textContent = n? ((yr?'['+yr+'] ':'')+(tg?tg+' ':'')+'미니모의고사 '+n+'주차') : '—';
+  if(typeof maybeFillMiniFromTypeMap==='function') maybeFillMiniFromTypeMap();
 }
 function examYearOptions(){
   var y=new Date().getFullYear(); var arr=[];
