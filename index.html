@@ -929,6 +929,7 @@ body.role-assistant .teacher-only{ display:none !important; }
       <div class="sec-hd">
         <h2>🔁 보강 신청 관리</h2>
         <div class="actions">
+          <button class="btn-sm sec" onclick="refreshMakeupRequests()">신청 새로고침</button>
           <button class="btn-sm sec" onclick="openMakeupRequestModal()">+ 신청 직접 입력</button>
           <button class="btn-sm" onclick="openMakeupSlotModal()">+ 보강 가능 시간 열기</button>
         </div>
@@ -6483,6 +6484,48 @@ function parentRequestValues(){
   var inbox=getParentMakeupInbox();
   return Object.keys(inbox).map(function(k){ return inbox[k]; }).filter(Boolean);
 }
+var _makeupInboxPulling=false;
+var _makeupInboxPulledAt=0;
+function pullParentMakeupInbox(force, cb){
+  if(typeof firebase==='undefined' || !window._fbDb){
+    if(cb) cb(false);
+    return false;
+  }
+  var now=Date.now();
+  if(!force && now-_makeupInboxPulledAt<5000){
+    if(cb) cb(false);
+    return false;
+  }
+  if(_makeupInboxPulling){
+    if(cb) cb(false);
+    return false;
+  }
+  _makeupInboxPulling=true;
+  Promise.resolve(window._authReady).then(function(){
+    return Promise.all([
+      window._fbDb.ref((window._FB_PREFIX||'bjm_')+'parentMakeupInbox').once('value'),
+      window._fbDb.ref((window._FB_PREFIX||'bjm_')+'parentMakeupRequests').once('value')
+    ]);
+  }).then(function(snaps){
+    DB.setOne('parentMakeupInbox', snaps[0].val() || {});
+    DB.setOne('parentMakeupRequests', snaps[1].val() || {});
+    _makeupInboxPulledAt=Date.now();
+    _makeupInboxPulling=false;
+    if(cb) cb(true);
+  }).catch(function(e){
+    console.warn('parent makeup inbox pull failed:', e&&e.message);
+    _makeupInboxPulledAt=Date.now();
+    _makeupInboxPulling=false;
+    if(cb) cb(false);
+  });
+  return true;
+}
+function refreshMakeupRequests(){
+  pullParentMakeupInbox(true, function(){
+    renderMakeup(true);
+    toast('학부모 신청을 새로 불러왔습니다');
+  });
+}
 function mergeParentMakeupInbox(){
   var inbox=parentRequestValues();
   if(!inbox.length) return DB.get('makeupRequests')||[];
@@ -6817,7 +6860,8 @@ function copyMakeupLinkText(){
   out.select();
   try{ document.execCommand('copy'); toast('문구를 복사했습니다'); }catch(e){ toast('문구를 선택해 복사해주세요'); }
 }
-function renderMakeup(){
+function renderMakeup(skipPull){
+  if(!skipPull && pullParentMakeupInbox(false, function(){ renderMakeup(true); })) return;
   var students=sortByGrade((DB.get('students')||[]).filter(isActiveStudent));
   var linkSel=document.getElementById('makeup-link-student');
   if(linkSel){
