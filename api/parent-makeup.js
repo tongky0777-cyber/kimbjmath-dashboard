@@ -285,7 +285,9 @@ async function snapshot(auth, credential) {
       scope: slot.scope || 'all',
       subject: slot.subject || ''
     }));
-  const requests = arr(await fbRequest('GET', 'bjm_parentMakeupRequests/' + auth.sid, credential)).map(publicRequest);
+  const requests = arr(await fbRequest('GET', 'bjm_parentMakeupRequests/' + auth.sid, credential))
+    .filter((r) => r && r.status !== 'rejected')
+    .map(publicRequest);
   return { student: portal.student, groups, slots, requests };
 }
 

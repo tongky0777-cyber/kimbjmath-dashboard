@@ -6509,6 +6509,7 @@ function pullParentMakeupInbox(force, cb){
   }).then(function(snaps){
     DB.setOne('parentMakeupInbox', snaps[0].val() || {});
     DB.setOne('parentMakeupRequests', snaps[1].val() || {});
+    purgeRejectedParentMakeupRecords();
     _makeupInboxPulledAt=Date.now();
     _makeupInboxPulling=false;
     if(cb) cb(true);
@@ -6560,6 +6561,34 @@ function syncParentMakeupStatus(req){
   map[req.sid]=_plainObject(map[req.sid]);
   map[req.sid][req.id]=Object.assign({}, map[req.sid][req.id]||{}, req);
   DB.setOne('parentMakeupRequests', map);
+}
+function removeParentVisibleMakeupRequest(req){
+  if(!req || req.source!=='parentPortal' || !req.sid || !req.id) return;
+  var inbox=getParentMakeupInbox();
+  if(inbox[req.id]) delete inbox[req.id];
+  DB.setOne('parentMakeupInbox', inbox);
+  var map=getParentMakeupRequestsMap();
+  if(map[req.sid] && map[req.sid][req.id]) delete map[req.sid][req.id];
+  DB.setOne('parentMakeupRequests', map);
+}
+function purgeRejectedParentMakeupRecords(){
+  var inbox=getParentMakeupInbox();
+  var map=getParentMakeupRequestsMap();
+  var changed=false;
+  Object.keys(inbox).forEach(function(id){
+    if(inbox[id] && inbox[id].status==='rejected'){ delete inbox[id]; changed=true; }
+  });
+  Object.keys(map).forEach(function(sid){
+    var box=_plainObject(map[sid]);
+    Object.keys(box).forEach(function(id){
+      if(box[id] && box[id].status==='rejected'){ delete box[id]; changed=true; }
+    });
+    map[sid]=box;
+  });
+  if(changed){
+    DB.setOne('parentMakeupInbox', inbox);
+    DB.setOne('parentMakeupRequests', map);
+  }
 }
 function makeupToday(){ return new Date().toISOString().slice(0,10); }
 function makeupStudentName(sid){
@@ -6835,7 +6864,7 @@ function rejectMakeupRequest(id){
   if(!confirm('이 보강 신청을 거절 처리할까요?')) return;
   var reqs=DB.get('makeupRequests')||[];
   var r=reqs.find(function(x){ return x.id===id; });
-  if(r){ r.status='rejected'; r.rejectedAt=new Date().toISOString(); DB.set('makeupRequests', reqs); syncParentMakeupStatus(r); renderMakeup(); }
+  if(r){ r.status='rejected'; r.rejectedAt=new Date().toISOString(); DB.set('makeupRequests', reqs); removeParentVisibleMakeupRequest(r); renderMakeup(); }
 }
 function completeMakeupRequest(id){
   var reqs=DB.get('makeupRequests')||[];

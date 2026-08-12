@@ -257,9 +257,10 @@ function statusLabel(s){
 }
 
 function renderRequests(){
-  var pending = state.requests.filter(function(r){ return r.status === 'pending'; }).length;
+  var visibleRequests = state.requests.filter(function(r){ return r.status !== 'rejected'; });
+  var pending = visibleRequests.filter(function(r){ return r.status === 'pending'; }).length;
   $('pending-count').textContent = pending;
-  $('request-list').innerHTML = state.requests.length ? state.requests.slice().sort(function(a,b){
+  $('request-list').innerHTML = visibleRequests.length ? visibleRequests.slice().sort(function(a,b){
     return (b.createdAt || '').localeCompare(a.createdAt || '');
   }).map(function(r){
     return '<div class="list-item"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>'+esc(r.groupName || '수업')+'</b><span class="status st-'+esc(r.status || 'pending')+'">'+statusLabel(r.status)+'</span></div>'
