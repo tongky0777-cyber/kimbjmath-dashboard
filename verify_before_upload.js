@@ -112,6 +112,8 @@ function main() {
     path.join(ROOT, 'api', 'classroom-admin.js'),
     path.join(ROOT, 'api', 'classroom-auth.js'),
     path.join(ROOT, 'api', 'classroom-push.js'),
+    path.join(ROOT, 'api', 'parent-auth.js'),
+    path.join(ROOT, 'api', 'parent-makeup.js'),
     path.join(ROOT, 'api', 'telegram.js'),
     path.join(ROOT, 'sync_classroom_aio.js'),
     path.join(ROOT, 'validate_aio_data.js')
@@ -120,7 +122,8 @@ function main() {
   [
     path.join(CLASSROOM, 'app.html'),
     path.join(CLASSROOM, 'index.html'),
-    path.join(ROOT, 'index.html')
+    path.join(ROOT, 'index.html'),
+    path.join(ROOT, 'parent.html')
   ].forEach(htmlScriptCheck);
 
   runAioCheck();

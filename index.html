@@ -400,6 +400,7 @@ body.role-assistant .teacher-only{ display:none !important; }
     <div class="sb-item teacher-only" onclick="showView('groups',this)"><span class="sb-icon">🏫</span> 반 관리</div>
     <div class="sb-section">일정</div>
     <div class="sb-item" onclick="showView('schedule',this)"><span class="sb-icon">📅</span> 보강 · 일정</div>
+    <div class="sb-item teacher-only" onclick="showView('makeup',this)"><span class="sb-icon">🔁</span> 보강 신청</div>
     <div class="sb-item" onclick="showView('memo',this)"><span class="sb-icon">🗒️</span> 메모</div>
     <div class="sb-item" onclick="showView('exam',this)"><span class="sb-icon">&#x1F4DD;</span> &#xC2DC;&#xD5D8; &#xC77C;&#xC815;</div>
     <div class="sb-item" onclick="showView('planner',this)"><span class="sb-icon">🗓️</span> 플래너</div>
@@ -923,6 +924,54 @@ body.role-assistant .teacher-only{ display:none !important; }
       </div>
     </div>
 
+    <!-- 보강 신청 관리 -->
+    <div class="view" id="view-makeup">
+      <div class="sec-hd">
+        <h2>🔁 보강 신청 관리</h2>
+        <div class="actions">
+          <button class="btn-sm sec" onclick="openMakeupRequestModal()">+ 신청 직접 입력</button>
+          <button class="btn-sm" onclick="openMakeupSlotModal()">+ 보강 가능 시간 열기</button>
+        </div>
+      </div>
+
+      <div class="stat-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px;">
+        <div class="stat-card"><div class="stat-card-top"><div class="stat-label">승인 대기</div><div class="stat-icon">⏳</div></div><div class="stat-num" id="makeup-pending-count">0</div><div class="stat-sub">학부모 신청</div></div>
+        <div class="stat-card"><div class="stat-card-top"><div class="stat-label">열어둔 시간</div><div class="stat-icon">🕒</div></div><div class="stat-num" id="makeup-open-count">0</div><div class="stat-sub">신청 가능</div></div>
+        <div class="stat-card"><div class="stat-card-top"><div class="stat-label">확정 보강</div><div class="stat-icon">✅</div></div><div class="stat-num" id="makeup-approved-count">0</div><div class="stat-sub">일정 반영</div></div>
+        <div class="stat-card"><div class="stat-card-top"><div class="stat-label">시간 조정</div><div class="stat-icon">↔️</div></div><div class="stat-num" id="makeup-adjust-count">0</div><div class="stat-sub">확인 필요</div></div>
+      </div>
+
+      <div style="background:var(--white);border:1px solid var(--line);border-radius:6px;padding:14px 16px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:var(--ink);">학부모 신청 링크</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">학생을 선택하면 보낼 문구가 만들어집니다. 현재는 대시보드에서 직접 입력도 가능합니다.</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <select id="makeup-link-student" onchange="renderMakeupLink()" style="font-size:12px;padding:7px 10px;border:1px solid var(--line);border-radius:4px;background:var(--white);font-family:var(--sans);min-width:180px;"></select>
+            <button class="btn-sm sec" onclick="copyMakeupLinkText()">문구 복사</button>
+          </div>
+        </div>
+        <textarea id="makeup-link-text" readonly style="width:100%;min-height:74px;border:1px solid var(--line);border-radius:4px;background:var(--bg);padding:10px;font-size:12px;color:var(--ink);font-family:var(--sans);line-height:1.55;"></textarea>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.1fr .9fr;gap:16px;align-items:start;">
+        <div class="schedule-card">
+          <div class="schedule-card-hd"><span>📨 승인 대기 신청</span><span id="makeup-request-count" style="font-size:11px;color:var(--red);">0건</span></div>
+          <div id="makeup-request-list" style="padding:12px;"></div>
+        </div>
+        <div class="schedule-card">
+          <div class="schedule-card-hd"><span>🕒 보강 가능 시간</span><span id="makeup-slot-count" style="font-size:11px;color:var(--muted);">0건</span></div>
+          <div id="makeup-slot-list" style="padding:12px;"></div>
+        </div>
+      </div>
+
+      <div class="schedule-card" style="margin-top:16px;">
+        <div class="schedule-card-hd"><span>✅ 확정/완료된 보강</span><span id="makeup-confirmed-count" style="font-size:11px;color:var(--muted);">0건</span></div>
+        <div id="makeup-confirmed-list" style="padding:12px;"></div>
+      </div>
+    </div>
+
     <!-- 메모 -->
     <div class="view" id="view-memo">
       <div class="sec-hd"><h2>🗒️ 메모 <span style="font-size:12px;font-weight:500;color:var(--muted);">(선생님·조교 공유)</span></h2></div>
@@ -1038,6 +1087,16 @@ body.role-assistant .teacher-only{ display:none !important; }
       <div class="form-row">
         <div class="form-group"><label>학생 연락처</label><input id="s-phone" placeholder="010-0000-0000"></div>
         <div class="form-group"><label>학부모 연락처</label><input id="s-parent" placeholder="010-0000-0000"></div>
+      </div>
+      <div class="form-group full" style="border:1px solid var(--line);border-radius:6px;background:var(--bg2);padding:12px;">
+        <label>학부모 포털 접속코드</label>
+        <div id="s-parent-portal-status" style="font-size:12px;color:var(--muted);margin-bottom:8px;">학생을 저장한 뒤 발급할 수 있습니다.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="btn-sm" onclick="issueParentPortalCode()">접속코드 발급/재발급</button>
+          <button type="button" class="btn-sm sec" onclick="disableParentPortal()">접속 중지</button>
+        </div>
+        <div id="s-parent-portal-code" style="display:none;margin-top:8px;padding:9px 10px;border-radius:6px;background:var(--white);border:1px dashed var(--teal);font-size:13px;font-weight:800;color:var(--teal);"></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;">코드는 발급할 때 한 번만 보입니다. 잊어버리면 재발급하면 됩니다.</div>
       </div>
       <div class="form-group full"><label>반 배정 (복수 선택 가능)</label>
         <div id="s-group-list" style="display:flex;flex-wrap:wrap;gap:8px;padding:12px;background:var(--bg2);border-radius:4px;min-height:48px;font-size:12px;color:var(--muted);">반 관리에서 반을 먼저 만들어주세요</div>
@@ -1279,6 +1338,49 @@ body.role-assistant .teacher-only{ display:none !important; }
 
 
 <!-- 모달: 빠른 입력 -->
+<div class="modal-bg" id="modal-makeup-slot">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-hd"><h3>🔁 보강 가능 시간</h3><button class="modal-close" onclick="closeModal('modal-makeup-slot')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="ms-id">
+      <div class="form-row">
+        <div class="form-group"><label>날짜 *</label><input type="date" id="ms-date"></div>
+        <div class="form-group"><label>시작 시간 *</label><input type="time" id="ms-start"></div>
+        <div class="form-group"><label>종료 시간</label><input type="time" id="ms-end"></div>
+        <div class="form-group"><label>정원</label><input type="number" id="ms-capacity" min="1" value="1"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>허용 범위</label><select id="ms-scope" onchange="renderMakeupSlotGroupChecks()"><option value="all">전체 가능</option><option value="groups">선택한 반만</option><option value="subject">과목 기준</option></select></div>
+        <div class="form-group"><label>허용 과목</label><select id="ms-subject"><option value="">전체 과목</option><option>공통수학1</option><option>공통수학2</option><option>대수</option><option>미적분</option><option>확률통계</option><option>기하</option></select></div>
+      </div>
+      <div class="form-group full"><label>허용 반</label><div id="ms-group-list" style="display:flex;flex-wrap:wrap;gap:8px;background:var(--bg2);border-radius:4px;padding:10px;min-height:44px;"></div></div>
+      <div class="form-group full"><label>학부모에게 보일 안내</label><textarea id="ms-memo" placeholder="예) 공수2 결석 학생만 신청 가능합니다."></textarea></div>
+    </div>
+    <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-makeup-slot')">취소</button><button class="btn-save" onclick="saveMakeupSlot()">저장</button></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-makeup-request">
+  <div class="modal" style="max-width:620px;">
+    <div class="modal-hd"><h3>📨 결석·보강 신청</h3><button class="modal-close" onclick="closeModal('modal-makeup-request')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="mr-id">
+      <div class="form-row">
+        <div class="form-group"><label>학생 *</label><select id="mr-student" onchange="onMakeupStudentChange()"></select></div>
+        <div class="form-group"><label>결석할 수업 *</label><select id="mr-group" onchange="onMakeupGroupChange()"></select></div>
+      </div>
+      <div id="mr-policy-note" style="display:none;background:var(--gold-bg);color:var(--gold);border:1px solid #ecd9a8;border-radius:4px;padding:9px 10px;font-size:12px;line-height:1.5;"></div>
+      <div class="form-row">
+        <div class="form-group"><label>결석 예정일 *</label><input type="date" id="mr-absent-date"></div>
+        <div class="form-group"><label>희망 보강 시간</label><select id="mr-slot" onchange="onMakeupSlotPick()"></select></div>
+      </div>
+      <div class="form-group full"><label>직접 요청 시간</label><input id="mr-custom-time" placeholder="열려 있는 시간이 없을 때만 입력"></div>
+      <div class="form-group full"><label>결석 사유 / 학부모 메모</label><textarea id="mr-reason" placeholder="예) 학교 행사로 결석 예정입니다."></textarea></div>
+    </div>
+    <div class="modal-ft"><button class="btn-cancel" onclick="closeModal('modal-makeup-request')">취소</button><button class="btn-save" onclick="saveMakeupRequest()">신청 저장</button></div>
+  </div>
+</div>
+
 <div class="modal-bg" id="modal-quick-input">
   <div class="modal" style="max-width:480px;">
     <div class="modal-hd">
@@ -1381,6 +1483,17 @@ body.role-assistant .teacher-only{ display:none !important; }
         </div>
         <div class="form-group"><label>시작 시간</label><input type="time" id="g-start" value="18:00"></div>
         <div class="form-group"><label>종료 시간</label><input type="time" id="g-end" value="20:00"></div>
+      </div>
+      <div class="form-group full">
+        <label>보강 정책</label>
+        <div style="display:grid;grid-template-columns:180px 1fr;gap:8px;">
+          <select id="g-makeup-policy">
+            <option value="allow">보강 가능</option>
+            <option value="blocked">보강 불가</option>
+            <option value="ask">선생님 확인 후 가능</option>
+          </select>
+          <input id="g-makeup-note" placeholder="학부모에게 보일 안내 문구 (예: 이 수업은 보강 신청 대상이 아닙니다)">
+        </div>
       </div>
       <div class="form-group full"><label>학생 선택 (복수 선택 가능)</label>
         <div id="g-students-list" style="display:flex;flex-wrap:wrap;gap:8px;padding:12px;background:var(--bg2);border-radius:4px;min-height:60px;"></div>
@@ -1614,7 +1727,7 @@ window._fbReady = false;
       : Promise.resolve());
     var PREFIX=window._FB_PREFIX;
     // 동기화 대상 키
-    var SYNC_KEYS=["students","attendance","homework","tests","progress","groups","schedules","exams","memo","memo_todo","examscores","planner_events","daily_problems","daily_subs","worklog"].map(function(k){return PREFIX+k;});
+    var SYNC_KEYS=["students","attendance","homework","tests","progress","groups","schedules","makeupSlots","makeupRequests","parentPortals","parentMakeupRequests","parentMakeupInbox","exams","memo","memo_todo","examscores","planner_events","daily_problems","daily_subs","worklog"].map(function(k){return PREFIX+k;});
 
     // 저장 시 서버에도 반영 (단, 동기화 준비 전에는 서버 덮어쓰기 금지)
     var _orig=localStorage.setItem.bind(localStorage);
@@ -1817,6 +1930,20 @@ function dashHash(pw){
   });
 }
 window.genLoginHash=function(pw){ dashHash(pw).then(function(h){ console.log(h); }); };
+
+var PARENT_PORTAL_SALT = 'kbjm.parent.v1|';
+function parentPortalHash(code){
+  var data = new TextEncoder().encode(PARENT_PORTAL_SALT + String(code||'').replace(/[^A-Za-z0-9]/g,'').toUpperCase());
+  return crypto.subtle.digest('SHA-256', data).then(function(buf){
+    return Array.prototype.map.call(new Uint8Array(buf), function(b){ return ('0'+b.toString(16)).slice(-2); }).join('');
+  });
+}
+function randomParentCode(){
+  var chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var bytes=new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  return Array.prototype.map.call(bytes, function(b){ return chars[b%chars.length]; }).join('');
+}
 
 function doLogin() {
   var pw = document.getElementById('login-pw').value;
@@ -2475,7 +2602,7 @@ function activateMemo() {
   }
 }
 
-var viewTitles = {dashboard:'📊 전체 현황',prep:'🎯 다음 수업 준비',progress:'📖 진도 관리',groups:'🏫 반 관리',students:'👥 학생 목록',attendance:'✅ 출결 관리',tests:'📝 테스트 결과',homework:'📚 숙제 관리',schedule:'📅 보강 · 일정',memo:'🗒️ 메모',wronganalysis:'📊 교재 오답 분석',planner:'🗓️ 플래너',report:'📄 학생 리포트',daily:'🎯 오늘의 문제'};
+var viewTitles = {dashboard:'📊 전체 현황',prep:'🎯 다음 수업 준비',progress:'📖 진도 관리',groups:'🏫 반 관리',students:'👥 학생 목록',attendance:'✅ 출결 관리',tests:'📝 테스트 결과',homework:'📚 숙제 관리',schedule:'📅 보강 · 일정',makeup:'🔁 보강 신청',memo:'🗒️ 메모',wronganalysis:'📊 교재 오답 분석',planner:'🗓️ 플래너',report:'📄 학생 리포트',daily:'🎯 오늘의 문제'};
 
 
 // ===== 시험 일정 =====
@@ -3063,6 +3190,7 @@ function showView(id, el) {
   if(id==='homework')   { setHwSvFilter(_hwSvFilter); renderHw(); renderHwStudentView(); hwCalYear=new Date().getFullYear(); hwCalMonth=new Date().getMonth(); renderHwCalendar(); loadClassHwDone(function(){ loadWaSubs(function(){ renderHw(); renderHwStudentView(); renderDashboard(); }); }); }
   if(id==='wronganalysis') renderWrongAnalysisHome();
   if(id==='schedule')   { renderSchedule(); }
+  if(id==='makeup')     { renderMakeup(); }
   if(id==='memo')       activateMemo();
   if(id==='dashboard')  renderDashboard();
   if(id==='prep')       renderPrep();
@@ -3090,6 +3218,7 @@ function refreshCurrentView(){
     else if(id==='tests'){ renderTests(); renderTestCalendar(); if(typeof testSelectedDate!=='undefined' && testSelectedDate) selectTestDay(testSelectedDate); }
     else if(id==='homework'){ renderHw(); renderHwStudentView(); renderHwCalendar(); if(hwSelectedDate) selectHwDay(hwSelectedDate); }
     else if(id==='schedule')  renderSchedule();
+    else if(id==='makeup')    renderMakeup();
     else if(id==='dashboard') renderDashboard();
     else if(id==='prep')      renderPrep();
     else if(id==='progress'){ renderProgress(); renderProgCalendar(); }
@@ -3139,6 +3268,7 @@ function openStudentModal() {
   var tw=document.getElementById('s-tutoring-wrap'); if(tw) tw.style.display=isTutorUnlocked()?'':'none';
   var sp=document.getElementById('s-special'); if(sp) sp.checked=false;
   var spn=document.getElementById('s-special-name'); if(spn) spn.value=currentSpecialCourseName();
+  updateParentPortalStatus(null);
   populateStudentGroupList('');
   openModal('modal-student');
 }
@@ -3653,6 +3783,7 @@ function saveStudent() {
     return g;
   });
   DB.set('groups', groups);
+  syncParentPortalForStudent(student);
 
   closeModal('modal-student');
   renderStudents(); renderDashboard(); updateGroupFilter();
@@ -3927,6 +4058,7 @@ function editStudent(id) {
   if(sp) sp.checked=!!s.specialCourse;
   var spn=document.getElementById('s-special-name');
   if(spn) spn.value=s.specialCourseName || currentSpecialCourseName();
+  updateParentPortalStatus(s);
   populateStudentGroupList(s.id);
   openModal('modal-student');
 }
@@ -3943,6 +4075,100 @@ function updateGroupFilter() {
 function getStudentGroups(sid) {
   var groups = DB.get('groups');
   return groups.filter(function(g){ return (g.students||[]).includes(sid); });
+}
+
+function _plainObject(v){ return v && typeof v==='object' && !Array.isArray(v) ? v : {}; }
+function getParentPortalMap(){ return _plainObject(DB.getOne('parentPortals')); }
+function getParentMakeupInbox(){ return _plainObject(DB.getOne('parentMakeupInbox')); }
+function getParentMakeupRequestsMap(){ return _plainObject(DB.getOne('parentMakeupRequests')); }
+function parentPublicStudent(s){
+  return { id:s.id, name:s.name||'', grade:s.grade||'', school:s.school||'' };
+}
+function parentPublicGroups(sid){
+  return (getStudentGroups(sid)||[]).map(function(g){
+    return {
+      id:g.id, name:g.name||'', subject:g.subject||'', days:g.days||[], time:g.time||'',
+      makeupPolicy:g.makeupPolicy||'allow', makeupNote:g.makeupNote||''
+    };
+  });
+}
+function syncParentPortalForStudent(student){
+  if(!student || !student.parentPortalId) return;
+  var portals=getParentPortalMap();
+  portals[student.parentPortalId]={
+    sid:student.id,
+    enabled:student.parentPortalEnabled!==false,
+    student:parentPublicStudent(student),
+    groups:parentPublicGroups(student.id),
+    updatedAt:new Date().toISOString()
+  };
+  DB.setOne('parentPortals', portals);
+}
+function syncParentPortalsForStudents(sids){
+  var set={};
+  (sids||[]).forEach(function(sid){ set[String(sid)]=1; });
+  (DB.getRaw('students')||[]).forEach(function(s){
+    if(s && s.parentPortalId && (!sids || set[String(s.id)])) syncParentPortalForStudent(s);
+  });
+}
+function updateParentPortalStatus(student){
+  var status=document.getElementById('s-parent-portal-status');
+  var codeBox=document.getElementById('s-parent-portal-code');
+  if(codeBox){ codeBox.style.display='none'; codeBox.textContent=''; }
+  if(!status) return;
+  if(!student || !student.id){
+    status.textContent='학생을 저장한 뒤 발급할 수 있습니다.';
+    return;
+  }
+  if(student.parentPortalId && student.parentPortalEnabled!==false){
+    status.textContent='학부모 포털 사용 중입니다. 코드를 잊어버렸다면 재발급하세요.';
+  } else if(student.parentPortalId && student.parentPortalEnabled===false){
+    status.textContent='현재 접속이 중지되어 있습니다. 다시 사용하려면 재발급하세요.';
+  } else {
+    status.textContent='아직 발급된 접속코드가 없습니다.';
+  }
+}
+function issueParentPortalCode(){
+  var sid=(document.getElementById('s-id')||{}).value;
+  if(!sid){ toast('학생을 먼저 저장한 뒤 접속코드를 발급해 주세요'); return; }
+  var students=DB.getRaw('students');
+  var student=students.find(function(s){ return s.id===sid; });
+  if(!student){ toast('학생 정보를 찾을 수 없습니다'); return; }
+  var code=randomParentCode();
+  parentPortalHash(code).then(function(hash){
+    student.parentPortalId=hash;
+    student.parentPortalEnabled=true;
+    student.parentPortalUpdatedAt=new Date().toISOString();
+    DB.set('students', students);
+    syncParentPortalForStudent(student);
+    updateParentPortalStatus(student);
+    var codeBox=document.getElementById('s-parent-portal-code');
+    if(codeBox){
+      codeBox.style.display='';
+      codeBox.innerHTML='학부모님께 안내할 접속코드: <span style="font-size:16px;letter-spacing:.08em;">'+esc(code)+'</span><br><span style="font-size:12px;color:var(--muted);font-weight:600;">주소: '+esc(location.origin + location.pathname.replace(/index\.html?$/,'') + 'parent.html')+'</span>';
+    }
+    renderStudents();
+    toast('학부모 접속코드가 발급되었습니다');
+  });
+}
+function disableParentPortal(){
+  var sid=(document.getElementById('s-id')||{}).value;
+  if(!sid){ toast('저장된 학생만 접속을 중지할 수 있습니다'); return; }
+  if(!confirm('이 학생의 학부모 포털 접속을 중지할까요?')) return;
+  var students=DB.getRaw('students');
+  var student=students.find(function(s){ return s.id===sid; });
+  if(!student) return;
+  if(student.parentPortalId){
+    var portals=getParentPortalMap();
+    if(portals[student.parentPortalId]) portals[student.parentPortalId].enabled=false;
+    DB.setOne('parentPortals', portals);
+  }
+  student.parentPortalEnabled=false;
+  student.parentPortalUpdatedAt=new Date().toISOString();
+  DB.set('students', students);
+  updateParentPortalStatus(student);
+  renderStudents();
+  toast('학부모 포털 접속을 중지했습니다');
 }
 
 var _stuStatusFilter = 'active';
@@ -6242,6 +6468,339 @@ function renderSchedule() {
 
 // 대시보드
 // ===== 다음 수업 준비 보드 =====
+// ===== 보강 신청 관리 =====
+function parentRequestValues(){
+  var inbox=getParentMakeupInbox();
+  return Object.keys(inbox).map(function(k){ return inbox[k]; }).filter(Boolean);
+}
+function mergeParentMakeupInbox(){
+  var inbox=parentRequestValues();
+  if(!inbox.length) return DB.get('makeupRequests')||[];
+  var reqs=DB.get('makeupRequests')||[];
+  var byId={};
+  reqs.forEach(function(r,i){ if(r && r.id) byId[r.id]=i; });
+  var changed=false;
+  inbox.forEach(function(r){
+    if(!r || !r.id) return;
+    if(byId[r.id] == null){
+      reqs.push(r);
+      byId[r.id]=reqs.length-1;
+      changed=true;
+    } else {
+      var old=reqs[byId[r.id]];
+      if((old.updatedAt||'') < (r.updatedAt||'')){
+        reqs[byId[r.id]]=Object.assign({}, old, r);
+        changed=true;
+      }
+    }
+  });
+  if(changed) DB.set('makeupRequests', reqs);
+  return reqs;
+}
+function syncParentMakeupStatus(req){
+  if(!req || req.source!=='parentPortal' || !req.sid || !req.id) return;
+  req.updatedAt=new Date().toISOString();
+  var inbox=getParentMakeupInbox();
+  inbox[req.id]=Object.assign({}, inbox[req.id]||{}, req);
+  DB.setOne('parentMakeupInbox', inbox);
+  var map=getParentMakeupRequestsMap();
+  map[req.sid]=_plainObject(map[req.sid]);
+  map[req.sid][req.id]=Object.assign({}, map[req.sid][req.id]||{}, req);
+  DB.setOne('parentMakeupRequests', map);
+}
+function makeupToday(){ return new Date().toISOString().slice(0,10); }
+function makeupStudentName(sid){
+  var s=(DB.get('students')||[]).find(function(x){ return x.id===sid; });
+  return s ? s.name : '';
+}
+function makeupGroupName(gid){
+  var g=(DB.get('groups')||[]).find(function(x){ return x.id===gid; });
+  return g ? g.name : '';
+}
+function makeupSlotLabel(slot){
+  if(!slot) return '시간 미정';
+  return (slot.date||'')+' '+(slot.start||'')+(slot.end?'~'+slot.end:'');
+}
+function makeupPolicyOf(g){ return (g && g.makeupPolicy) || 'allow'; }
+function makeupPolicyText(g){
+  var p=makeupPolicyOf(g);
+  if(p==='blocked') return g.makeupNote || '이 수업은 보강 신청 대상이 아닙니다.';
+  if(p==='ask') return g.makeupNote || '이 수업은 선생님 확인 후 보강 가능 여부가 결정됩니다.';
+  return g && g.makeupNote ? g.makeupNote : '보강 신청이 가능한 수업입니다.';
+}
+function makeupUsedCount(slotId){
+  return (DB.get('makeupRequests')||[]).filter(function(r){
+    return r.slotId===slotId && (r.status==='approved'||r.status==='done');
+  }).length;
+}
+function slotAllowsGroup(slot, group){
+  if(!slot || !group) return false;
+  if(slot.scope==='groups') return (slot.groupIds||[]).indexOf(group.id)>-1;
+  if(slot.scope==='subject') return !slot.subject || slot.subject===(group.subject||'');
+  return true;
+}
+function availableMakeupSlots(group){
+  var today=makeupToday();
+  return (DB.get('makeupSlots')||[]).filter(function(slot){
+    if(slot.closed) return false;
+    if((slot.date||'')<today) return false;
+    if(!slotAllowsGroup(slot, group)) return false;
+    var cap=parseInt(slot.capacity||1);
+    return makeupUsedCount(slot.id) < cap;
+  }).sort(function(a,b){ return ((a.date||'')+(a.start||'')).localeCompare((b.date||'')+(b.start||'')); });
+}
+function renderMakeupSlotGroupChecks(selected){
+  selected = selected || [];
+  var el=document.getElementById('ms-group-list');
+  if(!el) return;
+  var groups=DB.get('groups')||[];
+  if(!groups.length){ el.innerHTML='<span style="font-size:12px;color:var(--muted);">반이 없습니다.</span>'; return; }
+  el.innerHTML=groups.map(function(g){
+    var checked=selected.indexOf(g.id)>-1?'checked':'';
+    return '<label style="display:flex;align-items:center;gap:5px;background:var(--white);border:1px solid var(--line);border-radius:3px;padding:5px 8px;font-size:12px;cursor:pointer;"><input type="checkbox" class="ms-group-check" value="'+g.id+'" '+checked+' style="width:auto;">'+esc(g.name)+'</label>';
+  }).join('');
+}
+function openMakeupSlotModal(id){
+  if(isAssistant()){ toast('보강 시간 관리는 선생님만 할 수 있어요'); return; }
+  var slots=DB.get('makeupSlots')||[];
+  var slot=id ? slots.find(function(x){ return x.id===id; }) : null;
+  document.getElementById('ms-id').value = slot ? slot.id : '';
+  document.getElementById('ms-date').value = slot ? (slot.date||'') : makeupToday();
+  document.getElementById('ms-start').value = slot ? (slot.start||'') : '17:00';
+  document.getElementById('ms-end').value = slot ? (slot.end||'') : '';
+  document.getElementById('ms-capacity').value = slot ? (slot.capacity||1) : 1;
+  document.getElementById('ms-scope').value = slot ? (slot.scope||'all') : 'all';
+  document.getElementById('ms-subject').value = slot ? (slot.subject||'') : '';
+  document.getElementById('ms-memo').value = slot ? (slot.memo||'') : '';
+  renderMakeupSlotGroupChecks(slot ? (slot.groupIds||[]) : []);
+  openModal('modal-makeup-slot');
+}
+function saveMakeupSlot(){
+  var date=document.getElementById('ms-date').value;
+  var start=document.getElementById('ms-start').value;
+  if(!date || !start){ toast('날짜와 시작 시간을 입력해주세요'); return; }
+  var slots=DB.get('makeupSlots')||[];
+  var id=document.getElementById('ms-id').value || ('slot_'+Date.now());
+  var idx=slots.findIndex(function(x){ return x.id===id; });
+  var rec={
+    id:id, date:date, start:start,
+    end:document.getElementById('ms-end').value,
+    capacity:parseInt(document.getElementById('ms-capacity').value||'1'),
+    scope:document.getElementById('ms-scope').value,
+    subject:document.getElementById('ms-subject').value,
+    groupIds:[].slice.call(document.querySelectorAll('.ms-group-check:checked')).map(function(el){ return el.value; }),
+    memo:document.getElementById('ms-memo').value,
+    createdAt: idx>-1 ? slots[idx].createdAt : new Date().toISOString(),
+    closed: idx>-1 ? !!slots[idx].closed : false
+  };
+  if(idx>-1) slots[idx]=rec; else slots.push(rec);
+  DB.set('makeupSlots', slots);
+  closeModal('modal-makeup-slot');
+  renderMakeup();
+  toast('보강 가능 시간이 저장되었습니다');
+}
+function deleteMakeupSlot(id){
+  if(!confirm('이 보강 가능 시간을 삭제할까요?')) return;
+  DB.set('makeupSlots', (DB.get('makeupSlots')||[]).filter(function(s){ return s.id!==id; }));
+  renderMakeup();
+}
+function toggleMakeupSlotClosed(id){
+  var slots=DB.get('makeupSlots')||[];
+  var slot=slots.find(function(s){ return s.id===id; });
+  if(slot){ slot.closed=!slot.closed; DB.set('makeupSlots', slots); renderMakeup(); }
+}
+function fillMakeupStudentSelect(selected){
+  var students=sortByGrade((DB.get('students')||[]).filter(isActiveStudent));
+  var html=students.map(function(s){ return '<option value="'+s.id+'">'+esc(s.name)+' ('+esc(s.grade||'')+')</option>'; }).join('');
+  var sel=document.getElementById('mr-student');
+  if(sel){ sel.innerHTML=html||'<option value="">학생 없음</option>'; if(selected) sel.value=selected; }
+}
+function onMakeupStudentChange(){
+  var sid=document.getElementById('mr-student').value;
+  var groups=getStudentGroups(sid)||[];
+  var sel=document.getElementById('mr-group');
+  if(!sel) return;
+  sel.innerHTML=groups.length ? groups.map(function(g){ return '<option value="'+g.id+'">'+esc(g.name)+' ('+esc(g.subject||'')+')</option>'; }).join('') : '<option value="">배정된 반 없음</option>';
+  onMakeupGroupChange();
+}
+function onMakeupGroupChange(){
+  var gid=document.getElementById('mr-group').value;
+  var group=(DB.get('groups')||[]).find(function(g){ return g.id===gid; });
+  var note=document.getElementById('mr-policy-note');
+  if(note){
+    note.style.display=group?'':'none';
+    note.textContent=group?makeupPolicyText(group):'';
+  }
+  var slotSel=document.getElementById('mr-slot');
+  if(!slotSel) return;
+  if(!group || makeupPolicyOf(group)==='blocked'){
+    slotSel.innerHTML='<option value="">신청 가능한 보강 시간이 없습니다</option>';
+    return;
+  }
+  var slots=availableMakeupSlots(group);
+  slotSel.innerHTML='<option value="">직접 요청 / 아직 선택 안 함</option>'+slots.map(function(slot){
+    return '<option value="'+slot.id+'">'+esc(makeupSlotLabel(slot))+' · '+makeupUsedCount(slot.id)+'/'+(slot.capacity||1)+'명</option>';
+  }).join('');
+}
+function onMakeupSlotPick(){
+  var custom=document.getElementById('mr-custom-time');
+  if(custom && document.getElementById('mr-slot').value) custom.value='';
+}
+function openMakeupRequestModal(sid){
+  document.getElementById('mr-id').value='';
+  fillMakeupStudentSelect(sid);
+  document.getElementById('mr-absent-date').value=makeupToday();
+  document.getElementById('mr-custom-time').value='';
+  document.getElementById('mr-reason').value='';
+  onMakeupStudentChange();
+  openModal('modal-makeup-request');
+}
+function saveMakeupRequest(){
+  var sid=document.getElementById('mr-student').value;
+  var gid=document.getElementById('mr-group').value;
+  var absentDate=document.getElementById('mr-absent-date').value;
+  var group=(DB.get('groups')||[]).find(function(g){ return g.id===gid; });
+  if(!sid || !gid || !absentDate){ toast('학생, 결석할 수업, 결석 예정일을 입력해주세요'); return; }
+  if(group && makeupPolicyOf(group)==='blocked'){ toast('보강 불가로 설정된 수업입니다'); return; }
+  var reqs=DB.get('makeupRequests')||[];
+  var id=document.getElementById('mr-id').value || ('req_'+Date.now());
+  var idx=reqs.findIndex(function(r){ return r.id===id; });
+  var slotId=document.getElementById('mr-slot').value;
+  var rec={
+    id:id, sid:sid, studentName:makeupStudentName(sid),
+    groupId:gid, groupName:makeupGroupName(gid),
+    absentDate:absentDate, slotId:slotId,
+    requestedSlotLabel: slotId ? makeupSlotLabel((DB.get('makeupSlots')||[]).find(function(s){ return s.id===slotId; })) : '',
+    customTime:document.getElementById('mr-custom-time').value,
+    reason:document.getElementById('mr-reason').value,
+    status: idx>-1 ? reqs[idx].status : 'pending',
+    createdAt: idx>-1 ? reqs[idx].createdAt : new Date().toISOString()
+  };
+  if(idx>-1) reqs[idx]=Object.assign({}, reqs[idx], rec); else reqs.push(rec);
+  DB.set('makeupRequests', reqs);
+  closeModal('modal-makeup-request');
+  renderMakeup();
+  toast('보강 신청이 저장되었습니다');
+}
+function approveMakeupRequest(id){
+  var reqs=DB.get('makeupRequests')||[];
+  var req=reqs.find(function(r){ return r.id===id; });
+  if(!req) return;
+  var slot=(DB.get('makeupSlots')||[]).find(function(s){ return s.id===req.slotId; });
+  if(!slot && !req.customTime){ toast('보강 시간을 먼저 선택하거나 조정 상태로 두세요'); return; }
+  if(slot && makeupUsedCount(slot.id) >= parseInt(slot.capacity||1)){
+    if(!confirm('이 시간은 정원이 찼습니다. 그래도 승인할까요?')) return;
+  }
+  req.status='approved';
+  req.approvedAt=new Date().toISOString();
+  req.finalDate=slot ? slot.date : req.absentDate;
+  req.finalTime=slot ? slot.start : req.customTime;
+  DB.set('makeupRequests', reqs);
+  syncParentMakeupStatus(req);
+  var schedules=DB.get('schedules')||[];
+  var existing=schedules.findIndex(function(s){ return s.makeupRequestId===req.id; });
+  var sch={
+    id: existing>-1 ? schedules[existing].id : 'makeup_'+req.id,
+    date:req.finalDate, time:req.finalTime, type:'makeup', target:req.studentName,
+    content:req.studentName+' 보강 수업',
+    memo:'결석 예정일: '+req.absentDate+' / '+(req.groupName||'')+(req.reason?' / '+req.reason:''),
+    done:false, makeupRequestId:req.id
+  };
+  if(existing>-1) schedules[existing]=sch; else schedules.push(sch);
+  DB.set('schedules', schedules);
+  renderMakeup(); renderSchedule(); renderDashboard();
+  toast('보강이 승인되어 일정에 등록되었습니다');
+}
+function markMakeupAdjust(id){
+  var reqs=DB.get('makeupRequests')||[];
+  var r=reqs.find(function(x){ return x.id===id; });
+  if(r){ r.status='adjusting'; DB.set('makeupRequests', reqs); syncParentMakeupStatus(r); renderMakeup(); }
+}
+function rejectMakeupRequest(id){
+  if(!confirm('이 보강 신청을 거절 처리할까요?')) return;
+  var reqs=DB.get('makeupRequests')||[];
+  var r=reqs.find(function(x){ return x.id===id; });
+  if(r){ r.status='rejected'; r.rejectedAt=new Date().toISOString(); DB.set('makeupRequests', reqs); syncParentMakeupStatus(r); renderMakeup(); }
+}
+function completeMakeupRequest(id){
+  var reqs=DB.get('makeupRequests')||[];
+  var r=reqs.find(function(x){ return x.id===id; });
+  if(r){ r.status='done'; r.doneAt=new Date().toISOString(); DB.set('makeupRequests', reqs); syncParentMakeupStatus(r); renderMakeup(); }
+}
+function renderMakeupLink(){
+  var sel=document.getElementById('makeup-link-student');
+  var out=document.getElementById('makeup-link-text');
+  if(!sel || !out) return;
+  var students=sortByGrade((DB.get('students')||[]).filter(isActiveStudent));
+  if(!sel.options.length){
+    sel.innerHTML=students.map(function(s){ return '<option value="'+s.id+'">'+esc(s.name)+' ('+esc(s.grade||'')+')</option>'; }).join('');
+  }
+  var sid=sel.value || (students[0]&&students[0].id) || '';
+  var s=students.find(function(x){ return x.id===sid; });
+  out.value=s ? ('안녕하세요. '+s.name+' 학생 결석/보강 신청이 필요하시면 결석할 수업, 결석 예정일, 가능한 보강 시간을 보내주세요.\n선생님 확인 후 가능한 보강 시간으로 확정해드리겠습니다.\n\n※ 현재 학부모 공개 신청 링크는 학생정보 보호를 위해 별도 보안 적용 후 열 예정입니다.') : '학생을 먼저 등록해주세요.';
+}
+function copyMakeupLinkText(){
+  var out=document.getElementById('makeup-link-text');
+  if(!out) return;
+  out.select();
+  try{ document.execCommand('copy'); toast('문구를 복사했습니다'); }catch(e){ toast('문구를 선택해 복사해주세요'); }
+}
+function renderMakeup(){
+  var students=sortByGrade((DB.get('students')||[]).filter(isActiveStudent));
+  var linkSel=document.getElementById('makeup-link-student');
+  if(linkSel){
+    var keep=linkSel.value;
+    linkSel.innerHTML=students.map(function(s){ return '<option value="'+s.id+'">'+esc(s.name)+' ('+esc(s.grade||'')+')</option>'; }).join('');
+    if(keep) linkSel.value=keep;
+  }
+  renderMakeupLink();
+  var slots=(DB.get('makeupSlots')||[]).sort(function(a,b){ return ((a.date||'')+(a.start||'')).localeCompare((b.date||'')+(b.start||'')); });
+  var reqs=(mergeParentMakeupInbox()||[]).sort(function(a,b){ return (b.createdAt||'').localeCompare(a.createdAt||''); });
+  var pending=reqs.filter(function(r){ return r.status==='pending'; });
+  var approved=reqs.filter(function(r){ return r.status==='approved'||r.status==='done'; });
+  var adjusting=reqs.filter(function(r){ return r.status==='adjusting'; });
+  function setText(id, text){ var el=document.getElementById(id); if(el) el.textContent=text; }
+  setText('makeup-pending-count', pending.length);
+  setText('makeup-open-count', slots.filter(function(s){ return !s.closed && (s.date||'')>=makeupToday(); }).length);
+  setText('makeup-approved-count', approved.length);
+  setText('makeup-adjust-count', adjusting.length);
+  setText('makeup-request-count', pending.length+'건');
+  setText('makeup-slot-count', slots.length+'건');
+  setText('makeup-confirmed-count', approved.length+'건');
+  var reqBox=document.getElementById('makeup-request-list');
+  if(reqBox){
+    reqBox.innerHTML=pending.length ? pending.map(function(r){
+      return '<div style="border:1px solid var(--line);border-radius:6px;padding:12px;margin-bottom:8px;background:var(--white);">'
+        +'<div style="display:flex;justify-content:space-between;gap:8px;"><div><b>'+esc(r.studentName||makeupStudentName(r.sid))+'</b> <span style="font-size:11px;color:var(--muted);">'+esc(r.groupName||makeupGroupName(r.groupId))+'</span></div><span style="font-size:11px;color:var(--gold);font-weight:700;">승인 대기</span></div>'
+        +'<div style="font-size:12px;color:var(--muted);margin-top:5px;">결석 '+esc(r.absentDate||'')+' · 희망 '+esc(r.requestedSlotLabel||r.customTime||'직접 조정')+'</div>'
+        +(r.reason?'<div style="font-size:12px;background:var(--bg2);border-radius:4px;padding:7px;margin-top:7px;">'+esc(r.reason)+'</div>':'')
+        +'<div style="display:flex;gap:6px;margin-top:10px;"><button class="btn-sm" onclick="approveMakeupRequest(\''+r.id+'\')">승인</button><button class="btn-sm sec" onclick="markMakeupAdjust(\''+r.id+'\')">시간 조정</button><button class="btn-sm danger" onclick="rejectMakeupRequest(\''+r.id+'\')">거절</button></div>'
+        +'</div>';
+    }).join('') : '<div style="text-align:center;color:var(--muted);font-size:12px;padding:18px;">승인 대기 신청이 없습니다.</div>';
+  }
+  var slotBox=document.getElementById('makeup-slot-list');
+  if(slotBox){
+    slotBox.innerHTML=slots.length ? slots.map(function(s){
+      var groupNames=(s.groupIds||[]).map(makeupGroupName).filter(Boolean).join(', ');
+      var used=makeupUsedCount(s.id), cap=s.capacity||1;
+      return '<div style="border:1px solid var(--line);border-radius:6px;padding:10px;margin-bottom:8px;background:'+(s.closed?'var(--bg2)':'var(--white)')+';">'
+        +'<div style="display:flex;justify-content:space-between;gap:8px;"><b>'+esc(makeupSlotLabel(s))+'</b><span style="font-size:11px;color:'+(used>=cap?'var(--red)':'var(--teal)')+';font-weight:700;">'+used+'/'+cap+'명</span></div>'
+        +'<div style="font-size:11px;color:var(--muted);margin-top:4px;">'+(s.scope==='groups'?'반: '+esc(groupNames||'선택 없음'):s.scope==='subject'?'과목: '+esc(s.subject||'전체'):'전체 가능')+(s.memo?' · '+esc(s.memo):'')+'</div>'
+        +'<div style="display:flex;gap:6px;margin-top:8px;"><button class="btn-sm sec" onclick="openMakeupSlotModal(\''+s.id+'\')">수정</button><button class="btn-sm sec" onclick="toggleMakeupSlotClosed(\''+s.id+'\')">'+(s.closed?'다시 열기':'마감')+'</button><button class="btn-sm danger" onclick="deleteMakeupSlot(\''+s.id+'\')">삭제</button></div>'
+        +'</div>';
+    }).join('') : '<div style="text-align:center;color:var(--muted);font-size:12px;padding:18px;">열어둔 보강 시간이 없습니다.</div>';
+  }
+  var doneBox=document.getElementById('makeup-confirmed-list');
+  if(doneBox){
+    doneBox.innerHTML=approved.length ? approved.map(function(r){
+      return '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;border-bottom:1px solid var(--line);padding:9px 4px;">'
+        +'<div><b>'+esc(r.studentName||makeupStudentName(r.sid))+'</b> <span style="font-size:12px;color:var(--muted);">'+esc(r.groupName||'')+'</span><div style="font-size:11px;color:var(--muted);margin-top:2px;">확정 '+esc((r.finalDate||'')+' '+(r.finalTime||''))+' · 결석 '+esc(r.absentDate||'')+'</div></div>'
+        +'<div style="display:flex;gap:6px;align-items:center;"><span style="font-size:11px;color:'+(r.status==='done'?'var(--green)':'var(--teal)')+';font-weight:700;">'+(r.status==='done'?'완료':'확정')+'</span>'+(r.status==='done'?'':'<button class="btn-sm sec" onclick="completeMakeupRequest(\''+r.id+'\')">완료</button>')+'</div>'
+        +'</div>';
+    }).join('') : '<div style="text-align:center;color:var(--muted);font-size:12px;padding:18px;">확정된 보강이 없습니다.</div>';
+  }
+}
+
 var PREP_DAYNAMES = ['일','월','화','수','목','금','토'];
 // 특정 반(요일 배열)의 오늘 이후 N일 내 가장 가까운 수업 날짜 반환 (없으면 null)
 function nextClassDate(daysArr, withinDays){
@@ -6726,6 +7285,8 @@ function openGroupModal(id) {
     document.getElementById('g-name').value='';
     document.getElementById('g-start').value='18:00';
     document.getElementById('g-end').value='20:00';
+    var mp0=document.getElementById('g-makeup-policy'); if(mp0) mp0.value='allow';
+    var mn0=document.getElementById('g-makeup-note'); if(mn0) mn0.value='';
   } else {
     var g = groups.find(function(x){ return x.id===id; });
     if(g) {
@@ -6734,6 +7295,8 @@ function openGroupModal(id) {
       document.getElementById('g-type').value = g.type||'개념';
       document.getElementById('g-start').value = g.startTime||'18:00';
       document.getElementById('g-end').value = g.endTime||'20:00';
+      var mp=document.getElementById('g-makeup-policy'); if(mp) mp.value=g.makeupPolicy||'allow';
+      var mn=document.getElementById('g-makeup-note'); if(mn) mn.value=g.makeupNote||'';
       if(g.days) g.days.forEach(function(day){ var el=document.getElementById('g-day-'+{월:'mon',화:'tue',수:'wed',목:'thu',금:'fri',토:'sat',일:'sun'}[day]); if(el)el.checked=true; });
     }
   }
@@ -6764,10 +7327,13 @@ function saveGroup() {
     days: ['mon','tue','wed','thu','fri','sat','sun'].filter(function(d){ return document.getElementById('g-day-'+d).checked; }).map(function(d){ return document.getElementById('g-day-'+d).value; }),
     startTime: document.getElementById('g-start').value,
     endTime: document.getElementById('g-end').value,
+    makeupPolicy: (document.getElementById('g-makeup-policy')||{}).value || 'allow',
+    makeupNote: (document.getElementById('g-makeup-note')||{}).value || '',
     students: selected
   };
   if(idx===-1) groups.push(group); else groups[idx]=group;
   DB.set('groups', groups);
+  syncParentPortalsForStudents(selected);
   closeModal('modal-group');
   renderGroups(); updateGroupFilter(); toast(name+' 반이 저장되었습니다');
 }
@@ -6776,6 +7342,7 @@ function deleteGroup(id) {
   if(isAssistant()){ toast('반 삭제는 선생님만 할 수 있어요'); return; }
   if(!confirm('반을 삭제할까요?')) return;
   DB.set('groups', DB.get('groups').filter(function(g){ return g.id!==id; }));
+  syncParentPortalsForStudents();
   renderGroups(); toast('삭제되었습니다');
 }
 
