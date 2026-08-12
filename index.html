@@ -8,14 +8,14 @@
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --ink:#1f2a28;--ink2:#33403d;--muted:#7a8580;--line:#dfe9e4;
-  --bg:#f3faf7;--bg2:#e6f3ee;--white:#fff;
-  --red:#c0392b;--red2:#9c2c20;--red-bg:#fdf1f0;
-  --blue:#2484c4;--blue-bg:#eef6fc;
-  --teal:#117d70;--teal-bg:#e1f3ef;
-  --gold:#b07d12;--gold-bg:#fffaf0;
-  --green:#1d9e75;--green-bg:#e4f5ef;
-  --side:#d4f0ea;--side2:#b3e3da;--side-ink:#1a5a52;--side-ink2:#0c5d54;--side-on:#0e6e63;
+  --ink:#0f0f0f;--ink2:#2a2a2a;--muted:#777;--line:#e4e1d8;
+  --bg:#f5f4f0;--bg2:#eceae3;--white:#fff;
+  --red:#b4281e;--red2:#8f1e16;--red-bg:#fdf1f0;
+  --blue:#1c3c6e;--blue-bg:#edf2fb;
+  --teal:#0f5f5a;--teal-bg:#e8f5f4;
+  --gold:#8a6820;--gold-bg:#fdf8ee;
+  --green:#1a6b3a;--green-bg:#edf7f1;
+  --side:#0f0f0f;--side2:#1a1a1a;--side-ink:rgba(255,255,255,.6);--side-ink2:#fff;--side-on:rgba(180,40,30,.2);
   --sans:'Pretendard','Apple SD Gothic Neo',sans-serif;
 }
 body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;}
@@ -23,25 +23,25 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 /* 레이아웃 */
 .shell{display:grid;grid-template-columns:220px 1fr;height:100vh;overflow:hidden;}
 
-/* 사이드바 — 여름 연노랑 */
-.sidebar{background:var(--side);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
-.sb-logo{padding:20px;border-bottom:1px solid rgba(14,110,99,.16);}
-.sb-logo-name{font-size:15px;font-weight:700;color:var(--side-ink2);}
-.sb-logo-sub{font-size:11px;color:rgba(14,110,99,.6);margin-top:3px;}
+/* 사이드바 */
+.sidebar{background:var(--ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.sb-logo{padding:20px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sb-logo-name{font-size:15px;font-weight:700;color:#fff;}
+.sb-logo-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:3px;}
 .sb-nav{flex:1;padding:12px 0;}
-.sb-section{font-size:9px;font-weight:700;letter-spacing:.14em;color:rgba(14,110,99,.6);text-transform:uppercase;padding:14px 20px 6px;}
-.sb-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:var(--side-ink);cursor:pointer;transition:.15s;border-left:3px solid transparent;user-select:none;text-decoration:none;}
-.sb-item:hover{color:var(--side-ink2);background:rgba(14,110,99,.10);}
-.sb-item.on{color:#fff;background:var(--side-on);border-left-color:var(--side-ink2);font-weight:700;}
+.sb-section{font-size:9px;font-weight:700;letter-spacing:.14em;color:rgba(255,255,255,.3);text-transform:uppercase;padding:14px 20px 6px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:rgba(255,255,255,.6);cursor:pointer;transition:.15s;border-left:2px solid transparent;user-select:none;text-decoration:none;}
+.sb-item:hover{color:#fff;background:rgba(255,255,255,.05);}
+.sb-item.on{color:#fff;background:rgba(180,40,30,.2);border-left-color:var(--red);font-weight:700;}
 .sb-icon{font-size:15px;width:20px;text-align:center;}
-.sb-footer{padding:16px 20px;border-top:1px solid rgba(14,110,99,.16);font-size:11px;color:rgba(14,110,99,.5);}
+.sb-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:rgba(255,255,255,.25);}
 
 /* 메인 */
 .main{display:flex;flex-direction:column;height:100vh;overflow:hidden;}
 .topbar{background:var(--white);border-bottom:1px solid var(--line);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
 .topbar-title{font-size:15px;font-weight:700;color:var(--ink);}
 .topbar-right{display:flex;align-items:center;gap:10px;}
-.today-badge{background:var(--gold-bg);color:var(--gold);font-size:11px;font-weight:700;padding:5px 12px;border-radius:100px;border:1px solid #ecd9a8;}
+.today-badge{background:var(--red-bg);color:var(--red);font-size:11px;font-weight:700;padding:5px 12px;border-radius:100px;}
 .quick-nav{display:flex;align-items:center;gap:6px;margin-left:18px;}
 .quick-btn{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:500;color:var(--ink2);background:var(--bg2);border:1px solid transparent;border-radius:7px;padding:6px 12px;cursor:pointer;font-family:var(--sans);transition:.12s;white-space:nowrap;}
 .quick-btn:hover{background:var(--teal-bg);color:var(--teal);}
@@ -54,8 +54,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 .view.on{display:block;min-height:100px;}
 
 /* 버튼 */
-.btn-sm{background:var(--teal);color:#fff;border:0;font-size:12px;font-weight:700;padding:7px 14px;border-radius:5px;cursor:pointer;font-family:var(--sans);transition:.15s;white-space:nowrap;}
-.btn-sm:hover{background:#0d6b60;}
+.btn-sm{background:var(--red);color:#fff;border:0;font-size:12px;font-weight:700;padding:7px 14px;border-radius:3px;cursor:pointer;font-family:var(--sans);transition:.15s;white-space:nowrap;}
+.btn-sm:hover{background:var(--red2);}
 .btn-sm.sec{background:var(--bg2);color:var(--ink2);}
 .btn-sm.sec:hover{background:var(--line);}
 .btn-sm.danger{background:var(--red);}
@@ -169,8 +169,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--red);background:var(-
 textarea{resize:vertical;min-height:80px;}
 .modal-ft{padding:16px 24px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;}
 .btn-cancel{background:var(--bg2);color:var(--ink2);border:0;font-size:13px;font-weight:500;padding:9px 18px;border-radius:3px;cursor:pointer;font-family:var(--sans);}
-.btn-save{background:var(--teal);color:#fff;border:0;font-size:13px;font-weight:700;padding:9px 18px;border-radius:5px;cursor:pointer;font-family:var(--sans);}
-.btn-save:hover{background:#0d6b60;}
+.btn-save{background:var(--red);color:#fff;border:0;font-size:13px;font-weight:700;padding:9px 18px;border-radius:3px;cursor:pointer;font-family:var(--sans);}
+.btn-save:hover{background:var(--red2);}
 
 /* 출결 라디오 */
 .att-input-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
@@ -352,22 +352,22 @@ body.role-assistant .teacher-only{ display:none !important; }
 </head>
 <body>
 
-<div id="login-screen" style="position:fixed;inset:0;z-index:99999;background:#e4f5f0;display:none;align-items:center;justify-content:center;">
-  <div style="background:#fff;border:1px solid #d4ebe5;border-radius:16px;padding:40px 36px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(17,125,112,.10);">
+<div id="login-screen" style="position:fixed;inset:0;z-index:99999;background:#f5f4f0;display:none;align-items:center;justify-content:center;">
+  <div style="background:#fff;border:1px solid #e4e1d8;border-radius:16px;padding:40px 36px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(180,40,30,.10);">
     <div style="text-align:center;margin-bottom:32px;">
-      <div style="font-size:18px;font-weight:700;color:#117d70;margin-bottom:4px;">김병진 수학연구소</div>
-      <div style="font-size:12px;color:#7a8580;">학생 관리 시스템 · 관리자 전용</div>
+      <div style="font-size:18px;font-weight:700;color:#b4281e;margin-bottom:4px;">김병진 수학연구소</div>
+      <div style="font-size:12px;color:#777777;">학생 관리 시스템 · 관리자 전용</div>
     </div>
     <div style="margin-bottom:16px;">
-      <div style="font-size:11px;font-weight:700;color:#7a8580;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">비밀번호</div>
+      <div style="font-size:11px;font-weight:700;color:#777777;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">비밀번호</div>
       <input type="password" id="login-pw" placeholder="비밀번호 입력"
-        style="width:100%;background:#f3faf7;border:1.5px solid #d4ebe5;border-radius:8px;padding:12px 14px;font-size:14px;color:#1f2a28;outline:none;font-family:var(--sans);box-sizing:border-box;"
-        onfocus="this.style.borderColor='#117d70'"
-        onblur="this.style.borderColor='#d4ebe5'">
+        style="width:100%;background:#f5f4f0;border:1.5px solid #e4e1d8;border-radius:8px;padding:12px 14px;font-size:14px;color:#0f0f0f;outline:none;font-family:var(--sans);box-sizing:border-box;"
+        onfocus="this.style.borderColor='#b4281e'"
+        onblur="this.style.borderColor='#e4e1d8'">
     </div>
     <div id="login-err" style="font-size:12px;color:#c0392b;margin-bottom:12px;display:none;">비밀번호가 틀렸습니다</div>
     <button id="login-btn"
-      style="width:100%;background:#117d70;color:#fff;border:0;border-radius:8px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);">
+      style="width:100%;background:#b4281e;color:#fff;border:0;border-radius:8px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);">
       로그인
     </button>
     <div style="text-align:center;margin-top:20px;font-size:11px;color:#a8b3ae;">관리자 외 접근 불가</div>
@@ -7075,7 +7075,7 @@ function renderPrepCalendar(){
       var isToday=dateStr===today;
       var isSel=dateStr===prepSelectedDate;
       var cell=document.createElement('div');
-      var baseBg=isSel?'var(--teal-bg)':isToday?'#f0faf9':'var(--white)';
+      var baseBg=isSel?'var(--teal-bg)':isToday?'#faf9f5':'var(--white)';
       cell.style.cssText='min-height:62px;padding:4px;border:0.5px solid var(--line);cursor:pointer;transition:.12s;background:'+baseBg+';'+(isSel?'outline:2px solid var(--teal);':'');
       var dateColor=dow===0?'var(--red)':dow===6?'var(--blue)':'var(--ink2)';
       var dd=document.createElement('div');
@@ -8569,7 +8569,7 @@ function renderProgCalendar() {
       var groupNames = [...new Set(groupRecs.map(function(r){ return r.groupName; }))];
 
       var cell = document.createElement('div');
-      var baseBg = isSel ? 'var(--teal-bg)' : isToday ? '#f0faf9' : 'var(--white)';
+      var baseBg = isSel ? 'var(--teal-bg)' : isToday ? '#faf9f5' : 'var(--white)';
       cell.style.cssText = 'min-height:56px;padding:4px;border:0.5px solid var(--line);cursor:pointer;transition:.12s;background:'+baseBg+';'+(isSel?'outline:2px solid var(--teal);':'');
 
       var dateColor = dow===0?'var(--red)':dow===6?'var(--blue)':'var(--ink2)';
