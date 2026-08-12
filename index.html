@@ -1349,6 +1349,11 @@ body.role-assistant .teacher-only{ display:none !important; }
         <div class="form-group"><label>종료 시간</label><input type="time" id="ms-end"></div>
         <div class="form-group"><label>정원</label><input type="number" id="ms-capacity" min="1" value="1"></div>
       </div>
+      <div class="form-group full" id="ms-dates-wrap">
+        <label>추가 날짜</label>
+        <textarea id="ms-dates" placeholder="같은 시간으로 열 날짜를 여러 개 입력하세요. 예: 2026-08-13, 2026-08-20, 2026-08-27" style="min-height:62px;"></textarea>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">쉼표, 띄어쓰기, 줄바꿈으로 구분할 수 있습니다. 위 날짜도 자동 포함됩니다.</div>
+      </div>
       <div class="form-row">
         <div class="form-group"><label>허용 범위</label><select id="ms-scope" onchange="renderMakeupSlotGroupChecks()"><option value="all">전체 가능</option><option value="groups">선택한 반만</option><option value="subject">과목 기준</option></select></div>
         <div class="form-group"><label>허용 과목</label><select id="ms-subject"><option value="">전체 과목</option><option>공통수학1</option><option>공통수학2</option><option>대수</option><option>미적분</option><option>확률통계</option><option>기하</option></select></div>
@@ -6566,6 +6571,10 @@ function openMakeupSlotModal(id){
   var slot=id ? slots.find(function(x){ return x.id===id; }) : null;
   document.getElementById('ms-id').value = slot ? slot.id : '';
   document.getElementById('ms-date').value = slot ? (slot.date||'') : makeupToday();
+  var multiWrap=document.getElementById('ms-dates-wrap');
+  var multi=document.getElementById('ms-dates');
+  if(multiWrap) multiWrap.style.display = slot ? 'none' : '';
+  if(multi) multi.value = '';
   document.getElementById('ms-start').value = slot ? (slot.start||'') : '17:00';
   document.getElementById('ms-end').value = slot ? (slot.end||'') : '';
   document.getElementById('ms-capacity').value = slot ? (slot.capacity||1) : 1;
@@ -6575,6 +6584,17 @@ function openMakeupSlotModal(id){
   renderMakeupSlotGroupChecks(slot ? (slot.groupIds||[]) : []);
   openModal('modal-makeup-slot');
 }
+function parseMakeupSlotDates(mainDate, extraText){
+  var list=[];
+  function add(d){
+    d=String(d||'').trim();
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+    if(list.indexOf(d)===-1) list.push(d);
+  }
+  add(mainDate);
+  String(extraText||'').split(/[\s,，;；]+/).forEach(add);
+  return list.sort();
+}
 function saveMakeupSlot(){
   var date=document.getElementById('ms-date').value;
   var start=document.getElementById('ms-start').value;
@@ -6582,22 +6602,34 @@ function saveMakeupSlot(){
   var slots=DB.get('makeupSlots')||[];
   var id=document.getElementById('ms-id').value || ('slot_'+Date.now());
   var idx=slots.findIndex(function(x){ return x.id===id; });
-  var rec={
-    id:id, date:date, start:start,
+  var base={
+    start:start,
     end:document.getElementById('ms-end').value,
     capacity:parseInt(document.getElementById('ms-capacity').value||'1'),
     scope:document.getElementById('ms-scope').value,
     subject:document.getElementById('ms-subject').value,
     groupIds:[].slice.call(document.querySelectorAll('.ms-group-check:checked')).map(function(el){ return el.value; }),
     memo:document.getElementById('ms-memo').value,
-    createdAt: idx>-1 ? slots[idx].createdAt : new Date().toISOString(),
     closed: idx>-1 ? !!slots[idx].closed : false
   };
-  if(idx>-1) slots[idx]=rec; else slots.push(rec);
+  if(idx>-1){
+    slots[idx]=Object.assign({}, slots[idx], base, { id:id, date:date, createdAt:slots[idx].createdAt||new Date().toISOString() });
+  } else {
+    var dates=parseMakeupSlotDates(date, (document.getElementById('ms-dates')||{}).value);
+    var now=Date.now();
+    dates.forEach(function(d,i){
+      slots.push(Object.assign({}, base, {
+        id:'slot_'+now+'_'+i,
+        date:d,
+        createdAt:new Date().toISOString(),
+        closed:false
+      }));
+    });
+  }
   DB.set('makeupSlots', slots);
   closeModal('modal-makeup-slot');
   renderMakeup();
-  toast('보강 가능 시간이 저장되었습니다');
+  toast(idx>-1 ? '보강 가능 시간이 저장되었습니다' : '보강 가능 시간 '+parseMakeupSlotDates(date, (document.getElementById('ms-dates')||{}).value).length+'개가 열렸습니다');
 }
 function deleteMakeupSlot(id){
   if(!confirm('이 보강 가능 시간을 삭제할까요?')) return;
