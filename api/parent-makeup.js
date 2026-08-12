@@ -299,7 +299,8 @@ async function submit(body, auth, credential) {
   const slots = arr(await fbRequest('GET', 'bjm_makeupSlots', credential));
   const slotId = cleanText(body.slotId, 120);
   const slot = slotId ? slots.find((s) => s.id === slotId) : null;
-  if (slotId && !slotAllowsGroup(slot, group)) throw new Error('slot not allowed');
+  if (!slotId) throw new Error('slot required');
+  if (!slotAllowsGroup(slot, group)) throw new Error('slot not allowed');
 
   const now = new Date().toISOString();
   const id = 'pmr_' + Date.now() + '_' + crypto.randomBytes(4).toString('hex');
@@ -312,16 +313,15 @@ async function submit(body, auth, credential) {
     groupId: group.id,
     groupName: group.name || '',
     absentDate: ymd(body.absentDate),
-    slotId: slot ? slot.id : '',
-    requestedSlotLabel: slot ? slotLabel(slot) : '',
-    customTime: cleanText(body.customTime, 120),
+    slotId: slot.id,
+    requestedSlotLabel: slotLabel(slot),
+    customTime: '',
     reason: cleanText(body.reason, 500),
     status: 'pending',
     createdAt: now,
     updatedAt: now
   };
 
-  if (!request.slotId && !request.customTime) throw new Error('requested time required');
   await fbRequest('PUT', 'bjm_parentMakeupRequests/' + auth.sid + '/' + id, credential, request);
   await fbRequest('PUT', 'bjm_parentMakeupInbox/' + id, credential, request);
   return { request: publicRequest(request) };

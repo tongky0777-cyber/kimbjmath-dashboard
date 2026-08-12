@@ -122,10 +122,6 @@ button,input,select,textarea{font-family:var(--sans)}
             </div>
           </div>
           <div class="field">
-            <label for="custom-time">직접 희망 시간</label>
-            <input id="custom-time" placeholder="가능한 시간이 없으면 입력해 주세요">
-          </div>
-          <div class="field">
             <label for="reason">결석 사유</label>
             <textarea id="reason" placeholder="예: 학교 행사, 병원 진료 등"></textarea>
           </div>
@@ -251,9 +247,9 @@ function onGroupChange(){
     if(s.scope === 'subject') return !s.subject || s.subject === group.subject;
     return true;
   });
-  $('slot').innerHTML = '<option value="">직접 희망 시간 입력</option>' + slots.map(function(s){
+  $('slot').innerHTML = slots.length ? slots.map(function(s){
     return '<option value="'+esc(s.id)+'">'+esc(s.label || ((s.date||'')+' '+(s.start||'')))+'</option>';
-  }).join('');
+  }).join('') : '<option value="">신청 가능한 보강 시간이 없습니다</option>';
 }
 
 function statusLabel(s){
@@ -278,19 +274,18 @@ function submitRequest(){
   $('submit-msg').textContent = '';
   if(!group){ $('submit-msg').textContent = '수업을 선택해 주세요.'; return; }
   if(group.makeupPolicy === 'blocked'){ $('submit-msg').textContent = '이 수업은 보강 신청 대상이 아닙니다.'; return; }
+  if(!$('slot').value){ $('submit-msg').textContent = '선생님이 열어둔 보강 시간을 선택해 주세요.'; return; }
   var body = {
     action:'submit',
     token:state.token,
     groupId:$('group').value,
     absentDate:$('absent-date').value,
     slotId:$('slot').value,
-    customTime:$('custom-time').value,
     reason:$('reason').value
   };
   post('/api/parent-makeup', body).then(function(){
     $('submit-msg').style.color = 'var(--teal2)';
     $('submit-msg').textContent = '신청이 접수되었습니다. 선생님 승인 후 확정됩니다.';
-    $('custom-time').value = '';
     $('reason').value = '';
     loadData();
   }).catch(function(err){
