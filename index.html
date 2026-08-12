@@ -1355,10 +1355,26 @@ body.role-assistant .teacher-only{ display:none !important; }
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <input type="date" id="ms-pick-date" style="max-width:180px;">
           <button type="button" class="btn-sm sec" onclick="addMakeupSlotPickedDate()">날짜 추가</button>
+          <button type="button" class="btn-sm sec" onclick="removeCheckedMakeupSlotDates()">선택 삭제</button>
           <button type="button" class="btn-sm sec" onclick="clearMakeupSlotDates()">전체 비우기</button>
         </div>
+        <div style="margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--white);">
+          <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:7px;">매주 반복 추가</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <span style="font-size:12px;color:var(--muted);">종료일</span>
+            <input type="date" id="ms-repeat-end" style="max-width:180px;">
+            <label style="font-size:12px;display:flex;align-items:center;gap:4px;"><input type="checkbox" class="ms-weekday" value="1" style="width:auto;">월</label>
+            <label style="font-size:12px;display:flex;align-items:center;gap:4px;"><input type="checkbox" class="ms-weekday" value="2" style="width:auto;">화</label>
+            <label style="font-size:12px;display:flex;align-items:center;gap:4px;"><input type="checkbox" class="ms-weekday" value="3" style="width:auto;">수</label>
+            <label style="font-size:12px;display:flex;align-items:center;gap:4px;"><input type="checkbox" class="ms-weekday" value="4" style="width:auto;">목</label>
+            <label style="font-size:12px;display:flex;align-items:center;gap:4px;"><input type="checkbox" class="ms-weekday" value="5" style="width:auto;">금</label>
+            <label style="font-size:12px;display:flex;align-items:center;gap:4px;"><input type="checkbox" class="ms-weekday" value="6" style="width:auto;">토</label>
+            <label style="font-size:12px;display:flex;align-items:center;gap:4px;"><input type="checkbox" class="ms-weekday" value="0" style="width:auto;">일</label>
+            <button type="button" class="btn-sm" onclick="addWeeklyMakeupSlotDates()">반복 날짜 추가</button>
+          </div>
+        </div>
         <div id="ms-selected-dates" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;min-height:30px;"></div>
-        <div style="font-size:11px;color:var(--muted);margin-top:4px;">위 날짜는 자동으로 포함됩니다. 달력에서 날짜를 고르고 날짜 추가를 누르면 같은 시간으로 여러 날짜가 열립니다.</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">위 날짜는 자동으로 포함됩니다. 반복 추가는 위 날짜부터 종료일까지 선택한 요일을 모두 추가합니다.</div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>허용 범위</label><select id="ms-scope" onchange="renderMakeupSlotGroupChecks()"><option value="all">전체 가능</option><option value="groups">선택한 반만</option><option value="subject">과목 기준</option></select></div>
@@ -6648,7 +6664,11 @@ function renderSelectedMakeupSlotDates(){
   if(!box) return;
   makeupSlotSelectedDates=makeupSlotSelectedDates.filter(function(d,i,a){ return d && a.indexOf(d)===i; }).sort();
   box.innerHTML=makeupSlotSelectedDates.length ? makeupSlotSelectedDates.map(function(d){
-    return '<button type="button" class="btn-sm sec" onclick="removeMakeupSlotDate(\''+d+'\')" style="padding:5px 8px;">'+esc(d)+' ×</button>';
+    return '<span style="display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:5px;background:var(--white);padding:5px 7px;font-size:12px;">'
+      +'<input type="checkbox" class="ms-selected-date-check" value="'+esc(d)+'" style="width:auto;margin:0;">'
+      +'<span>'+esc(d)+'</span>'
+      +'<button type="button" onclick="removeMakeupSlotDate(\''+d+'\')" style="border:0;background:transparent;color:var(--red);font-weight:700;cursor:pointer;padding:0 2px;">×</button>'
+      +'</span>';
   }).join('') : '<span style="font-size:12px;color:var(--muted);">선택된 날짜가 없습니다.</span>';
 }
 function addMakeupSlotDate(d){
@@ -6671,9 +6691,39 @@ function removeMakeupSlotDate(d){
   makeupSlotSelectedDates=makeupSlotSelectedDates.filter(function(x){ return x!==d; });
   renderSelectedMakeupSlotDates();
 }
+function removeCheckedMakeupSlotDates(){
+  var picked=[].slice.call(document.querySelectorAll('.ms-selected-date-check:checked')).map(function(el){ return el.value; });
+  if(!picked.length){ toast('삭제할 날짜를 체크해주세요'); return; }
+  makeupSlotSelectedDates=makeupSlotSelectedDates.filter(function(d){ return picked.indexOf(d)===-1; });
+  renderSelectedMakeupSlotDates();
+}
 function clearMakeupSlotDates(){
   makeupSlotSelectedDates=[];
   renderSelectedMakeupSlotDates();
+}
+function addWeeklyMakeupSlotDates(){
+  var start=(document.getElementById('ms-date')||{}).value;
+  var end=(document.getElementById('ms-repeat-end')||{}).value;
+  var days=[].slice.call(document.querySelectorAll('.ms-weekday:checked')).map(function(el){ return parseInt(el.value,10); });
+  if(!start || !end){ toast('시작 날짜와 종료일을 선택해주세요'); return; }
+  if(end < start){ toast('종료일은 시작 날짜 이후로 선택해주세요'); return; }
+  if(!days.length){ toast('반복할 요일을 선택해주세요'); return; }
+  var cur=new Date(start+'T00:00:00');
+  var last=new Date(end+'T00:00:00');
+  var added=0;
+  while(cur<=last){
+    var y=cur.getFullYear();
+    var m=String(cur.getMonth()+1).padStart(2,'0');
+    var d=String(cur.getDate()).padStart(2,'0');
+    var text=y+'-'+m+'-'+d;
+    if(days.indexOf(cur.getDay())>-1 && makeupSlotSelectedDates.indexOf(text)===-1){
+      makeupSlotSelectedDates.push(text);
+      added++;
+    }
+    cur.setDate(cur.getDate()+1);
+  }
+  renderSelectedMakeupSlotDates();
+  toast('반복 날짜 '+added+'개를 추가했습니다');
 }
 function openMakeupSlotModal(id){
   if(isAssistant()){ toast('보강 시간 관리는 선생님만 할 수 있어요'); return; }
@@ -6683,8 +6733,11 @@ function openMakeupSlotModal(id){
   document.getElementById('ms-date').value = slot ? (slot.date||'') : makeupToday();
   var multiWrap=document.getElementById('ms-dates-wrap');
   var pick=document.getElementById('ms-pick-date');
+  var repeatEnd=document.getElementById('ms-repeat-end');
   if(multiWrap) multiWrap.style.display = slot ? 'none' : '';
   if(pick) pick.value = '';
+  if(repeatEnd) repeatEnd.value = '';
+  [].slice.call(document.querySelectorAll('.ms-weekday')).forEach(function(el){ el.checked=false; });
   makeupSlotSelectedDates = slot ? [slot.date||makeupToday()] : [document.getElementById('ms-date').value || makeupToday()];
   renderSelectedMakeupSlotDates();
   document.getElementById('ms-start').value = slot ? (slot.start||'') : '17:00';
