@@ -17,6 +17,7 @@
   --green:#1a6b3a;--green-bg:#edf7f1;
   --side:#0f0f0f;--side2:#1a1a1a;--side-ink:rgba(255,255,255,.6);--side-ink2:#fff;--side-on:rgba(180,40,30,.2);
   --sans:'Pretendard','Apple SD Gothic Neo',sans-serif;
+  --pink:#863E7D; --pink-bg:#FDE9F9;   /* 260813 06 확정값. 플래너 「개인」 일정 */
 }
 body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;}
 
@@ -2502,6 +2503,17 @@ function examScoreKeyOfRecord(t){
       23:10.0, 24:12.0, 25:13.0
     }, total:25, full:100,
       labels:{ 23:'서술 1', 24:'서술 2', 25:'서술 3' } };
+    changed=true;
+  }
+  // 2025 시지고 공통수학2 2학기 중간 (21문항, 만점 100 / 선택형 15문항 65.0 · 서답형 6문항 35.0)
+  // 출처: 01 원본·정답방 25-2중간_시지고_공수2__정답표.csv (c4658cb3… · 배점 열 21/21)
+  var KEY30='gicul||2025||시지고||공통수학2||2학기||중간';
+  if(!tables[KEY30]){
+    tables[KEY30]={ points:{
+      1:3.7, 2:3.8, 3:4, 4:4, 5:4.1, 6:4.1, 7:4.2, 8:4.3,
+      9:4.4, 10:4.5, 11:4.5, 12:4.7, 13:4.7, 14:4.9, 15:5.1,
+      16:4, 17:5, 18:6, 19:7, 20:6, 21:7
+    }, total:21, full:100 };
     changed=true;
   }
   // 2025 대구여고 공통수학2 2학기 중간 (23문항, 만점 100 / 18~23번 서답형, 18번 (1)(2)(3) 소문항)
