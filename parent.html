@@ -32,6 +32,14 @@ button,input,select,textarea{font-family:var(--sans)}
 .btn.sec{background:var(--bg2);color:var(--teal2);border:1px solid var(--line)}
 .btn.danger{background:var(--red-bg);color:var(--red);border:1px solid #f6cbd0}
 .msg{font-size:13px;color:var(--red);min-height:20px;margin-top:10px}
+
+/* ── 탭 ─────────────────────────────── */
+.tabs{display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:0}
+.tab{border:1px solid var(--line);border-bottom:0;border-radius:10px 10px 0 0;background:var(--bg2);color:var(--ink2);
+     font-weight:900;font-size:14px;padding:11px 18px;cursor:pointer;position:relative;top:1px}
+.tab[aria-selected="true"]{background:var(--white);color:var(--teal2);box-shadow:0 -3px 0 var(--teal) inset}
+.tab:focus-visible{outline:3px solid rgba(22,143,122,.35);outline-offset:2px}
+
 .hero{display:flex;gap:16px;align-items:stretch;margin-bottom:16px}
 .student{flex:1;background:linear-gradient(135deg,#128872,#2aa991);color:#fff;border-radius:10px;padding:22px;box-shadow:var(--shadow)}
 .student h1{font-size:24px;margin-bottom:6px}
@@ -61,26 +69,86 @@ button,input,select,textarea{font-family:var(--sans)}
 .empty{text-align:center;color:var(--muted);font-size:13px;padding:22px 8px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .hidden{display:none!important}
+
+/* ── 탭 ① 학습 현황 — 학부모는 거의 폰으로 본다. 한 단으로 간다 ── */
+.study{max-width:640px;margin:0 auto}
+.study .hero{display:block}
+.study .summary{width:auto;margin-top:12px}
+.section{background:var(--white);border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.section-title{font-size:12px;font-weight:900;color:var(--teal2);letter-spacing:.04em;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.section-title::before{content:'';display:inline-block;width:4px;height:14px;background:linear-gradient(var(--teal),var(--teal2));border-radius:3px}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat-box{background:var(--bg2);border-radius:10px;padding:14px 10px;text-align:center}
+.stat-val{font-size:23px;font-weight:900;color:var(--ink)}
+.stat-label{font-size:11px;color:var(--muted);margin-top:3px;font-weight:800}
+.hw-item{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.hw-item:last-child{border-bottom:0}
+.hw-name{flex:1;font-size:13px;color:var(--ink2)}
+.hw-due{font-size:11px;color:var(--muted);white-space:nowrap}
+.tag{font-size:11px;font-weight:900;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.tag-pending{background:var(--red-bg);color:var(--red)}
+.tag-done{background:var(--bg2);color:var(--teal2)}
+.tag-half{background:var(--gold-bg);color:var(--gold)}
+.test-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.test-item:last-child{border-bottom:0}
+.test-name{flex:1;font-size:13px;color:var(--ink2);font-weight:700}
+.test-score{font-size:17px;font-weight:900}
+.test-date{font-size:11px;color:var(--muted)}
+/* 출결 — ★ 색만으로 가르지 않는다. 글자(출석/결석/조퇴/지각/보강) + 왼쪽 막대 + 색 3종 */
+.att-grid{display:flex;flex-wrap:wrap;gap:6px}
+.att-dot{min-width:34px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+         font-size:11px;font-weight:900;padding:0 6px 0 3px;border-left:4px solid currentColor}
+.att-o{background:var(--bg2);color:var(--teal2)}
+.att-x{background:var(--red-bg);color:var(--red)}
+.att-e{background:var(--blue-bg);color:var(--blue)}
+.att-t{background:var(--gold-bg);color:var(--gold)}
+.att-date{font-size:9px;text-align:center;color:var(--muted);margin-top:2px}
+.att-wrap{display:flex;flex-direction:column;align-items:center}
+.prog-item{padding:11px 0;border-bottom:1px solid var(--line)}
+.prog-item:last-child{border-bottom:0}
+.prog-book{font-size:13px;font-weight:800;color:var(--ink)}
+.prog-unit{font-size:12px;color:var(--ink2);margin-top:2px}
+.prog-meta{font-size:11px;color:var(--muted);margin-top:3px}
+.schedule-item{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.schedule-item:last-child{border-bottom:0}
+.schedule-date{font-size:12px;font-weight:800;color:var(--teal2);white-space:nowrap;min-width:52px}
+.schedule-info{flex:1}
+.schedule-content{font-size:13px;color:var(--ink2)}
+.schedule-time{font-size:11px;color:var(--muted);margin-top:2px}
+.schedule-done{font-size:11px;font-weight:900;padding:3px 9px;border-radius:999px;white-space:nowrap;background:var(--bg2);color:var(--teal2)}
+.schedule-upcoming{font-size:11px;font-weight:900;padding:3px 9px;border-radius:999px;white-space:nowrap;background:var(--gold-bg);color:var(--gold)}
+.loading{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
+.chart-wrap{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:16px 8px 8px;margin-bottom:4px}
+.chart-svg{width:100%;height:auto;display:block;overflow:visible}
+.chart-legend{font-size:11px;color:var(--muted);text-align:center;margin-top:6px}
+
 @media(max-width:760px){
   .hero,.grid{display:block}
   .summary{width:auto;margin-top:12px}
   .card{margin-bottom:14px}
   .row{grid-template-columns:1fr}
+  .tab{flex:1;padding:11px 8px;font-size:13px}
 }
 </style>
+
+<!-- Firebase SDK — 학습 현황 탭이 bjm_* 6키를 직접 읽는다.
+     ★ 다음 단계: 학습 데이터도 /api/parent-makeup snapshot 에 얹어 이 직접 읽기를 없앤다 (총괄 지시 260814-2300 ㉡) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 </head>
 <body>
 <div class="top">
   <div class="top-in">
     <div class="brand">김병진T 학부모 포털</div>
-    <div class="chip" id="top-chip">보강 신청</div>
+    <div class="chip" id="top-chip">학습 현황</div>
   </div>
 </div>
 
 <main class="wrap">
   <section class="login" id="login-panel">
     <h1>학부모 접속</h1>
-    <p>선생님이 안내한 접속코드를 입력하면 자녀의 보강 신청 화면으로 들어갑니다.</p>
+    <p>선생님이 안내한 접속코드를 입력하면 자녀의 학습 현황과 보강 신청 화면으로 들어갑니다.</p>
     <div class="field">
       <label for="code">접속코드</label>
       <input id="code" autocomplete="one-time-code" inputmode="text" placeholder="예: A7K2M9Q4">
@@ -90,54 +158,76 @@ button,input,select,textarea{font-family:var(--sans)}
   </section>
 
   <section id="app-panel" class="hidden">
-    <div class="hero">
-      <div class="student">
-        <h1 id="student-name">학생</h1>
-        <p id="student-meta"></p>
-      </div>
-      <div class="summary">
-        <b id="pending-count">0</b>
-        <div>승인 대기 신청</div>
-        <button class="btn sec" style="width:100%;margin-top:14px" onclick="logout()">나가기</button>
-      </div>
+    <div class="tabs" role="tablist">
+      <button class="tab" id="tab-study" role="tab" aria-selected="true" aria-controls="pane-study" onclick="showTab('study')">학습 현황</button>
+      <button class="tab" id="tab-makeup" role="tab" aria-selected="false" aria-controls="pane-makeup" onclick="showTab('makeup')">보강 신청</button>
     </div>
 
-    <div class="grid">
-      <div class="card">
-        <div class="card-hd"><h2>결석·보강 신청</h2></div>
-        <div class="card-bd">
-          <div class="field">
-            <label for="group">결석 예정 수업</label>
-            <select id="group" onchange="onGroupChange()"></select>
-          </div>
-          <div id="policy-note" class="notice"></div>
-          <div class="row" style="margin-top:14px">
-            <div class="field">
-              <label for="absent-date">결석 예정일</label>
-              <input id="absent-date" type="date">
-            </div>
-            <div class="field">
-              <label for="slot">희망 보강 시간</label>
-              <select id="slot"></select>
-            </div>
-          </div>
-          <div class="field">
-            <label for="reason">결석 사유</label>
-            <textarea id="reason" placeholder="예: 학교 행사, 병원 진료 등"></textarea>
-          </div>
-          <button class="btn" style="width:100%" onclick="submitRequest()">신청 보내기</button>
-          <div class="msg" id="submit-msg"></div>
+    <!-- ① 학습 현황 -->
+    <div id="pane-study" class="study" role="tabpanel" aria-labelledby="tab-study">
+      <div class="hero">
+        <div class="student">
+          <h1 id="study-name">학생</h1>
+          <p id="study-meta"></p>
+        </div>
+        <div class="summary">
+          <button class="btn sec" style="width:100%" onclick="logout()">나가기</button>
+        </div>
+      </div>
+      <div id="study-body"><div class="loading">불러오는 중..</div></div>
+    </div>
+
+    <!-- ② 보강 신청 -->
+    <div id="pane-makeup" class="hidden" role="tabpanel" aria-labelledby="tab-makeup">
+      <div class="hero">
+        <div class="student">
+          <h1 id="student-name">학생</h1>
+          <p id="student-meta"></p>
+        </div>
+        <div class="summary">
+          <b id="pending-count">0</b>
+          <div>승인 대기 신청</div>
+          <button class="btn sec" style="width:100%;margin-top:14px" onclick="logout()">나가기</button>
         </div>
       </div>
 
-      <div>
-        <div class="card" style="margin-bottom:16px">
-          <div class="card-hd"><h2>수강 중인 수업</h2></div>
-          <div class="card-bd" id="group-list"></div>
-        </div>
+      <div class="grid">
         <div class="card">
-          <div class="card-hd"><h2>신청 내역</h2><button class="btn sec" onclick="loadData()">새로고침</button></div>
-          <div class="card-bd" id="request-list"></div>
+          <div class="card-hd"><h2>결석·보강 신청</h2></div>
+          <div class="card-bd">
+            <div class="field">
+              <label for="group">결석 예정 수업</label>
+              <select id="group" onchange="onGroupChange()"></select>
+            </div>
+            <div id="policy-note" class="notice"></div>
+            <div class="row" style="margin-top:14px">
+              <div class="field">
+                <label for="absent-date">결석 예정일</label>
+                <input id="absent-date" type="date">
+              </div>
+              <div class="field">
+                <label for="slot">희망 보강 시간</label>
+                <select id="slot"></select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="reason">결석 사유</label>
+              <textarea id="reason" placeholder="예: 학교 행사, 병원 진료 등"></textarea>
+            </div>
+            <button class="btn" style="width:100%" onclick="submitRequest()">신청 보내기</button>
+            <div class="msg" id="submit-msg"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-hd"><h2>수강 중인 수업</h2></div>
+            <div class="card-bd" id="group-list"></div>
+          </div>
+          <div class="card">
+            <div class="card-hd"><h2>신청 내역</h2><button class="btn sec" onclick="loadData()">새로고침</button></div>
+            <div class="card-bd" id="request-list"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -146,10 +236,17 @@ button,input,select,textarea{font-family:var(--sans)}
 
 <script>
 var state = { token:'', student:null, groups:[], slots:[], requests:[] };
+var studyLoaded = false;
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function today(){ return new Date().toISOString().slice(0,10); }
+
+/* ★ 학생 id 는 접속코드 인증 결과에서만 온다. URL 의 ?id= 는 읽지 않는다.
+     옛 링크(parent.html?id=…)는 이제 안 열린다 — 의도한 것이다 (총괄 지시 260814-2300 ㉠) */
+function sidOf(){
+  return (state.student && state.student.id != null) ? String(state.student.id) : '';
+}
 
 function post(url, body){
   return fetch(url, {
@@ -164,6 +261,23 @@ function post(url, body){
   });
 }
 
+/* ── 탭 ───────────────────────────── */
+function showTab(name){
+  var isStudy = (name !== 'makeup');
+  $('pane-study').classList.toggle('hidden', !isStudy);
+  $('pane-makeup').classList.toggle('hidden', isStudy);
+  $('tab-study').setAttribute('aria-selected', isStudy ? 'true' : 'false');
+  $('tab-makeup').setAttribute('aria-selected', isStudy ? 'false' : 'true');
+  $('top-chip').textContent = isStudy ? '학습 현황' : '보강 신청';
+  try { localStorage.setItem('kbjm_parent_tab', isStudy ? 'study' : 'makeup'); } catch(e){}
+}
+function savedTab(){
+  var t = '';
+  try { t = localStorage.getItem('kbjm_parent_tab') || ''; } catch(e){}
+  return t === 'makeup' ? 'makeup' : 'study';
+}
+
+/* ── 로그인 ───────────────────────── */
 function login(){
   var code = $('code').value.trim();
   $('login-msg').textContent = '';
@@ -183,6 +297,8 @@ function login(){
 function logout(){
   localStorage.removeItem('kbjm_parent_token');
   state = { token:'', student:null, groups:[], slots:[], requests:[] };
+  studyLoaded = false;
+  $('study-body').innerHTML = '<div class="loading">불러오는 중..</div>';
   $('app-panel').classList.add('hidden');
   $('login-panel').classList.remove('hidden');
 }
@@ -190,10 +306,16 @@ function logout(){
 function showApp(){
   $('login-panel').classList.add('hidden');
   $('app-panel').classList.remove('hidden');
-  $('student-name').textContent = (state.student && state.student.name || '') + ' 학생';
-  $('student-meta').textContent = [state.student && state.student.grade, state.student && state.student.school].filter(Boolean).join(' · ');
+  var nm = (state.student && state.student.name) || '';
+  var meta = [state.student && state.student.grade, state.student && state.student.school].filter(Boolean).join(' · ');
+  $('student-name').textContent = nm + ' 학생';
+  $('student-meta').textContent = meta;
+  $('study-name').textContent = nm + ' 학생';
+  $('study-meta').textContent = meta;
   $('absent-date').value = today();
   renderGroups();
+  showTab(savedTab());
+  loadStudy();
 }
 
 function loadData(){
@@ -211,6 +333,7 @@ function loadData(){
   });
 }
 
+/* ── 탭 ② 보강 신청 (옮겨 온 그대로) ── */
 function renderGroups(){
   var sel = $('group');
   var allowed = state.groups.filter(function(g){ return g.makeupPolicy !== 'blocked'; });
@@ -293,6 +416,233 @@ function submitRequest(){
     $('submit-msg').style.color = 'var(--red)';
     $('submit-msg').textContent = err.message || '신청을 보내지 못했습니다.';
   });
+}
+
+/* ── 탭 ① 학습 현황 ───────────────── */
+var firebaseConfig = {
+  apiKey: "AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",
+  authDomain: "kimbjmath.firebaseapp.com",
+  databaseURL: "https://kimbjmath-default-rtdb.firebaseio.com",
+  projectId: "kimbjmath",
+  storageBucket: "kimbjmath.firebasestorage.app",
+  messagingSenderId: "664889936709",
+  appId: "1:664889936709:web:2df1494b0cd978c64e4c2c"
+};
+var rtdb = null, authReady = Promise.resolve(false);
+if(typeof firebase !== 'undefined'){
+  firebase.initializeApp(firebaseConfig);
+  rtdb = firebase.database();
+  // 익명 로그인: Firebase 보안 규칙이 인증을 요구하므로 데이터 접근 전 로그인 필요
+  authReady = (firebase.auth ? firebase.auth().signInAnonymously()
+    .then(function(){ return true; })
+    .catch(function(e){ console.warn('익명 로그인 실패:', e); return false; })
+    : Promise.resolve(false));
+}
+
+function loadStudy(){
+  if(studyLoaded) return;
+  var sid = sidOf();
+  var box = $('study-body');
+  // ★ id 가 없는 것과 데이터가 0건인 것은 다른 말이다. 0건으로 뭉뚱그리지 않는다
+  if(!sid){
+    box.innerHTML = '<div class="section"><div class="empty">학생 정보를 불러오지 못했습니다. 나갔다가 다시 들어와 주세요.</div></div>';
+    return;
+  }
+  if(!rtdb){
+    box.innerHTML = '<div class="section"><div class="empty">학습 현황을 불러오지 못했습니다. 잠시 뒤 새로고침해 주세요.</div></div>';
+    return;
+  }
+  studyLoaded = true;
+  var keys = ['students','attendance','homework','tests','schedules','progress'];
+  var data = {}, loaded = 0;
+  Promise.resolve(authReady).then(function(){
+    keys.forEach(function(key){
+      rtdb.ref('bjm_' + key).once('value', function(snap){
+        var val = snap.val();
+        if(!val){ data[key] = []; }
+        else if(Array.isArray(val)){ data[key] = val; }
+        else if(typeof val === 'object'){ data[key] = Object.keys(val).map(function(k){ return val[k]; }); }
+        else { data[key] = []; }
+        loaded++;
+        if(loaded === keys.length) renderStudy(sid, data, box);
+      }, function(err){
+        data[key] = [];
+        loaded++;
+        if(loaded === keys.length) renderStudy(sid, data, box);
+      });
+    });
+  });
+}
+
+// SVG 꺾은선 그래프 (테스트 점수 추이) — items: [{name,score,date}] 오래된→최신
+function buildScoreChart(items){
+  if(!items.length) return '';
+  var W=600, H=240, padL=38, padR=18, padT=24, padB=42;
+  var plotW=W-padL-padR, plotH=H-padT-padB;
+  var n=items.length;
+  function xAt(i){ return n===1 ? padL+plotW/2 : padL + plotW*i/(n-1); }
+  function yAt(v){ var vv=Math.max(0,Math.min(100,v)); return padT + plotH*(1 - vv/100); }
+  var svg='<svg class="chart-svg" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">';
+  var lines=[{v:100},{v:75},{v:50},{v:25},{v:0}];
+  lines.forEach(function(g){
+    var y=yAt(g.v);
+    svg+='<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="#dcebe7" stroke-width="1" '+(g.v%50!==0?'stroke-dasharray="3 4"':'')+'/>';
+    svg+='<text x="'+(padL-8)+'" y="'+(y+4)+'" font-size="11" fill="#8aa09a" text-anchor="end">'+g.v+'</text>';
+  });
+  // ★ 청록 팔레트로 통일 (총괄 지시 260814-2300 ㉢) — areaGrad · lineGrad 둘 다 바꿨다
+  svg+='<defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">'
+    +'<stop offset="0%" stop-color="#168f7a" stop-opacity="0.30"/>'
+    +'<stop offset="100%" stop-color="#2aa991" stop-opacity="0.02"/></linearGradient>'
+    +'<linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">'
+    +'<stop offset="0%" stop-color="#0f7766"/><stop offset="100%" stop-color="#2aa991"/></linearGradient></defs>';
+  var linePath='', areaPath='';
+  items.forEach(function(t,i){
+    var x=xAt(i), y=yAt(t.score);
+    linePath += (i===0?'M':'L')+x+' '+y+' ';
+  });
+  areaPath = linePath + 'L'+xAt(n-1)+' '+yAt(0)+' L'+xAt(0)+' '+yAt(0)+' Z';
+  svg+='<path d="'+areaPath+'" fill="url(#areaGrad)"/>';
+  svg+='<path d="'+linePath+'" fill="none" stroke="url(#lineGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
+  items.forEach(function(t,i){
+    var x=xAt(i), y=yAt(t.score);
+    svg+='<circle cx="'+x+'" cy="'+y+'" r="5.5" fill="#fff" stroke="#168f7a" stroke-width="2.5"/>';
+    var above = y>padT+22;
+    var ly = above ? y-12 : y+20;
+    svg+='<text x="'+x+'" y="'+ly+'" font-size="12.5" font-weight="700" fill="#0f7766" text-anchor="middle">'+t.score+'</text>';
+    var md=(t.date||'').slice(5).replace('-','.');
+    svg+='<text x="'+x+'" y="'+(H-padB+22)+'" font-size="10" fill="#8aa09a" text-anchor="middle">'+md+'</text>';
+  });
+  svg+='</svg>';
+  return '<div class="chart-wrap">'+svg+'</div>';
+}
+
+function renderStudy(sid, data, box){
+  var students = data.students || [];
+  var s0 = students.find(function(s){ return s && String(s.id) === String(sid); }) || {};
+  var student = {
+    name:  s0.name  || (state.student && state.student.name)  || '',
+    grade: s0.grade || (state.student && state.student.grade) || '',
+    school:s0.school|| (state.student && state.student.school)|| '',
+    'class': s0['class'] || (state.student && state.student['class']) || ''
+  };
+  $('study-name').textContent = student.name + ' 학생';
+  $('study-meta').textContent = [student.grade, student.school, student['class']].filter(Boolean).join(' · ');
+
+  var threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+  var threeMonthsAgoStr = threeMonthsAgo.toISOString().slice(0,10);
+  var todayStr = today();
+
+  var attendance = (data.attendance || []).filter(function(a){ return a && String(a.sid) === sid && (a.date||'') >= threeMonthsAgoStr; }).sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+  var homework   = (data.homework   || []).filter(function(h){ return h && String(h.sid) === sid; }).sort(function(a,b){ return (b.due||'').localeCompare(a.due||''); });
+  var tests      = (data.tests      || []).filter(function(t){ return t && String(t.sid) === sid; }).sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+  var progress   = (data.progress   || []).filter(function(p){ return p && String(p.sid) === sid; }).sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); }).slice(0,2);
+  var schedules  = (data.schedules  || []).filter(function(s){ return s && s.target && student.name && s.target.indexOf(student.name) !== -1; }).sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+
+  var attO = attendance.filter(function(a){ return a.status==='O'; }).length;
+  var hwDone = homework.filter(function(h){ return h.status==='done'; }).length;
+  var testAvg = tests.length ? Math.round(tests.reduce(function(s,t){ return s+(parseFloat(t.score)||0); },0)/tests.length) : null;
+
+  var attStatusLabel = {O:'출석',X:'결석',E:'조퇴',T:'지각',B:'보강'};
+  var attStatusClass = {O:'att-o',X:'att-x',E:'att-e',T:'att-t',B:'att-t'};
+  var hwStatusLabel  = {pending:'미제출',done:'제출',half:'일부제출'};
+  var hwStatusClass  = {pending:'tag-pending',done:'tag-done',half:'tag-half'};
+
+  var html = '';
+
+  // ① 요약
+  html += '<div class="section"><div class="section-title">요약</div>'
+    + '<div class="stat-row">'
+    + '<div class="stat-box"><div class="stat-val">'+attO+'</div><div class="stat-label">출석 (3개월)</div></div>'
+    + '<div class="stat-box"><div class="stat-val">'+hwDone+'</div><div class="stat-label">제출 숙제</div></div>'
+    + '<div class="stat-box"><div class="stat-val">'+(testAvg!==null?testAvg+'점':'–')+'</div><div class="stat-label">평균 점수</div></div>'
+    + '</div></div>';
+
+  // ② 최근 진도
+  html += '<div class="section"><div class="section-title">최근 진도</div>';
+  if(!progress.length){ html += '<div class="empty">진도 데이터가 없습니다</div>'; }
+  else {
+    progress.forEach(function(p){
+      html += '<div class="prog-item">'
+        + '<div class="prog-book">'+esc(p.book)+(p.unit?' · '+esc(p.unit):'')+'</div>'
+        + (p.range?'<div class="prog-unit">범위: '+esc(p.range)+'</div>':'')
+        + '<div class="prog-meta">'+esc(p.date)+(p.groupName?' · '+esc(p.groupName):'')+'</div>'
+        + '</div>';
+    });
+  }
+  html += '</div>';
+
+  // ③ 확정된 보강 일정  ★ 「보강 신청」(탭 ②)과 다른 것이다
+  html += '<div class="section"><div class="section-title">확정된 보강 일정</div>';
+  if(!schedules.length){ html += '<div class="empty">확정된 보강 일정이 없습니다</div>'; }
+  else {
+    schedules.slice(0,10).forEach(function(s){
+      var isDone = s.done || (s.date||'') < todayStr;
+      var statusTag = isDone ? '<span class="schedule-done">완료</span>' : '<span class="schedule-upcoming">예정</span>';
+      html += '<div class="schedule-item">'
+        + '<div class="schedule-date">'+esc((s.date||'').slice(5))+'</div>'
+        + '<div class="schedule-info">'
+        + '<div class="schedule-content">'+esc(s.content||'보강')+'</div>'
+        + (s.time ? '<div class="schedule-time">'+esc(s.time)+'</div>' : '')
+        + '</div>' + statusTag + '</div>';
+    });
+  }
+  html += '</div>';
+
+  // ④ 출결 현황 — ★ 색만으로 가르지 않는다. 글자 + 왼쪽 막대 + 색
+  html += '<div class="section"><div class="section-title">출결 현황</div>';
+  if(!attendance.length){ html += '<div class="empty">출결 데이터가 없습니다</div>'; }
+  else {
+    html += '<div class="att-grid">';
+    attendance.slice(0,30).forEach(function(a){
+      html += '<div class="att-wrap">'
+        + '<div class="att-dot '+(attStatusClass[a.status]||'att-o')+'">'+esc(attStatusLabel[a.status]||a.status)+'</div>'
+        + '<div class="att-date">'+esc((a.date||'').slice(5))+'</div>'
+        + '</div>';
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // ⑤ 숙제 현황
+  html += '<div class="section"><div class="section-title">숙제 현황</div>';
+  if(!homework.length){ html += '<div class="empty">숙제 데이터가 없습니다</div>'; }
+  else {
+    homework.slice(0,10).forEach(function(h){
+      html += '<div class="hw-item">'
+        + '<div class="hw-name">'+esc(h.name)+'</div>'
+        + '<div class="hw-due">마감 '+esc((h.due||'').slice(5))+'</div>'
+        + '<span class="tag '+(hwStatusClass[h.status]||'tag-pending')+'">'+esc(hwStatusLabel[h.status]||'미제출')+'</span>'
+        + '</div>';
+    });
+  }
+  html += '</div>';
+
+  // ⑥ 테스트 결과 (점수 추이 그래프 + 목록)
+  html += '<div class="section"><div class="section-title">테스트 결과</div>';
+  if(!tests.length){ html += '<div class="empty">테스트 데이터가 없습니다</div>'; }
+  else {
+    var chartData = tests.slice().filter(function(t){ return typeof t.score==='number' || !isNaN(parseFloat(t.score)); })
+      .map(function(t){ return {name:t.name, score:Math.round(parseFloat(t.score)), date:t.date}; })
+      .sort(function(a,b){ return (a.date||'').localeCompare(b.date||''); });
+    if(chartData.length>=1){
+      html += buildScoreChart(chartData);
+      html += '<div class="chart-legend">최근 점수 추이 (100점 만점 기준)</div>';
+    }
+    tests.forEach(function(t){
+      var sc = parseFloat(t.score);
+      var scoreColor = sc>=90?'var(--teal)':sc>=70?'var(--gold)':'var(--red)';
+      html += '<div class="test-item">'
+        + '<div class="test-name">'+esc(t.name)+'</div>'
+        + '<div style="text-align:right">'
+        + '<div class="test-score" style="color:'+scoreColor+'">'+esc(t.score)+'점</div>'
+        + '<div class="test-date">'+esc(t.date)+'</div>'
+        + '</div></div>';
+    });
+  }
+  html += '</div>';
+
+  box.innerHTML = html;
 }
 
 document.addEventListener('DOMContentLoaded', function(){
