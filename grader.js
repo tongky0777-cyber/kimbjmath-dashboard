@@ -7,6 +7,8 @@
  *   int  정수        → 숫자 정규화 후 일치
  *   frac 분수        → 기약분수/소수 변환 후 값 일치
  *   self 자가채점     → 채점 보류(학생/선생님이 O/X). 정답 텍스트(a)는 화면 표시용.
+ *   free 정답 없음    → 무조건 정답. 교재가 잘못돼 정답을 정할 수 없는 문항에 쓴다.
+ *                      비워 두든 무엇을 적든 'correct'. (예: 온리원 미적분1 2권 도활 016)
  *
  * 결과 상태:
  *   'correct'  맞음
@@ -111,6 +113,7 @@
       case 'int':  var rInt=gradeInt(meta.a, studentRaw);  return rInt==='blank'?'wrong':rInt;
       case 'frac': var rFr=gradeFrac(meta.a, studentRaw);  return rFr==='blank'?'wrong':rFr;
       case 'self': return 'self';   // 자동채점 불가 → 항상 보류(△). 선생님이 수업시간에 처리.
+      case 'free': return 'correct'; // 교재 오류로 정답이 없는 문항 → 비워도 무엇을 적어도 정답.
       default:     return 'self';
     }
   }

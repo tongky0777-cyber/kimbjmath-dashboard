@@ -75,7 +75,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:15p
 var FBCONFIG={apiKey:"AIzaSyDfQxi6q8xVUVgnvwON446Lnd-Becpwvbk",databaseURL:"https://kimbjmath-default-rtdb.firebaseio.com",projectId:"kimbjmath",appId:"1:664889936709:web:2df1494b0cd978c64e4c2c"};
 var FB_PREFIX="bjm_";
 var AIO_UNIT_NAMES={ unit1:'1단원 다항식', unit2:'2단원 나머지정리·인수분해', unit3:'3단원 방정식' };
-var TAG={ mc:'객관식', int:'단답(정수)', frac:'분수', self:'직접 채점' };
+var TAG={ mc:'객관식', int:'단답(정수)', frac:'분수', self:'직접 채점', free:'정답 없음' };
 
 var params=new URLSearchParams(location.search);
 var hwId=params.get('hw'), studentId=params.get('student');
@@ -163,6 +163,8 @@ function buildQ(n){
       +'<div class="frac-bar"></div>'
       +'<input class="frac-in" id="fd-'+n+'" inputmode="numeric" placeholder="분모" value="'+esc(den)+'" oninput="onFrac('+n+')">'
       +'</div><div class="frac-hint">정수면 분자만,<br>분수면 분자·분모 모두 입력</div></div>';
+  } else if(k==='free'){
+    body='<div class="self-note">\u2713 교재가 잘못돼 정답을 정할 수 없는 문제예요. 비워 두셔도 되고, 모두 정답 처리됩니다.</div>';
   } else {
     body='<div class="self-note">△ 이 문제는 자동 채점이 안 돼요. 답을 적지 않아도 되고, 수업시간에 선생님과 함께 확인합니다.</div>';
   }
@@ -215,17 +217,19 @@ function showSubmitted(prev){
 }
 function updateSummary(){
   // 채점 결과는 숨기고, 답한 개수만 보여줌 (제출 전에는 O/X 노출 안 함)
-  var s=hwRec.qStart, e=hwRec.qEnd, total=e-s+1, answered=0, selfCnt=0;
+  var s=hwRec.qStart, e=hwRec.qEnd, total=e-s+1, answered=0, selfCnt=0, freeCnt=0;
   for(var n=s;n<=e;n++){
     var meta=Grader.getAnswer(ak,hwRec.unitKey,n);
+    if(meta && meta.k==='free'){ freeCnt++; continue; }
     if(meta && meta.k==='self'){ selfCnt++; continue; }
     var raw=(inputs[n]||{}).raw;
     if(raw!=null && String(raw).trim()!=='') answered++;
   }
-  var gradable=total-selfCnt;
+  var gradable=total-selfCnt-freeCnt;
   var sum=document.getElementById('summary');
   if(sum) sum.innerHTML='입력 <b>'+answered+'</b> / '+gradable+'문제'
-    + (selfCnt?' <span style="color:var(--muted)">(직접확인 '+selfCnt+')</span>':'');
+    + (selfCnt?' <span style="color:var(--muted)">(직접확인 '+selfCnt+')</span>':'')
+    + (freeCnt?' <span style="color:var(--muted)">(정답 없음 '+freeCnt+')</span>':'');
 }
 
 var _submitting=false;
