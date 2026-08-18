@@ -158,7 +158,10 @@ function buildQ(n){
   } else if(k==='frac'){
     var sv=saved.raw||'', num='', den='';
     if(sv.indexOf('/')>-1){ var p=sv.split('/'); num=p[0]; den=p[1]; } else { num=sv; }
-    body='<div class="frac-row"><div class="frac-col">'
+    var fneg=(String(num).charAt(0)==='-'); num=String(num).replace('-','');
+    body='<div class="frac-row">'
+      +'<button class="sign-btn'+(fneg?' on':'')+'" id="fsign-'+n+'" onclick="toggleFracSign('+n+')">\u00b1</button>'
+      +'<div class="frac-col">'
       +'<input class="frac-in" id="fn-'+n+'" inputmode="numeric" placeholder="분자" value="'+esc(num)+'" oninput="onFrac('+n+')">'
       +'<div class="frac-bar"></div>'
       +'<input class="frac-in" id="fd-'+n+'" inputmode="numeric" placeholder="분모" value="'+esc(den)+'" oninput="onFrac('+n+')">'
@@ -181,15 +184,20 @@ function pickMc(n,i){
 function toggleSign(n){ document.getElementById('sign-'+n).classList.toggle('on'); onInt(n); }
 function onInt(n){
   var neg=document.getElementById('sign-'+n).classList.contains('on');
-  var v=(document.getElementById('in-'+n).value||'').replace(/[^0-9]/g,'');
+  var el=document.getElementById('in-'+n);
+  var v=(el.value||'').replace(/[^0-9]/g,''); if(el.value!==v) el.value=v;
   inputs[n]=Object.assign({},inputs[n],{raw:(v===''?'':(neg?'-':'')+v)});
   updateSummary();
 }
+function toggleFracSign(n){ document.getElementById('fsign-'+n).classList.toggle('on'); onFrac(n); }
 function onFrac(n){
-  var num=(document.getElementById('fn-'+n).value||'').trim();
-  var den=(document.getElementById('fd-'+n).value||'').trim();
-  var raw = den==='' ? num : (num+'/'+den);
-  inputs[n]=Object.assign({},inputs[n],{raw:raw});
+  var b=document.getElementById('fsign-'+n);
+  var neg=!!(b && b.classList.contains('on'));
+  var fn=document.getElementById('fn-'+n), fd=document.getElementById('fd-'+n);
+  var num=(fn.value||'').replace(/[^0-9]/g,''); if(fn.value!==num) fn.value=num;
+  var den=(fd.value||'').replace(/[^0-9]/g,''); if(fd.value!==den) fd.value=den;
+  var v=(num===''?'':(den===''?num:num+'/'+den));
+  inputs[n]=Object.assign({},inputs[n],{raw:(v===''?'':(neg?'-':'')+v)});
   updateSummary();
 }
 
