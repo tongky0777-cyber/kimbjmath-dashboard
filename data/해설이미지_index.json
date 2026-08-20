@@ -1,0 +1,44 @@
+{
+ "cdn": "https://cdn.jsdelivr.net/gh/tongky0777-cyber/kimbjmath-dashboard@main/",
+ "note": "문항번호 = 파일명. 예: img/sol/aio_mi1_1/unit_diff/007.jpg 는 미분 7번",
+ "books": {
+  "aio_mi1_1": {
+   "book": "All in one 미적분1 1권",
+   "units": {
+    "unit_diff": {
+     "name": "미분계수와 도함수",
+     "from": 1,
+     "to": 70,
+     "count": 70,
+     "path": "img/sol/aio_mi1_1/unit_diff/"
+    },
+    "unit_diffapp": {
+     "name": "미분법의 활용(1)",
+     "from": 1,
+     "to": 31,
+     "count": 31,
+     "path": "img/sol/aio_mi1_1/unit_diffapp/"
+    }
+   }
+  },
+  "oo_gs1_1": {
+   "book": "Only one 공수1 1권",
+   "units": {
+    "unit2_1": {
+     "name": "복소수와 이차방정식",
+     "from": 1,
+     "to": 51,
+     "count": 51,
+     "path": "img/sol/oo_gs1_1/unit2_1/"
+    },
+    "unit2_2": {
+     "name": "이차방정식과 이차함수",
+     "from": 31,
+     "to": 93,
+     "count": 63,
+     "path": "img/sol/oo_gs1_1/unit2_2/"
+    }
+   }
+  }
+ }
+}
