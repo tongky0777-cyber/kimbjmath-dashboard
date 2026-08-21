@@ -543,6 +543,7 @@ body.role-assistant .teacher-only{ display:none !important; }
       <div class="sec-hd"><h2>📝 테스트 결과</h2><div class="actions">
         <select id="test-filter" onchange="renderTests()" style="font-size:12px;padding:6px 10px;border:1px solid var(--line);border-radius:3px;background:var(--white);cursor:pointer;font-family:var(--sans);"><option value="">전체 테스트</option></select>
         <button class="btn-sm sec" onclick="cleanGhostTests()" title="삭제(퇴원)된 학생의 테스트 기록을 한 번에 정리">🧹 삭제학생 정리</button>
+        <button class="btn-sm sec" onclick="exportGradeRaw()" title="성적표 도구용 원자료(학생·테스트·반·출결·숙제·오답)를 한 파일로 내려받습니다">📥 성적 원자료 내려받기</button>
         <button class="btn-sm sec" onclick="openGroupTestModal()">👥 반별 입력</button>
         <button class="btn-sm" onclick="openTestModal()">+ 개별 입력</button>
       </div></div>
@@ -11464,6 +11465,36 @@ function deleteSentReport(id){
   Promise.resolve(window._authReady).then(function(){
     return firebase.database().ref('bjm_sent_reports/'+id).remove();
   }).then(function(){ toast('삭제했어요'); openSentReports(); });
+}
+
+// ===== [08 성적표도구] 성적 원자료 내려받기 — ★더하기만. 기존 함수·단추를 안 건드린다★ =====
+// downloadSentReport(11448행)의 Blob → a.download → click() 여섯 줄을 그대로 따랐다.
+// 읽기만 한다. 아무것도 저장하지 않는다.
+function exportGradeRaw(){
+  var KEYS=['students','tests','groups','attendance','homework'];
+  var out={ meta:{ ver:1, at:new Date().toISOString(), tz:'Asia/Seoul' } };
+  try{ out.meta.tutorUnlocked = (typeof isTutorUnlocked==='function') ? !!isTutorUnlocked() : null; }catch(e){ out.meta.tutorUnlocked=null; }
+  KEYS.forEach(function(k){ try{ out[k]=DB.get(k); }catch(e){ out[k]=[]; out.meta['err_'+k]=String(e&&e.message||e); } });
+  try{ toast('원자료를 모으는 중…'); }catch(e){}
+  Promise.resolve(window._authReady).then(function(){
+    return firebase.database().ref('wronganswers').once('value');
+  }).then(function(snap){
+    out.wronganswers = snap.val() || {};
+  }).catch(function(e){
+    out.wronganswers = {};
+    out.meta.wronganswersError = String(e && e.message || e);
+  }).then(function(){
+    var d=new Date(), p2=function(n){ return (n<10?'0':'')+n; };
+    var stamp=d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+'_'+p2(d.getHours())+p2(d.getMinutes());
+    var blob=new Blob([JSON.stringify(out)],{type:'application/json;charset=utf-8'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='성적원자료_'+stamp+'.json';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1000);
+    var n=(out.tests&&out.tests.length)||0, w=Object.keys(out.wronganswers||{}).length;
+    try{ toast('내려받았어요 — 테스트 '+n+'건 · 오답 '+w+'묶음'); }catch(e){}
+  });
 }
 
 </script>
