@@ -17,84 +17,84 @@
           "type": "정점직선-넓이삼등분",
           "cat": "line",
           "unit": "직선의 방정식 > 정점을 지나는 직선",
-          "answer": "43",
+          "answer": "93",
           "grade": "int"
         },
         "2": {
           "type": "정사각형-현의길이",
           "cat": "line",
           "unit": "직선의 방정식 > 도형과 직선의 교점",
-          "answer": "④(-4)",
+          "answer": "②(-9)",
           "grade": "mc"
         },
         "3": {
           "type": "구간함수-넓이이등분",
           "cat": "coord",
           "unit": "도형의 방정식 > 넓이의 이등분",
-          "answer": "96",
+          "answer": "126",
           "grade": "int"
         },
         "4": {
           "type": "삼각형-비존재조건",
           "cat": "line",
           "unit": "직선의 방정식 > 세 직선의 위치관계",
-          "answer": "④(-4)",
+          "answer": "⑤(-3)",
           "grade": "mc"
         },
         "5": {
           "type": "내심외심일치-정삼각형",
           "cat": "coord",
           "unit": "평면좌표 > 삼각형의 내심·외심",
-          "answer": "5",
+          "answer": "33",
           "grade": "int"
         },
         "6": {
           "type": "평행사변형-대각선제곱합",
           "cat": "coord",
           "unit": "평면좌표 > 두 점 사이의 거리",
-          "answer": "②(-4)",
+          "answer": "①(-6)",
           "grade": "mc"
         },
         "7": {
           "type": "정점직선-거리최대",
           "cat": "line",
           "unit": "점과 직선 사이의 거리",
-          "answer": "48",
+          "answer": "27",
           "grade": "int"
         },
         "8": {
           "type": "등거리-각의이등분선",
           "cat": "line",
           "unit": "점과 직선 사이의 거리",
-          "answer": "8",
+          "answer": "10",
           "grade": "int"
         },
         "9": {
           "type": "평행선-교점사각형넓이",
           "cat": "line",
           "unit": "두 평행선 사이의 거리",
-          "answer": "16",
+          "answer": "64",
           "grade": "int"
         },
         "10": {
           "type": "직각삼각형-세경우",
           "cat": "line",
           "unit": "직선의 방정식 > 수직 조건",
-          "answer": "7",
+          "answer": "12",
           "grade": "int"
         },
         "11": {
           "type": "ab=0-등거리",
           "cat": "line",
           "unit": "점과 직선 사이의 거리",
-          "answer": "22",
+          "answer": "280",
           "grade": "int"
         },
         "12": {
           "type": "직각삼각형-피타고라스",
           "cat": "coord",
           "unit": "평면좌표 > 두 점 사이의 거리",
-          "answer": "③(3/2)",
+          "answer": "④(6)",
           "grade": "mc"
         }
       }
@@ -109,84 +109,84 @@
           "type": "수직이등분선-삼차방정식",
           "cat": "coord",
           "unit": "평면좌표 > 두 점 사이의 거리",
-          "answer": "②(2)",
+          "answer": "③(3)",
           "grade": "mc"
         },
         "2": {
           "type": "정사각형-이차식최소",
           "cat": "coord",
           "unit": "평면좌표 > 거리의 제곱의 최소",
-          "answer": "⑤(36)",
+          "answer": "②(40)",
           "grade": "mc"
         },
         "3": {
           "type": "근호합-대칭이동",
           "cat": "coord",
           "unit": "평면좌표 > 거리의 합의 최소",
-          "answer": "①(10)",
+          "answer": "④(15)",
           "grade": "mc"
         },
         "4": {
           "type": "평행사변형-대각선제곱차",
           "cat": "coord",
           "unit": "평면좌표 > 평행사변형의 성질",
-          "answer": "64",
+          "answer": "6",
           "grade": "int"
         },
         "5": {
           "type": "예각삼각형-정수해",
           "cat": "coord",
           "unit": "평면좌표 > 예각삼각형의 조건",
-          "answer": "④(6)",
+          "answer": "②(8)",
           "grade": "mc"
         },
         "6": {
           "type": "마름모-대각선-둘레",
           "cat": "coord",
           "unit": "평면좌표 > 마름모",
-          "answer": "③(52)",
+          "answer": "⑤(68)",
           "grade": "mc"
         },
         "7": {
           "type": "넓이삼등분-평행선거리",
           "cat": "line",
           "unit": "직선의 방정식 > 평행한 두 직선",
-          "answer": "24",
+          "answer": "30",
           "grade": "int"
         },
         "8": {
           "type": "절댓값그래프-외심",
           "cat": "line",
           "unit": "직선의 방정식 > 삼각형의 외심",
-          "answer": "6",
+          "answer": "4",
           "grade": "int"
         },
         "9": {
           "type": "수직인두직선-직각이등변",
           "cat": "line",
           "unit": "직선의 방정식 > 두 직선이 이루는 각",
-          "answer": "4",
+          "answer": "10",
           "grade": "int"
         },
         "10": {
           "type": "넓이이등분-자연수해",
           "cat": "coord",
           "unit": "평면좌표 > 사각형의 넓이",
-          "answer": "20",
+          "answer": "8",
           "grade": "int"
         },
         "11": {
           "type": "두직선이루는각-tan",
           "cat": "line",
           "unit": "직선의 방정식 > 점과 직선 사이의 거리",
-          "answer": "①(7/24)",
+          "answer": "③(4/3)",
           "grade": "mc"
         },
         "12": {
           "type": "원의접선-넓이-경우나누기",
           "cat": "line",
           "unit": "직선의 방정식 > 점과 직선 사이의 거리",
-          "answer": "(12+4√13)/3",
+          "answer": "72",
           "grade": "int"
         }
       }
@@ -201,84 +201,84 @@
           "type": "수직선거리-절댓값-삼차방정식실근합",
           "cat": "coord",
           "unit": "도형의 방정식 > 평면좌표 > 수직선 위의 두 점 사이의 거리",
-          "answer": "④(4)",
+          "answer": "③(3)",
           "grade": "mc"
         },
         "2": {
           "type": "정삼각형-거리제곱합최소-넓이비",
           "cat": "coord",
           "unit": "도형의 방정식 > 평면좌표 > 두 점 사이의 거리의 활용",
-          "answer": "③(9√3)",
+          "answer": "②(16√3)",
           "grade": "mc"
         },
         "3": {
           "type": "근호합-완전제곱-두정점거리",
           "cat": "coord",
           "unit": "도형의 방정식 > 평면좌표 > 두 점 사이의 거리의 최솟값",
-          "answer": "④(13)",
+          "answer": "①(10)",
           "grade": "mc"
         },
         "4": {
           "type": "중선정리-무게중심-소거",
           "cat": "coord",
           "unit": "도형의 방정식 > 평면좌표 > 무게중심과 중선정리",
-          "answer": "62",
+          "answer": "90",
           "grade": "int"
         },
         "5": {
           "type": "둔각삼각형-피타고라스부등식-정수범위",
           "cat": "coord",
           "unit": "도형의 방정식 > 평면좌표 > 둔각삼각형이 되는 조건",
-          "answer": "③(185)",
+          "answer": "⑤(322)",
           "grade": "mc"
         },
         "6": {
           "type": "마름모-대각선수직이등분-넓이",
           "cat": "coord",
           "unit": "도형의 방정식 > 평면좌표 > 마름모와 대각선의 성질",
-          "answer": "③(40)",
+          "answer": "④(60)",
           "grade": "mc"
         },
         "7": {
           "type": "직선위의점-삼각형넓이-최대최소",
           "cat": "line",
           "unit": "도형의 방정식 > 직선의 방정식 > 점과 직선 사이의 거리",
-          "answer": "4",
+          "answer": "12",
           "grade": "int"
         },
         "8": {
           "type": "내심-각의이등분선정리-무게중심",
           "cat": "line",
           "unit": "도형의 방정식 > 직선의 방정식 > 각의 이등분선과 내심",
-          "answer": "③(16/3)",
+          "answer": "①(22/3)",
           "grade": "mc"
         },
         "9": {
           "type": "내분점-넓이비-사각형분할",
           "cat": "coord",
           "unit": "도형의 방정식 > 평면좌표 > 내분점과 넓이의 비",
-          "answer": "64",
+          "answer": "54",
           "grade": "int"
         },
         "10": {
           "type": "직선족-정점-기울기범위-정수해",
           "cat": "line",
           "unit": "도형의 방정식 > 직선의 방정식 > 정점을 지나는 직선",
-          "answer": "②(-2)",
+          "answer": "③(-4)",
           "grade": "mc"
         },
         "11": {
           "type": "내분점자취-평행선-사다리꼴넓이",
           "cat": "line",
           "unit": "도형의 방정식 > 직선의 방정식 > 자취의 방정식",
-          "answer": "③(45/4)",
+          "answer": "④(57/4)",
           "grade": "mc"
         },
         "12": {
           "type": "볼록사각형-대각선교점-거리합최소",
           "cat": "coord",
           "unit": "도형의 방정식 > 평면좌표 > 거리의 합의 최소",
-          "answer": "①(33)",
+          "answer": "②(28)",
           "grade": "mc"
         }
       }
