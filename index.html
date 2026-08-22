@@ -4629,6 +4629,8 @@ function quickScore(id, val){
   DB.set('tests', recs);
   renderTests(); renderTestCalendar(); if(testSelectedDate) selectTestDay(testSelectedDate);
   toast('점수를 입력했어요');
+  // ===== [08] 41건 구멍 ① — ★막지 말고 보이게★ (지시 260821-1720). 더하기만 =====
+  if(!Array.isArray(recs[idx].wrong)) toast('점수만 저장했습니다. 문항별 기록은 남지 않습니다');
 }
 
 function saveTest() {
@@ -4763,6 +4765,8 @@ function renderTests() {
       var cls = t.score>=90?'high':t.score>=70?'mid':'low';
       var fillColor = t.score>=90?'var(--green)':t.score>=70?'var(--gold)':'var(--red)';
       scoreCell = '<span class="score '+cls+'">'+t.score+'점</span><div class="score-bar"><div class="score-fill" style="width:'+t.score+'%;background:'+fillColor+'"></div></div>';
+      // ===== [08] 41건 구멍 ②③ — ★위 줄을 안 건드린다. 뒤에 붙이기만 한다★ =====
+      if(!Array.isArray(t.wrong)) scoreCell += scoreOnlyBadge(t.id);
     }
     return '<tr'+((t.pending||t.score==null)?' style="background:#fffdf5;"':'')+'><td class="student-name">'+(student?student.name:'—')+(student?specialStudentBadge(student):'')+'</td><td>'+(student?getStudentGroups(student.id).map(function(g){return g.name;}).join(', ')||'—':'—')+'</td><td style="font-weight:500;">'+t.name+(isSpecialRecord(t)?specialBadge(t):'')+'</td><td style="font-size:12px;color:var(--muted);">'+(unitStr||'—')+'</td><td style="font-size:12px;color:var(--muted);">'+t.date+'</td><td>'+scoreCell+'</td><td style="font-size:12px;color:var(--muted);">'+(t.memo||'—')+'</td><td><div class="row-action">'+(t.dailyKey?'<button class="icon-btn" title="유형 분석" onclick="showDailyType(\''+t.id+'\')">📊</button>':'')+'<button class="icon-btn" onclick="editTest(\''+t.id+'\')">✏️</button><button class="icon-btn" onclick="deleteTest(\''+t.id+'\')">🗑️</button></div></td></tr>';
   }).join('');
@@ -9455,6 +9459,8 @@ function saveGroupTestPending(){
   closeModal('modal-group-test');
   renderTests(); renderTestCalendar(); if(testSelectedDate) selectTestDay(testSelectedDate);
   toast(saved+'명 미채점 저장 완료. 수업 중 점수만 입력하세요');
+  // ===== [08] 41건 구멍 ① — 이 길로 들어온 기록은 문항별이 안 남는다. 더하기만 =====
+  setTimeout(function(){ toast('점수만 넣으면 문항별 기록은 남지 않습니다. 번호까지 채우려면 「번호 입력」을 누르세요'); }, 2600);
 }
 
 // ══ 학생 상세 (꺾은선 그래프) ════════════════════
@@ -11495,6 +11501,17 @@ function exportGradeRaw(){
     var n=(out.tests&&out.tests.length)||0, w=Object.keys(out.wronganswers||{}).length;
     try{ toast('내려받았어요 — 테스트 '+n+'건 · 오답 '+w+'묶음'); }catch(e){}
   });
+}
+
+// ===== [08] 41건 구멍 ②③ — 「점수만」 배지 · 되돌아갈 길 (지시 260821-1720) =====
+// ★막지 않는다. 보이게만 한다★
+//   ② wrong 이 배열이 아닌 기록에 회색 배지가 붙는다 — 나중에 봐도 어느 게 반쪽인지 한눈에 보인다
+//   ③ 누르면 기존 문항별 채점 화면(editTest)을 ★부르기만★ 한다. 그 화면을 안 고쳤다
+//   ★wrong:[] 를 만들지 않는다★ — 빈 배열은 「전부 맞음」이라 모순된 성적표가 나간다
+function scoreOnlyBadge(id){
+  return '<button class="btn-sm sec" onclick="editTest(\''+id+'\')"'
+    +' title="문항별 기록이 없습니다. 눌러서 번호를 채우면 채점표가 살아납니다"'
+    +' style="margin-left:6px;font-size:10px;padding:1px 7px;border-radius:9px;color:var(--muted);vertical-align:middle;">점수만</button>';
 }
 
 </script>
