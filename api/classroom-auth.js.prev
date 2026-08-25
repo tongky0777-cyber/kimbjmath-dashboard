@@ -159,17 +159,8 @@ module.exports = async function handler(req, res) {
       return;
     }
     if (body.action === 'verify') {
-      var payload = verify(body.token);
-      if (!payload) {
-        json(res, 401, { ok: false, error: 'invalid token' });
-        return;
-      }
-      // ★슬라이딩 갱신 (지시 260825-0730 ①)★
-      //   TTL 을 늘리지 않는다. 쓰는 동안만 산다 — 12시간 안 열면 그대로 풀린다.
-      //   같은 payload 에 exp 만 새로 박아 다시 서명해 함께 돌려준다. sign() 은 이미 있던 것이다.
-      //   ※ 이 파일은 원래 const 로 적혀 있으나 총괄방 지시가 「var 만」이라 더한 줄만 var 로 뒀다
-      var next = Object.assign({}, payload, { exp: Date.now() + TOKEN_TTL_MS });
-      json(res, 200, Object.assign({ ok: true, token: sign(next) }, next));
+      const payload = verify(body.token);
+      json(res, payload ? 200 : 401, payload ? Object.assign({ ok: true }, payload) : { ok: false, error: 'invalid token' });
       return;
     }
     json(res, 400, { ok: false, error: 'unknown action' });
