@@ -5278,12 +5278,38 @@ function saveHw() {
   _checkAioRange(valid, function(rangeErr){
     if(rangeErr){ toast(rangeErr); return; }
     _saveHwCommit(sids, valid, due);
+    // [확인줄 260828] 저장 toast 가 꺼진 뒤 한 번. ★실제로 읽어 견준 단원만★ 들어간다
+    var _aioNote = _aioRangeNoteLine();
+    if(_aioNote) setTimeout(function(){ toast(_aioNote); }, 2600);
   });
 }
 
 // All in one/온리원 블록의 끝번호가 단원 마지막 문항을 넘는지 검사(정답표 totalCount 기준)
 // 문제 있으면 안내 문구를, 없으면 '' 를 cb 로 넘긴다. (정답표 로드 실패 시엔 통과시켜 기존 동작 유지)
+// [확인줄 260828] 범위검사가 ★실제로 돈★ 단원만 여기 쌓인다.  못 읽은 단원은 안 쌓인다.
+// 그래서 「줄이 떴다 = 검사가 돌았다 / 안 떴다 = 검사를 못 했다」 로 읽을 수 있다.
+var _aioRangeNotes = [];
+var AIO_NOTE_MAX = 2;   // ★한 줄에 둘까지. 넘치면 「… 외 N개」로 접는다★
+function _aioRangeNoteLine(){
+  var ns = _aioRangeNotes || [];
+  if(!ns.length) return '';
+  if(ns.length === 1){
+    var o = ns[0];
+    return '범위 확인 · ' + o.name + ' ' + o.qs + '~' + o.qe + ' · 이 단원은 ' + o.max + '번까지 있습니다';
+  }
+  var parts = [];
+  for(var i=0; i<ns.length && i<AIO_NOTE_MAX; i++){
+    parts.push(ns[i].name + ' ' + ns[i].qs + '~' + ns[i].qe + ' · ' + ns[i].max + '번까지');
+  }
+  if(ns.length > AIO_NOTE_MAX) parts.push('… 외 ' + (ns.length - AIO_NOTE_MAX) + '개');
+  return '범위 확인 · ' + parts.join('  |  ');
+}
+function _aioUnitNameOf(b){
+  var u = aioUnitsOf(b.book).filter(function(x){ return x.key === b.unitKey; })[0];
+  return u ? u.name : b.unitKey;
+}
 function _checkAioRange(valid, cb){
+  _aioRangeNotes = [];   // [확인줄 260828] 돌 때마다 비운다.  못 읽고 빠져나가면 빈 채로 남는다
   var aioBlocks = (valid||[]).filter(function(b){ return isAioBook(b.book) && b.unitKey && b.qEnd!=null; });
   if(!aioBlocks.length || !window.Grader){ cb(''); return; }
   var jobs = aioBlocks.map(function(b){
@@ -5297,6 +5323,8 @@ function _checkAioRange(valid, cb){
     for(var i=0;i<results.length;i++){
       var r=results[i];
       if(r.max==null) continue;  // 정답표를 못 읽으면 이 블록은 범위검사 생략
+      // [확인줄 260828] 여기까지 온 것만 ★totalCount 를 실제로 읽어 견준★ 단원이다
+      _aioRangeNotes.push({ name:_aioUnitNameOf(r.b), qs:r.b.qStart, qe:r.b.qEnd, max:r.max });
       if(r.b.qEnd>r.max || r.b.qStart>r.max){
         var u=aioUnitsOf(r.b.book).filter(function(x){return x.key===r.b.unitKey;})[0];
         var uname=u?u.name:r.b.unitKey;
