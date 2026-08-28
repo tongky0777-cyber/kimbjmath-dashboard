@@ -19,9 +19,6 @@ button,input,select,textarea{font-family:var(--sans)}
 .brand{font-weight:900;font-size:17px;color:var(--teal2)}
 .chip{margin-left:auto;background:var(--bg2);color:var(--teal2);border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:800}
 .wrap{max-width:980px;margin:0 auto;padding:22px 16px 60px}
-.login{max-width:430px;margin:8vh auto 0;background:var(--white);border:1px solid var(--line);border-radius:10px;padding:28px;box-shadow:var(--shadow)}
-.login h1{font-size:22px;margin-bottom:8px;color:var(--ink)}
-.login p{color:var(--muted);font-size:13px;margin-bottom:18px}
 .field{margin-bottom:14px}
 .field label{display:block;font-size:12px;font-weight:900;color:var(--ink2);margin-bottom:6px}
 .field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:8px;background:#fbfffd;padding:12px;font-size:15px;color:var(--ink);outline:none}
@@ -32,13 +29,6 @@ button,input,select,textarea{font-family:var(--sans)}
 .btn.sec{background:var(--bg2);color:var(--teal2);border:1px solid var(--line)}
 .btn.danger{background:var(--red-bg);color:var(--red);border:1px solid #f6cbd0}
 .msg{font-size:13px;color:var(--red);min-height:20px;margin-top:10px}
-
-/* ── 탭 ─────────────────────────────── */
-.tabs{display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:0}
-.tab{border:1px solid var(--line);border-bottom:0;border-radius:10px 10px 0 0;background:var(--bg2);color:var(--ink2);
-     font-weight:900;font-size:14px;padding:11px 18px;cursor:pointer;position:relative;top:1px}
-.tab[aria-selected="true"]{background:var(--white);color:var(--teal2);box-shadow:0 -3px 0 var(--teal) inset}
-.tab:focus-visible{outline:3px solid rgba(22,143,122,.35);outline-offset:2px}
 
 .hero{display:flex;gap:16px;align-items:stretch;margin-bottom:16px}
 .student{flex:1;background:linear-gradient(135deg,#128872,#2aa991);color:#fff;border-radius:10px;padding:22px;box-shadow:var(--shadow)}
@@ -94,7 +84,7 @@ button,input,select,textarea{font-family:var(--sans)}
 .test-name{flex:1;font-size:13px;color:var(--ink2);font-weight:700}
 .test-score{font-size:17px;font-weight:900}
 .test-date{font-size:11px;color:var(--muted)}
-/* 출결 — ★ 색만으로 가르지 않는다. 글자(출석/결석/조퇴/지각/보강) + 왼쪽 막대 + 색 3종 */
+/* 출결 — 색만으로 가르지 않는다. 글자(출석/결석/조퇴/지각/보강) + 왼쪽 막대 + 색 3종 */
 .att-grid{display:flex;flex-wrap:wrap;gap:6px}
 .att-dot{min-width:34px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;
          font-size:11px;font-weight:900;padding:0 6px 0 3px;border-left:4px solid currentColor}
@@ -131,8 +121,8 @@ button,input,select,textarea{font-family:var(--sans)}
 }
 </style>
 
-<!-- Firebase SDK — 학습 현황 탭이 bjm_* 6키를 직접 읽는다.
-     ★ 다음 단계: 학습 데이터도 /api/parent-makeup snapshot 에 얹어 이 직접 읽기를 없앤다 (총괄 지시 260814-2300 ㉡) -->
+<!-- Firebase SDK — 학습 현황이 bjm_* 6키를 직접 읽는다.
+     학생은 URL 의 ?id= 로 정한다 (260828 판정). 로그인 화면·토큰·API 호출은 없다 -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -146,276 +136,37 @@ button,input,select,textarea{font-family:var(--sans)}
 </div>
 
 <main class="wrap">
-  <section class="login" id="login-panel">
-    <h1>학부모 접속</h1>
-    <p>선생님이 안내한 접속코드를 입력하면 자녀의 학습 현황과 보강 신청 화면으로 들어갑니다.</p>
-    <div class="field">
-      <label for="code">접속코드</label>
-      <input id="code" autocomplete="one-time-code" inputmode="text" placeholder="예: A7K2M9Q4">
-    </div>
-    <button class="btn" style="width:100%" onclick="login()">들어가기</button>
-    <div class="msg" id="login-msg"></div>
-  </section>
-
-  <section id="app-panel" class="hidden">
-    <div class="tabs" role="tablist">
-      <button class="tab" id="tab-study" role="tab" aria-selected="true" aria-controls="pane-study" onclick="showTab('study')">학습 현황</button>
-      <button class="tab" id="tab-makeup" role="tab" aria-selected="false" aria-controls="pane-makeup" onclick="showTab('makeup')">보강 신청</button>
-    </div>
-
+  <section id="app-panel">
     <!-- ① 학습 현황 -->
-    <div id="pane-study" class="study" role="tabpanel" aria-labelledby="tab-study">
+    <div id="pane-study" class="study">
       <div class="hero">
         <div class="student">
           <h1 id="study-name">학생</h1>
           <p id="study-meta"></p>
         </div>
-        <div class="summary">
-          <button class="btn sec" style="width:100%" onclick="logout()">나가기</button>
-        </div>
       </div>
       <div id="study-body"><div class="loading">불러오는 중..</div></div>
     </div>
 
-    <!-- ② 보강 신청 -->
-    <div id="pane-makeup" class="hidden" role="tabpanel" aria-labelledby="tab-makeup">
-      <div class="hero">
-        <div class="student">
-          <h1 id="student-name">학생</h1>
-          <p id="student-meta"></p>
-        </div>
-        <div class="summary">
-          <b id="pending-count">0</b>
-          <div>승인 대기 신청</div>
-          <button class="btn sec" style="width:100%;margin-top:14px" onclick="logout()">나가기</button>
-        </div>
-      </div>
-
-      <div class="grid">
-        <div class="card">
-          <div class="card-hd"><h2>결석·보강 신청</h2></div>
-          <div class="card-bd">
-            <div class="field">
-              <label for="group">결석 예정 수업</label>
-              <select id="group" onchange="onGroupChange()"></select>
-            </div>
-            <div id="policy-note" class="notice"></div>
-            <div class="row" style="margin-top:14px">
-              <div class="field">
-                <label for="absent-date">결석 예정일</label>
-                <input id="absent-date" type="date">
-              </div>
-              <div class="field">
-                <label for="slot">희망 보강 시간</label>
-                <select id="slot"></select>
-              </div>
-            </div>
-            <div class="field">
-              <label for="reason">결석 사유</label>
-              <textarea id="reason" placeholder="예: 학교 행사, 병원 진료 등"></textarea>
-            </div>
-            <button class="btn" style="width:100%" onclick="submitRequest()">신청 보내기</button>
-            <div class="msg" id="submit-msg"></div>
-          </div>
-        </div>
-
-        <div>
-          <div class="card" style="margin-bottom:16px">
-            <div class="card-hd"><h2>수강 중인 수업</h2></div>
-            <div class="card-bd" id="group-list"></div>
-          </div>
-          <div class="card">
-            <div class="card-hd"><h2>신청 내역</h2><button class="btn sec" onclick="loadData()">새로고침</button></div>
-            <div class="card-bd" id="request-list"></div>
-          </div>
-        </div>
-      </div>
-    </div>
   </section>
 </main>
 
 <script>
-var state = { token:'', student:null, groups:[], slots:[], requests:[] };
 var studyLoaded = false;
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function today(){ return new Date().toISOString().slice(0,10); }
 
-/* ★ 학생 id 는 접속코드 인증 결과에서만 온다. URL 의 ?id= 는 읽지 않는다.
-     옛 링크(parent.html?id=…)는 이제 안 열린다 — 의도한 것이다 (총괄 지시 260814-2300 ㉠) */
+/* ── 학생 얻는 법 — 옛 판(old_parent.html 117~127행) 그대로 되살렸다 ──
+   260828 판정 : parent.html?id={학생id} 로 연다. 코드 입력을 쓰지 않는다.
+   링크를 아는 사람이면 누구나 그 학생의 화면을 본다. 이것은 정해진 것이다. */
+function getParam(name){
+  return new URLSearchParams(window.location.search).get(name);
+}
 function sidOf(){
-  return (state.student && state.student.id != null) ? String(state.student.id) : '';
-}
-
-function post(url, body){
-  return fetch(url, {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(body)
-  }).then(function(r){
-    return r.json().catch(function(){ return {}; }).then(function(j){
-      if(!r.ok || !j.ok) throw new Error(j.error || '요청을 처리하지 못했습니다');
-      return j;
-    });
-  });
-}
-
-/* ── 탭 ───────────────────────────── */
-function showTab(name){
-  var isStudy = (name !== 'makeup');
-  $('pane-study').classList.toggle('hidden', !isStudy);
-  $('pane-makeup').classList.toggle('hidden', isStudy);
-  $('tab-study').setAttribute('aria-selected', isStudy ? 'true' : 'false');
-  $('tab-makeup').setAttribute('aria-selected', isStudy ? 'false' : 'true');
-  $('top-chip').textContent = isStudy ? '학습 현황' : '보강 신청';
-  try { localStorage.setItem('kbjm_parent_tab', isStudy ? 'study' : 'makeup'); } catch(e){}
-}
-function savedTab(){
-  var t = '';
-  try { t = localStorage.getItem('kbjm_parent_tab') || ''; } catch(e){}
-  return t === 'makeup' ? 'makeup' : 'study';
-}
-
-/* ── 로그인 ───────────────────────── */
-function login(){
-  var code = $('code').value.trim();
-  $('login-msg').textContent = '';
-  if(!code){ $('login-msg').textContent = '접속코드를 입력해 주세요.'; return; }
-  post('/api/parent-auth', { action:'login', code:code }).then(function(data){
-    state.token = data.token;
-    state.student = data.student;
-    state.groups = data.groups || [];
-    localStorage.setItem('kbjm_parent_token', state.token);
-    showApp();
-    loadData();
-  }).catch(function(err){
-    $('login-msg').textContent = '접속코드를 확인해 주세요.';
-  });
-}
-
-function logout(){
-  localStorage.removeItem('kbjm_parent_token');
-  state = { token:'', student:null, groups:[], slots:[], requests:[] };
-  studyLoaded = false;
-  $('study-body').innerHTML = '<div class="loading">불러오는 중..</div>';
-  $('app-panel').classList.add('hidden');
-  $('login-panel').classList.remove('hidden');
-}
-
-function showApp(){
-  $('login-panel').classList.add('hidden');
-  $('app-panel').classList.remove('hidden');
-  var nm = (state.student && state.student.name) || '';
-  var meta = [state.student && state.student.grade, state.student && state.student.school].filter(Boolean).join(' · ');
-  $('student-name').textContent = nm + ' 학생';
-  $('student-meta').textContent = meta;
-  $('study-name').textContent = nm + ' 학생';
-  $('study-meta').textContent = meta;
-  $('absent-date').value = today();
-  renderGroups();
-  showTab(savedTab());
-  loadStudy();
-}
-
-function loadData(){
-  if(!state.token) return;
-  return post('/api/parent-makeup', { action:'snapshot', token:state.token }).then(function(data){
-    state.student = data.student || state.student;
-    state.groups = data.groups || [];
-    state.slots = data.slots || [];
-    state.requests = data.requests || [];
-    showApp();
-    renderRequests();
-    onGroupChange();
-  }).catch(function(err){
-    logout();
-  });
-}
-
-/* ── 탭 ② 보강 신청 (옮겨 온 그대로) ── */
-function renderGroups(){
-  var sel = $('group');
-  var allowed = state.groups.filter(function(g){ return g.makeupPolicy !== 'blocked'; });
-  sel.innerHTML = state.groups.length
-    ? state.groups.map(function(g){ return '<option value="'+esc(g.id)+'">'+esc(g.name || '수업')+(g.subject?' · '+esc(g.subject):'')+'</option>'; }).join('')
-    : '<option value="">수업 정보 없음</option>';
-  if(allowed.length && (!sel.value || state.groups.find(function(g){ return g.id === sel.value && g.makeupPolicy === 'blocked'; }))){
-    sel.value = allowed[0].id;
-  }
-  $('group-list').innerHTML = state.groups.length ? state.groups.map(function(g){
-    var cls = g.makeupPolicy === 'blocked' ? 'blocked' : (g.makeupPolicy === 'ask' ? 'ask' : '');
-    var note = g.makeupPolicy === 'blocked' ? (g.makeupNote || '이 수업은 보강 신청 대상이 아닙니다.')
-      : g.makeupPolicy === 'ask' ? (g.makeupNote || '선생님 확인 후 보강 가능 여부가 결정됩니다.')
-      : (g.makeupNote || '보강 신청이 가능한 수업입니다.');
-    return '<div class="group"><div class="group-top"><b>'+esc(g.name || '수업')+'</b><small>'+esc([g.subject,(g.days||[]).join(','),g.time].filter(Boolean).join(' · '))+'</small></div><div class="notice '+cls+'">'+esc(note)+'</div></div>';
-  }).join('') : '<div class="empty">등록된 수업 정보가 없습니다.</div>';
-}
-
-function onGroupChange(){
-  var group = state.groups.find(function(g){ return g.id === $('group').value; });
-  var note = $('policy-note');
-  if(!group){
-    note.textContent = '수업을 선택해 주세요.';
-    note.className = 'notice';
-    $('slot').innerHTML = '<option value="">가능한 시간 없음</option>';
-    return;
-  }
-  var blocked = group.makeupPolicy === 'blocked';
-  note.className = 'notice ' + (blocked ? 'blocked' : group.makeupPolicy === 'ask' ? 'ask' : '');
-  note.textContent = blocked ? (group.makeupNote || '이 수업은 보강 신청 대상이 아닙니다.')
-    : group.makeupPolicy === 'ask' ? (group.makeupNote || '선생님 확인 후 보강 가능 여부가 결정됩니다.')
-    : (group.makeupNote || '보강 신청이 가능한 수업입니다.');
-  var slots = state.slots.filter(function(s){
-    if(s.scope === 'subject') return !s.subject || s.subject === group.subject;
-    return true;
-  });
-  $('slot').innerHTML = slots.length ? slots.map(function(s){
-    return '<option value="'+esc(s.id)+'">'+esc(s.label || ((s.date||'')+' '+(s.start||'')))+'</option>';
-  }).join('') : '<option value="">신청 가능한 보강 시간이 없습니다</option>';
-}
-
-function statusLabel(s){
-  return { pending:'승인 대기', adjusting:'시간 조정', rejected:'반려', approved:'확정', done:'완료' }[s] || '승인 대기';
-}
-
-function renderRequests(){
-  var visibleRequests = state.requests.filter(function(r){ return r.status !== 'rejected'; });
-  var pending = visibleRequests.filter(function(r){ return r.status === 'pending'; }).length;
-  $('pending-count').textContent = pending;
-  $('request-list').innerHTML = visibleRequests.length ? visibleRequests.slice().sort(function(a,b){
-    return (b.createdAt || '').localeCompare(a.createdAt || '');
-  }).map(function(r){
-    return '<div class="list-item"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>'+esc(r.groupName || '수업')+'</b><span class="status st-'+esc(r.status || 'pending')+'">'+statusLabel(r.status)+'</span></div>'
-      + '<div style="font-size:12px;color:var(--muted);margin-top:4px">결석 '+esc(r.absentDate || '')+' · 희망 '+esc(r.requestedSlotLabel || r.customTime || '')+'</div>'
-      + (r.finalDate ? '<div class="notice" style="margin-top:8px">확정: '+esc(r.finalDate+' '+(r.finalTime||''))+'</div>' : '')
-      + '</div>';
-  }).join('') : '<div class="empty">아직 신청 내역이 없습니다.</div>';
-}
-
-function submitRequest(){
-  var group = state.groups.find(function(g){ return g.id === $('group').value; });
-  $('submit-msg').textContent = '';
-  if(!group){ $('submit-msg').textContent = '수업을 선택해 주세요.'; return; }
-  if(group.makeupPolicy === 'blocked'){ $('submit-msg').textContent = '이 수업은 보강 신청 대상이 아닙니다.'; return; }
-  if(!$('slot').value){ $('submit-msg').textContent = '선생님이 열어둔 보강 시간을 선택해 주세요.'; return; }
-  var body = {
-    action:'submit',
-    token:state.token,
-    groupId:$('group').value,
-    absentDate:$('absent-date').value,
-    slotId:$('slot').value,
-    reason:$('reason').value
-  };
-  post('/api/parent-makeup', body).then(function(){
-    $('submit-msg').style.color = 'var(--teal2)';
-    $('submit-msg').textContent = '신청이 접수되었습니다. 선생님 승인 후 확정됩니다.';
-    $('reason').value = '';
-    loadData();
-  }).catch(function(err){
-    $('submit-msg').style.color = 'var(--red)';
-    $('submit-msg').textContent = err.message || '신청을 보내지 못했습니다.';
-  });
+  var v = getParam('id');
+  return v ? String(v) : '';
 }
 
 /* ── 탭 ① 학습 현황 ───────────────── */
@@ -443,7 +194,7 @@ function loadStudy(){
   if(studyLoaded) return;
   var sid = sidOf();
   var box = $('study-body');
-  // ★ id 가 없는 것과 데이터가 0건인 것은 다른 말이다. 0건으로 뭉뚱그리지 않는다
+  // id 가 없는 것과 데이터가 0건인 것은 다른 말이다. 0건으로 뭉뚱그리지 않는다
   if(!sid){
     box.innerHTML = '<div class="section"><div class="empty">학생 정보를 불러오지 못했습니다. 나갔다가 다시 들어와 주세요.</div></div>';
     return;
@@ -489,7 +240,7 @@ function buildScoreChart(items){
     svg+='<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="#dcebe7" stroke-width="1" '+(g.v%50!==0?'stroke-dasharray="3 4"':'')+'/>';
     svg+='<text x="'+(padL-8)+'" y="'+(y+4)+'" font-size="11" fill="#8aa09a" text-anchor="end">'+g.v+'</text>';
   });
-  // ★ 청록 팔레트로 통일 (총괄 지시 260814-2300 ㉢) — areaGrad · lineGrad 둘 다 바꿨다
+  // 청록 팔레트로 통일 (260814) — areaGrad · lineGrad 둘 다 바꿨다
   svg+='<defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">'
     +'<stop offset="0%" stop-color="#168f7a" stop-opacity="0.30"/>'
     +'<stop offset="100%" stop-color="#2aa991" stop-opacity="0.02"/></linearGradient>'
@@ -519,11 +270,13 @@ function buildScoreChart(items){
 function renderStudy(sid, data, box){
   var students = data.students || [];
   var s0 = students.find(function(s){ return s && String(s.id) === String(sid); }) || {};
+  // 학생은 bjm_students 에서만 온다 (state 는 없앴다 — 260828).
+  // 없는 id 로 들어오면 s0 이 {} 라 이름이 빈 채로 6섹션이 0건으로 뜬다.
   var student = {
-    name:  s0.name  || (state.student && state.student.name)  || '',
-    grade: s0.grade || (state.student && state.student.grade) || '',
-    school:s0.school|| (state.student && state.student.school)|| '',
-    'class': s0['class'] || (state.student && state.student['class']) || ''
+    name:  s0.name   || '',
+    grade: s0.grade  || '',
+    school:s0.school || '',
+    'class': s0['class'] || ''
   };
   $('study-name').textContent = student.name + ' 학생';
   $('study-meta').textContent = [student.grade, student.school, student['class']].filter(Boolean).join(' · ');
@@ -572,7 +325,7 @@ function renderStudy(sid, data, box){
   }
   html += '</div>';
 
-  // ③ 확정된 보강 일정  ★ 「보강 신청」(탭 ②)과 다른 것이다
+  // ③ 확정된 보강 일정 — 선생님이 대시보드에서 잡아 둔 것. Firebase bjm_schedules 에서 온다
   html += '<div class="section"><div class="section-title">확정된 보강 일정</div>';
   if(!schedules.length){ html += '<div class="empty">확정된 보강 일정이 없습니다</div>'; }
   else {
@@ -589,7 +342,7 @@ function renderStudy(sid, data, box){
   }
   html += '</div>';
 
-  // ④ 출결 현황 — ★ 색만으로 가르지 않는다. 글자 + 왼쪽 막대 + 색
+  // ④ 출결 현황 — 색만으로 가르지 않는다. 글자 + 왼쪽 막대 + 색
   html += '<div class="section"><div class="section-title">출결 현황</div>';
   if(!attendance.length){ html += '<div class="empty">출결 데이터가 없습니다</div>'; }
   else {
@@ -646,12 +399,11 @@ function renderStudy(sid, data, box){
 }
 
 document.addEventListener('DOMContentLoaded', function(){
-  var token = localStorage.getItem('kbjm_parent_token') || '';
-  if(token){
-    state.token = token;
-    loadData();
+  if(!sidOf()){
+    $('study-body').innerHTML = '<div class="section"><div class="empty">학생이 없습니다.<br>학부모 링크를 다시 확인해주세요.</div></div>';
+    return;
   }
-  $('code').addEventListener('keydown', function(e){ if(e.key === 'Enter') login(); });
+  loadStudy();
 });
 </script>
 </body>
