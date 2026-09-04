@@ -482,6 +482,7 @@ body.role-assistant .teacher-only{ display:none !important; }
     <div class="view" id="view-attendance">
       <div class="sec-hd"><h2>✅ 출결 관리</h2><div class="actions">
         <button class="btn-sm sec" onclick="exportAttendanceExcel()">📥 출석부 내보내기</button>
+        <button class="btn-sm sec" onclick="openAttSheetExport()" title="한글 출석부(.hwpx) 조판용 자료를 반 하나 · 달 하나로 냅니다">📄 출석부 자료(한글용)</button>
         <button class="btn-sm sec" onclick="attViewMode='list';renderAttendance()">📋 학생별</button>
         <button class="btn-sm" onclick="openAttModal()">+ 출결 입력</button>
       </div></div>
@@ -3658,19 +3659,36 @@ function miniDailyKey(){
 function dailyClassOf(testName){ return DAILY_CLASS_BY_TESTNAME[testName] || null; }
 var _dailyTMByKey = {};  // 'subject||className' -> 로드된 유형표 데이터
 // 데일리(유형표 있는 반)면 단원 드롭다운을 유형표의 테스트 목록(교과순)으로 교체
-function maybeFillDailyUnits(prefix){
+// [단원 리셋 260904] wantUnit — ★되살릴 단원을 밖에서 알려 줄 수 있게 한 칸 더 받는다★
+//   지금까지 부르던 자리는 그대로 두 칸 없이 부른다 (undefined 로 들어와 옛 동작 그대로다)
+function maybeFillDailyUnits(prefix, wantUnit){
   var nameEl=document.getElementById(prefix+'-name'); var subjEl=document.getElementById(prefix+'-subject'); var unitSel=document.getElementById(prefix+'-unit');
   if(!nameEl||!subjEl||!unitSel) return;
   var cls=dailyClassOf(nameEl.value); var subj=subjEl.value;
   if(!cls || !subj || !(window.TypeMap && TypeMap.loadDailyTypeMap)) return;
   var prevUnit = unitSel.value;
+  // [단원 리셋 260904] 밖에서 준 값이 있으면 그것을 지킨다 (수정 창에서 저장된 단원)
+  if(wantUnit) prevUnit = wantUnit;
+  // [단원 리셋 260904] ★늦게 오는 응답이 화면을 덮지 않게 표를 떠 둔다★
+  var _reqName = nameEl.value, _reqSubj = subj;
   TypeMap.loadDailyTypeMap(subj, cls).then(function(d){
+    // [단원 리셋 260904] ★기다리는 사이에 테스트명·과목이 바뀌었으면 이 응답은 버린다★
+    //   수정 창은 이름을 먼저 넣고(옛 과목으로 한 번 부름) 그 뒤에 과목을 넣는다.
+    //   그 첫 부름의 응답이 늦게 와서 단원을 빈칸으로 덮던 것이 리셋의 한 갈래였다.
+    if(nameEl.value!==_reqName || subjEl.value!==_reqSubj) return;
     if(!d || !d.tests) return;  // 이 과목·반은 유형표 없음 → 기존 단원 유지
+    // [단원 리셋 260904] 기다리는 사이에 값이 들어왔으면 그것을 지킨다
+    if(!prevUnit && unitSel.value) prevUnit = unitSel.value;
     _dailyTMByKey[subj+'||'+cls]=d;
     var list=TypeMap.dailyTestList(d);
     unitSel.innerHTML='<option value="">(테스트 선택)</option>'+list.map(function(e){
       return '<option value="'+e.name+'"'+(e.name===prevUnit?' selected':'')+'>'+e.name+' ('+e.totalCount+'문항)</option>';
     }).join('');
+    // [단원 리셋 260904] ★목록에 없는 단원이라도 지우지 않는다★ — 옛 기록·이름이 바뀐 유형표를 살린다
+    if(prevUnit && unitSel.value!==prevUnit){
+      var _o=document.createElement('option'); _o.value=prevUnit; _o.textContent=prevUnit;
+      unitSel.appendChild(_o); unitSel.value=prevUnit;
+    }
     unitSel.onchange=function(){ onDailyTestPick(prefix); };
     if(unitSel.value) onDailyTestPick(prefix);
   });
@@ -3853,6 +3871,14 @@ function saveStudent() {
   var checkedGroups = [...document.querySelectorAll('.s-group-check:checked')].map(function(el){ return el.value; });
   var uncheckedGroups = [...document.querySelectorAll('.s-group-check:not(:checked)')].map(function(el){ return el.value; });
   var groups = DB.get('groups');
+  // [반이동 이력 260901] 지시 260831-1900 ③ — ★반에서 빠지는 순간 자국을 남긴다★
+  //   여기가 이력이 새던 자리다. moveStudent() 는 movedAt·prevGroups 를 남기는데,
+  //   이 화면에서 반 체크를 풀면 g.students 에서 빠지기만 하고 아무 자국도 안 남았다.
+  //   ★status 는 안 건드린다★ — 'moved' 로 바꾸면 재원생이 명단에서 사라진다 (기존 동작을 고치는 것이 된다)
+  //   ★소급해서 채우지 않는다★ — 지금 저장하는 이 순간에 빠진 반만 적는다
+  var _leftGroups = groups.filter(function(g){
+    return uncheckedGroups.indexOf(g.id)>-1 && (g.students||[]).indexOf(student.id)>-1;
+  }).map(function(g){ return g.id; });
   groups = groups.map(function(g){
     if(checkedGroups.includes(g.id)) {
       if(!(g.students||[]).includes(student.id)) g.students = (g.students||[]).concat(student.id);
@@ -3862,6 +3888,18 @@ function saveStudent() {
     return g;
   });
   DB.set('groups', groups);
+  // [반이동 이력 260901] 빠진 반이 있을 때만 적는다.  없으면 한 글자도 안 쓴다
+  if(_leftGroups.length){
+    var _ss = DB.getRaw('students');
+    var _me = _ss.filter(function(x){ return x.id===student.id; })[0];
+    if(_me){
+      _me.movedAt = new Date().toISOString().slice(0,10);
+      var _pg = (_me.prevGroups||[]).slice();
+      _leftGroups.forEach(function(gid){ if(_pg.indexOf(gid)<0) _pg.push(gid); });
+      _me.prevGroups = _pg;
+      DB.set('students', _ss);
+    }
+  }
   syncParentPortalForStudent(student);
 
   closeModal('modal-student');
@@ -4747,6 +4785,10 @@ function editTest(id) {
     if(t.subject){ document.getElementById('test-subject').value = t.subject; }
     refreshUnits('test');
     if(t.unit){ var tu=document.getElementById('test-unit'); var th=Array.prototype.some.call(tu.options,function(o){return o.value===t.unit;}); if(th) tu.value=t.unit; }
+    // [단원 리셋 260904] ★유형표를 쓰는 데일리는 저장된 단원이 교육과정 단원 목록에 없다★
+    //   (저장된 값은 유형표 테스트 이름이다.  위 줄의 th 가 false 라 값이 안 들어갔다)
+    //   그래서 되살릴 단원을 손에 쥐여 한 번 더 부른다.  ★유형표가 없는 과목이면 아무 일도 안 일어난다★
+    if(t.unit) maybeFillDailyUnits('test', t.unit);
   }
   // 기출류도 이제 번호 그리드 사용 — total/wrong 복원 후 배점표 안내
   if(t.name==='기출 Test' || t.name==='모의고사 기출'){
@@ -10838,6 +10880,193 @@ plSelectDate(plFmt(plToday));
 
 
 // ===== 출석부 엑셀 내보내기 (월별·학년별·달력형) =====
+// ===== [08] 출석부 자료 내보내기 — 한글(.hwpx) 조판용 (지시 260831-1900 / 설계 260831) =====
+// ★이 방은 자료만 낸다. 조판은 13방 몫이다★  ·  ★기존 exportAttendanceExcel 은 한 줄도 안 건드렸다★
+// ★기호는 설계서 1항 실측을 따른다★ — 출석 「ㅇ」는 ★한글 이응(U+3147)★ 이다. ○(동그라미)가 아니다
+//   설계서 3항·4항 예시에는 ○ 로 적혀 있는데, 같은 문서 1항이 「○ 로 쓰면 글꼴이 달라 보인다」고 못 박았다.
+//   ★두 곳이 부딪히면 실측한 쪽을 따른다★ — 1항이 견본 hwpx 를 열어서 잰 것이다.
+var ATT_SHEET_MARK = { O:'ㅇ', X:'/', B:'△', E:'공' };
+//   [판정 260901-1510] ★T(지각)은 여기서 뺐다★ — 김병진T 「지각은 없으니깐 빼도 돼」
+//     ★statusCycle 은 안 건드린다★ (대시보드 기능이다).  출석부에서만 안 그리고 ★못그린칸으로 센다★
+//   [판정 260901-1510] ★E(공결)은 「공」 한 글자★ — ★머리글은 안 늘린다★ (인쇄되는 종이의 규격이다)
+//     「공」이 실제로 지면에 나오는 날이 오면 그때 머리글을 늘린다
+var ATT_SHEET_COLS = 31;   // ★날짜 칸 수 31 고정★ (표 33열 = 번호1 + 이름1 + 날짜31). 설계 1항 참값
+var ATT_SHEET_ROWS = 10;   // 견본 한 표의 학생 줄 수. 넘으면 세어서 알린다 (자르지 않는다)
+
+function _attSheetPad2(n){ return (n<10?'0':'')+n; }
+function _attSheetYmd(y,m,d){ return y+'-'+_attSheetPad2(m)+'-'+_attSheetPad2(d); }
+// 그 달에 그 반 요일이 오는 날을 왼쪽부터 세운다. ★쉬는 날을 빼지 않는다★ — 뺄 근거가 자료에 없다
+function _attSheetDays(year, month1, days){
+  var WD=['일','월','화','수','목','금','토'], out=[];
+  var last=new Date(year, month1, 0).getDate();
+  for(var d=1; d<=last; d++){
+    var w=WD[new Date(year, month1-1, d).getDay()];
+    if((days||[]).indexOf(w)>-1) out.push(_attSheetYmd(year,month1,d));
+  }
+  return out;
+}
+// 앞 칸부터 n개 중 ★비어 있는 칸★ 에만 글자를 편다. 기록이 있는 칸은 안 덮는다
+function _attSheetSpread(cells, fromIdx, word, forward){
+  var put=0, miss=0, at=null, i;
+  var idxs=[];
+  if(forward){ for(i=fromIdx; i<cells.length; i++) idxs.push(i); }
+  else       { for(i=fromIdx; i>=0; i--)          idxs.push(i); }
+  var chars = forward ? word.split('') : word.split('').reverse();
+  for(var c=0; c<chars.length; c++){
+    var placed=false;
+    for(var k=0; k<idxs.length; k++){
+      var j=idxs[k];
+      if(cells[j]==='' ){ cells[j]=chars[c]; if(at===null||j<at) at=j; idxs.splice(k,1); placed=true; put++; break; }
+    }
+    if(!placed) miss++;
+  }
+  return { 놓은수:put, 못놓은수:miss, 부터칸:(at===null?null:at+1) };
+}
+
+// 반 하나 · 달 하나 → 설계서 4항 꼴의 객체
+function buildAttSheetJson(groupId, year, month1){
+  var groups = DB.get('groups')||[];
+  var g = groups.filter(function(x){ return x.id===groupId; })[0];
+  if(!g) return null;
+  var days = g.days||[];
+  var dates = _attSheetDays(year, month1, days);
+  var ym = year+'-'+_attSheetPad2(month1);
+  var recs = DB.get('attendance')||[];
+  var allStu = DB.get('students')||[];
+  var byId={}; allStu.forEach(function(s){ byId[s.id]=s; });
+
+  // sid → {date:status} (그 달만)
+  var byStu={};
+  recs.forEach(function(r){
+    if(!r.date || r.date.slice(0,7)!==ym) return;
+    (byStu[r.sid]=byStu[r.sid]||{})[r.date]=r.status;
+  });
+
+  // 명단 = ★반 소속 그대로★ (퇴원생도 반에 남아 있으므로 함께 나온다)
+  //   ⚠ ★「이 달 이 반 수업일에 기록이 있는 사람」을 더해 명단을 넓히려다 접었다★ —
+  //      attendance 한 칸은 {date, memo, sid, status} 뿐이라 ★어느 반 수업인지 가릴 열이 없다★.
+  //      화·금 반이 넷이라 날짜로 대면 다른 반 학생이 통째로 딸려 들어온다 (실측: 5명 반이 31명이 됐다).
+  //      ★없는 것을 있다고 적을 수 없어 넓히지 않았다.★  이력이 안 남은 학생은 보고로 올린다
+  var roster = (g.students||[]).slice();
+  var outside = [];
+
+  var 날짜칸=[], i;
+  for(i=0;i<ATT_SHEET_COLS;i++){
+    if(i<dates.length){
+      var ds=dates[i];
+      var 글 = (i===0) ? (parseInt(ds.slice(5,7),10)+'/'+parseInt(ds.slice(8,10),10)) : String(parseInt(ds.slice(8,10),10));
+      날짜칸.push({ '칸':i+1, '글':글, '날짜':ds });
+    } else {
+      날짜칸.push({ '칸':i+1, '글':'', '날짜':null });
+    }
+  }
+
+  var E칸=0, T칸=0, 모르는칸=0, 못그린칸=0, 추정후보=[], 학생=[];
+  roster.forEach(function(sid, n){
+    var s = byId[sid] || { id:sid, name:'(이름없음)' };
+    var cells=[];
+    for(i=0;i<ATT_SHEET_COLS;i++){
+      var st = (i<dates.length) ? (byStu[sid]||{})[dates[i]] : null;
+      if(!st){ cells.push(''); continue; }
+      if(st==='E') E칸++;
+      if(st==='T'){ T칸++; 못그린칸++; cells.push(''); continue; }   // [판정 260901-1510] 지각은 안 그린다
+      if(ATT_SHEET_MARK[st]==null){ 모르는칸++; 못그린칸++; cells.push(''); continue; }  // ★모르는 기호를 지어내지 않는다★
+      cells.push(ATT_SHEET_MARK[st]);
+    }
+    var 꼬리표=null, 펼침=null, r;
+    // 퇴원 — withdrawnAt ★다음★ 수업일 칸부터
+    if(s.status==='withdrawn' && s.withdrawnAt){
+      var wi=-1; for(i=0;i<dates.length;i++){ if(dates[i]>s.withdrawnAt){ wi=i; break; } }
+      if(wi>-1){ r=_attSheetSpread(cells, wi, '퇴원', true); 못그린칸+=r.못놓은수;
+                 꼬리표='퇴원'; 펼침={ '부터칸':r.부터칸, '글자':'퇴원', '추정':false, '기준일':s.withdrawnAt }; }
+    }
+    // 신규 — createdAt 이 ★그 달 안★ 일 때만. 앞 수업일 칸에 뒤에서부터
+    if(!꼬리표 && s.joinType==='new' && s.createdAt && s.createdAt.slice(0,7)===ym){
+      var ci=-1; for(i=dates.length-1;i>=0;i--){ if(dates[i]<s.createdAt){ ci=i; break; } }
+      if(ci>-1){ r=_attSheetSpread(cells, ci, '신규', false); 못그린칸+=r.못놓은수;
+                 꼬리표='신규'; 펼침={ '부터칸':r.부터칸, '글자':'신규', '추정':false, '기준일':s.createdAt }; }
+      else { 꼬리표='신규'; 펼침=null; 못그린칸+=2; }
+    }
+    // 반이동 — ★movedAt 이 있을 때만 펼친다★
+    if(!꼬리표 && s.movedAt){
+      var mi=-1; for(i=0;i<dates.length;i++){ if(dates[i]>s.movedAt){ mi=i; break; } }
+      if(mi>-1){ r=_attSheetSpread(cells, mi, '반이동', true); 못그린칸+=r.못놓은수;
+                 꼬리표='반이동'; 펼침={ '부터칸':r.부터칸, '글자':'반이동', '추정':false, '기준일':s.movedAt }; }
+    }
+    // ★movedAt 이 없는데 반에서 빠진 사람 — 글자를 안 펼친다★
+    //   요일이 끊긴 자리로 되살리면 여름 특강이 끝난 자국까지 같이 잡힌다(실측 9명 중 사진과 맞는 것은 1명).
+    //   ★지면에 거짓을 찍느니 후보로 낸다.★ 판정이 오면 이 자리만 고친다
+    if(!꼬리표 && outside.indexOf(sid)>-1){
+      꼬리표='반이동?';
+      추정후보.push({ '이름':s.name, '까닭':'이력 없이 반에서 빠진 것으로 보인다', '추정':true });
+    }
+    학생.push({ '번호':학생.length+1, '이름':s.name, '칸':cells, '꼬리표':꼬리표, '펼침':펼침 });
+  });
+
+  return {
+    '반': g.name, '요일': days, '연월': ym,
+    '머리': { '왼쪽': year+'년 '+month1+'월', '오른쪽': days.join(',')+' 반' },
+    '기호': { '출석':ATT_SHEET_MARK.O, '결석':ATT_SHEET_MARK.X, '보강':ATT_SHEET_MARK.B,
+              '공결':ATT_SHEET_MARK.E,
+              '머리글':'날 짜 (출석 : '+ATT_SHEET_MARK.O+', 결석 : '+ATT_SHEET_MARK.X+', 보강 : '+ATT_SHEET_MARK.B+')',
+              '안그리는것':'T(지각) — 판정 260901-1510 으로 뺐다. 나오면 못그린칸으로 센다' },
+    '날짜칸': 날짜칸,
+    '학생': 학생,
+    '추정후보': 추정후보,
+    '되살리기': { '한것':false,
+      '까닭':'attendance 기록에 반을 가릴 열이 없다({date,memo,sid,status}). 같은 요일을 쓰는 반이 여럿이라 날짜로는 못 가린다',
+      '이력없이빠진사람':'movedAt 을 채워 주시면 그 달 출석부에 「반 이 동」이 펼쳐진다' },
+    '잰것': { '학생수':학생.length, '수업일':dates.length, '칸수':ATT_SHEET_COLS,
+              'E칸':E칸, 'T칸':T칸, '모르는칸':모르는칸, '추정칸':0, '추정후보수':추정후보.length,
+              '못그린칸':못그린칸, '줄넘침':Math.max(0, 학생.length-ATT_SHEET_ROWS),
+              '뜬시각':new Date().toISOString() }
+  };
+}
+
+function exportAttSheetJson(groupId, year, month1){
+  var o = buildAttSheetJson(groupId, year, month1);
+  if(!o){ toast('반을 찾지 못했어요'); return; }
+  if(!o.요일.length){ toast('이 반은 요일이 비어 있어 수업일을 세울 수 없어요'); return; }
+  var name='[출석부]'+o.반+'_'+o.연월+'.json';
+  var blob=new Blob([JSON.stringify(o,null,2)],{type:'application/json;charset=utf-8'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1000);
+  var m=o.잰것;
+  toast('내려받았어요 — 학생 '+m.학생수+'명 · 수업일 '+m.수업일+'일'
+        + (m.T칸 ? ' · 안 그린 지각 '+m.T칸+'개' : '')
+        + (m.추정후보수 ? ' · 이동 의심 '+m.추정후보수+'명' : ''));
+}
+
+// 반 하나 · 달 하나를 고르는 작은 판. ★새 화면을 안 만들고 이 판만 띄운다★
+function openAttSheetExport(){
+  var old=document.getElementById('att-sheet-pick'); if(old) old.remove();
+  var groups=(DB.get('groups')||[]).filter(function(g){ return (g.days||[]).length; });
+  if(!groups.length){ toast('요일이 정해진 반이 없어요'); return; }
+  var y=(typeof attCalYear==='number'&&attCalYear) ? attCalYear : new Date().getFullYear();
+  var m=(typeof attCalMonth==='number') ? attCalMonth+1 : new Date().getMonth()+1;
+  var wrap=document.createElement('div');
+  wrap.id='att-sheet-pick';
+  wrap.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:1000;display:flex;align-items:center;justify-content:center;';
+  var opts=groups.map(function(g){ return '<option value="'+g.id+'">'+g.name+' ('+(g.days||[]).join(',')+')</option>'; }).join('');
+  var yopts=''; for(var yy=y-1; yy<=y+1; yy++){ yopts+='<option value="'+yy+'"'+(yy===y?' selected':'')+'>'+yy+'년</option>'; }
+  var mopts=''; for(var mm=1; mm<=12; mm++){ mopts+='<option value="'+mm+'"'+(mm===m?' selected':'')+'>'+mm+'월</option>'; }
+  wrap.innerHTML='<div style="background:var(--white);border-radius:10px;padding:20px;min-width:320px;max-width:92vw;">'
+    +'<div style="font-weight:700;margin-bottom:4px;">출석부 자료 내보내기</div>'
+    +'<div style="font-size:12px;color:var(--muted);margin-bottom:14px;">반 하나 · 달 하나를 골라 한글 조판용 자료를 냅니다</div>'
+    +'<div style="margin-bottom:10px;"><select id="att-sheet-g" style="width:100%;">'+opts+'</select></div>'
+    +'<div style="display:flex;gap:8px;margin-bottom:16px;">'
+    +'<select id="att-sheet-y" style="flex:1;">'+yopts+'</select>'
+    +'<select id="att-sheet-m" style="flex:1;">'+mopts+'</select></div>'
+    +'<div style="display:flex;gap:8px;justify-content:flex-end;">'
+    +'<button class="btn-sm sec" onclick="document.getElementById(\'att-sheet-pick\').remove()">닫기</button>'
+    +'<button class="btn-sm" onclick="exportAttSheetJson(document.getElementById(\'att-sheet-g\').value,+document.getElementById(\'att-sheet-y\').value,+document.getElementById(\'att-sheet-m\').value)">내보내기</button>'
+    +'</div></div>';
+  wrap.addEventListener('click', function(e){ if(e.target===wrap) wrap.remove(); });
+  document.body.appendChild(wrap);
+}
+
 function exportAttendanceExcel(){
   if(typeof XLSX==='undefined'){ toast('엑셀 모듈을 불러오지 못했어요. 새로고침 후 다시 시도해주세요'); return; }
 
