@@ -2623,6 +2623,16 @@ function examScoreKeyOfRecord(t){
     }, total:23, full:100 };
     changed=true;
   }
+  // 2026 김병진수학연구소 공수1 실전 모의고사 2회차 (23문항, 만점 100 / 1~18 5지선다 70점, 19~23 서술형 30점)
+  var KEY36='mock||2026||공수1 실전모의 2회';
+  if(!tables[KEY36]){
+    tables[KEY36]={ points:{
+      1:3, 2:3, 3:3, 4:3, 5:3, 6:3, 7:4, 8:4, 9:4, 10:4,
+      11:4, 12:4, 13:4, 14:4, 15:5, 16:5, 17:5, 18:5,
+      19:6, 20:6, 21:6, 22:6, 23:6
+    }, total:23, full:100 };
+    changed=true;
+  }
   if(changed) setExamScoreTables(tables);
 })();
 
