@@ -3325,142 +3325,119 @@
    "totalCount": 23,
    "typeMap": {
     "1": {
-     "type": "동류항 정리",
+     "type": "다항식의 덧셈과 뺄셈 — 동류항 정리",
      "cat": "calc_etc",
-     "grade": "mc",
-     "level": "하"
+     "grade": "mc"
     },
     "2": {
-     "type": "조립제법으로 몫과 나머지 구하기",
+     "type": "다항식의 나눗셈 — 조립제법으로 몫과 나머지 구하기",
      "cat": "calc_div",
-     "grade": "mc",
-     "level": "하"
+     "grade": "mc"
     },
     "3": {
-     "type": "일차식 ax+b로 나눈 나머지",
+     "type": "나머지정리 — 일차식 ax+b로 나눈 나머지",
      "cat": "calc_rem",
-     "grade": "mc",
-     "level": "하"
+     "grade": "mc"
     },
     "4": {
-     "type": "음수의 제곱근의 곱과 나눗셈",
+     "type": "복소수 — 음수의 제곱근의 곱과 나눗셈",
      "cat": "complex_op",
-     "grade": "mc",
-     "level": "하"
+     "grade": "mc"
     },
     "5": {
-     "type": "켤레근과 근과 계수의 관계",
+     "type": "이차방정식 — 켤레근과 근과 계수의 관계",
      "cat": "eq_quad",
-     "grade": "mc",
-     "level": "하"
+     "grade": "mc"
     },
     "6": {
-     "type": "접할 조건 D=0",
+     "type": "이차함수와 직선의 위치 관계 — 접할 조건 D=0",
      "cat": "fn_graph",
-     "grade": "mc",
-     "level": "하"
+     "grade": "mc"
     },
     "7": {
-     "type": "곱셈 공식을 이용한 수의 계산",
+     "type": "다항식의 연산 — 곱셈 공식을 이용한 수의 계산",
      "cat": "calc_mul",
-     "grade": "mc",
-     "level": "중"
+     "grade": "mc"
     },
     "8": {
-     "type": "수치대입법으로 계수의 합 구하기",
+     "type": "항등식 — 수치대입법으로 계수의 합 구하기",
      "cat": "calc_id",
-     "grade": "mc",
-     "level": "중"
+     "grade": "mc"
     },
     "9": {
-     "type": "나머지 R(x)를 (x+1)²의 나머지로 다시 쓰기",
+     "type": "나머지정리 — 나머지 R(x)를 (x+1)²의 나머지로 다시 쓰기",
      "cat": "calc_rem",
-     "grade": "mc",
-     "level": "중"
+     "grade": "mc"
     },
     "10": {
-     "type": "네 일차식의 곱, 공통부분 치환과 완전제곱식",
+     "type": "인수분해 — 네 일차식의 곱, 공통부분 치환과 완전제곱식",
      "cat": "factor",
-     "grade": "mc",
-     "level": "중"
+     "grade": "mc"
     },
     "11": {
-     "type": "항 묶기와 자연수 조건(소인수분해)",
+     "type": "인수분해 — 항 묶기와 자연수 조건(소인수분해)",
      "cat": "factor",
-     "grade": "mc",
-     "level": "중"
+     "grade": "mc"
     },
     "12": {
-     "type": "거듭제곱의 주기성(z³=−1, z⁶=1)과 단위원 위의 회전",
+     "type": "복소수 — 거듭제곱의 주기성(z³=−1, z⁶=1)과 단위원 위의 회전",
      "cat": "complex_op",
-     "grade": "mc",
-     "level": "중"
+     "grade": "mc"
     },
     "13": {
-     "type": "x³=1의 허근 ω와 켤레복소수",
+     "type": "복소수 — x³=1의 허근 ω와 켤레복소수",
      "cat": "complex_root",
-     "grade": "mc",
-     "level": "중"
+     "grade": "mc"
     },
     "14": {
-     "type": "k에 관계없이 중근을 가질 조건(항등식)",
+     "type": "이차방정식 — k에 관계없이 중근을 가질 조건(항등식)",
      "cat": "eq_quad",
-     "grade": "mc",
-     "level": "중"
+     "grade": "mc"
     },
     "15": {
-     "type": "조건식으로 삼차식 P(x) 결정하기",
+     "type": "나머지정리 — 조건식으로 삼차식 P(x) 결정하기",
      "cat": "calc_rem",
-     "grade": "mc",
-     "level": "상"
+     "grade": "mc"
     },
     "16": {
-     "type": "축·x축 접함·접선 조건으로 식 결정",
+     "type": "이차함수와 직선 — 축·x축 접함·접선 조건으로 식 결정",
      "cat": "fn_graph",
-     "grade": "mc",
-     "level": "상"
+     "grade": "mc"
     },
     "17": {
-     "type": "iⁿ의 주기성과 거듭제곱이 양의 실수가 될 조건",
+     "type": "복소수 — iⁿ의 주기성과 거듭제곱이 양의 실수가 될 조건",
      "cat": "complex_op",
-     "grade": "mc",
-     "level": "상"
+     "grade": "mc"
     },
     "18": {
-     "type": "축의 위치에 따른 경우 나누기",
+     "type": "이차함수의 최대·최소 — 축의 위치에 따른 경우 나누기",
      "cat": "fn_graph",
-     "grade": "mc",
-     "level": "상"
+     "grade": "mc"
     },
     "19": {
-     "type": "x+y, xy로 x⁴+y⁴ 구하기",
+     "type": "곱셈 공식의 변형 — x+y, xy로 x⁴+y⁴ 구하기",
      "cat": "calc_mul",
-     "grade": "self",
-     "level": "하"
+     "grade": "self"
     },
     "20": {
-     "type": "삼각형의 모양 판정",
+     "type": "인수분해 — 삼각형의 모양 판정",
      "cat": "factor",
-     "grade": "self",
-     "level": "중"
+     "grade": "self"
     },
     "21": {
-     "type": "조건식으로 문자 줄이기(제한된 범위)",
+     "type": "이차함수의 최대·최소 — 조건식으로 문자 줄이기(제한된 범위)",
      "cat": "fn_graph",
-     "grade": "self",
-     "level": "중"
+     "grade": "self"
     },
     "22": {
-     "type": "x³+1로 나눈 나머지 (인수의 곱으로 나누기)",
+     "type": "나머지정리 — x³+1로 나눈 나머지 (인수의 곱으로 나누기)",
      "cat": "calc_rem",
-     "grade": "self",
-     "level": "상"
+     "grade": "self"
     },
     "23": {
-     "type": "정점을 지나는 직선과 판별식",
+     "type": "이차함수와 직선의 위치 관계 — 정점을 지나는 직선과 판별식",
      "cat": "fn_graph",
-     "grade": "self",
-     "level": "상"
+     "grade": "self"
     }
    }
   }
