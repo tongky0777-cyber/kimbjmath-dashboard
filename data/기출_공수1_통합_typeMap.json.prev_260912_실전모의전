@@ -3200,246 +3200,123 @@
     }
    }
   },
-  "gicul||2025||대구여고||공통수학1||1학기||중간": {
-   "school": "대구여고",
-   "year": "2025",
-   "term": "중간",
-   "totalCount": 22,
-   "typeMap": {
-    "1": {
-     "type": "곱셈공식",
-     "cat": "calc_mul",
-     "grade": "mc"
-    },
-    "2": {
-     "type": "일차식으로 나눈 나머지",
-     "cat": "calc_rem",
-     "grade": "mc"
-    },
-    "3": {
-     "type": "켤레근",
-     "cat": "eq_quad",
-     "grade": "mc"
-    },
-    "4": {
-     "type": "몫과 나머지",
-     "cat": "calc_div",
-     "grade": "mc"
-    },
-    "5": {
-     "type": "i 의 거듭제곱",
-     "cat": "complex_op",
-     "grade": "mc"
-    },
-    "6": {
-     "type": "근과 계수의 관계",
-     "cat": "eq_quad",
-     "grade": "mc"
-    },
-    "7": {
-     "type": "최대·최소",
-     "cat": "fn_graph",
-     "grade": "mc"
-    },
-    "8": {
-     "type": "수치대입법",
-     "cat": "calc_id",
-     "grade": "mc"
-    },
-    "9": {
-     "type": "치환",
-     "cat": "factor",
-     "grade": "mc"
-    },
-    "10": {
-     "type": "근과 계수의 관계",
-     "cat": "eq_quad",
-     "grade": "mc"
-    },
-    "11": {
-     "type": "제한된 범위의 최대·최소",
-     "cat": "fn_graph",
-     "grade": "mc"
-    },
-    "12": {
-     "type": "곱셈공식의 변형",
-     "cat": "calc_mul",
-     "grade": "mc"
-    },
-    "13": {
-     "type": "켤레복소수의 성질",
-     "cat": "complex_op",
-     "grade": "mc"
-    },
-    "14": {
-     "type": "이차함수와 직선",
-     "cat": "fn_graph",
-     "grade": "mc"
-    },
-    "15": {
-     "type": "복소평면과 주기",
-     "cat": "complex_op",
-     "grade": "mc"
-    },
-    "16": {
-     "type": "세 문자 곱셈공식",
-     "cat": "calc_mul",
-     "grade": "mc"
-    },
-    "17": {
-     "type": "치환",
-     "cat": "factor",
-     "grade": "self"
-    },
-    "18": {
-     "type": "수치대입법",
-     "cat": "calc_id",
-     "grade": "self"
-    },
-    "19": {
-     "type": "세 문자 곱셈공식",
-     "cat": "calc_mul",
-     "grade": "self"
-    },
-    "20": {
-     "type": "음수의 제곱근과 거듭제곱",
-     "cat": "complex_op",
-     "grade": "self"
-    },
-    "21": {
-     "type": "판별식",
-     "cat": "eq_quad",
-     "grade": "self"
-    },
-    "22": {
-     "type": "이차함수와 직선",
-     "cat": "fn_graph",
-     "grade": "self"
+   "gicul||2025||대구여고||공통수학1||1학기||중간": {
+    "school": "대구여고",
+    "year": "2025",
+    "term": "중간",
+    "totalCount": 22,
+    "typeMap": {
+     "1": {
+      "type": "곱셈공식",
+      "cat": "calc_mul",
+      "grade": "mc"
+     },
+     "2": {
+      "type": "일차식으로 나눈 나머지",
+      "cat": "calc_rem",
+      "grade": "mc"
+     },
+     "3": {
+      "type": "켤레근",
+      "cat": "eq_quad",
+      "grade": "mc"
+     },
+     "4": {
+      "type": "몫과 나머지",
+      "cat": "calc_div",
+      "grade": "mc"
+     },
+     "5": {
+      "type": "i 의 거듭제곱",
+      "cat": "complex_op",
+      "grade": "mc"
+     },
+     "6": {
+      "type": "근과 계수의 관계",
+      "cat": "eq_quad",
+      "grade": "mc"
+     },
+     "7": {
+      "type": "최대·최소",
+      "cat": "fn_graph",
+      "grade": "mc"
+     },
+     "8": {
+      "type": "수치대입법",
+      "cat": "calc_id",
+      "grade": "mc"
+     },
+     "9": {
+      "type": "치환",
+      "cat": "factor",
+      "grade": "mc"
+     },
+     "10": {
+      "type": "근과 계수의 관계",
+      "cat": "eq_quad",
+      "grade": "mc"
+     },
+     "11": {
+      "type": "제한된 범위의 최대·최소",
+      "cat": "fn_graph",
+      "grade": "mc"
+     },
+     "12": {
+      "type": "곱셈공식의 변형",
+      "cat": "calc_mul",
+      "grade": "mc"
+     },
+     "13": {
+      "type": "켤레복소수의 성질",
+      "cat": "complex_op",
+      "grade": "mc"
+     },
+     "14": {
+      "type": "이차함수와 직선",
+      "cat": "fn_graph",
+      "grade": "mc"
+     },
+     "15": {
+      "type": "복소평면과 주기",
+      "cat": "complex_op",
+      "grade": "mc"
+     },
+     "16": {
+      "type": "세 문자 곱셈공식",
+      "cat": "calc_mul",
+      "grade": "mc"
+     },
+     "17": {
+      "type": "치환",
+      "cat": "factor",
+      "grade": "self"
+     },
+     "18": {
+      "type": "수치대입법",
+      "cat": "calc_id",
+      "grade": "self"
+     },
+     "19": {
+      "type": "세 문자 곱셈공식",
+      "cat": "calc_mul",
+      "grade": "self"
+     },
+     "20": {
+      "type": "음수의 제곱근과 거듭제곱",
+      "cat": "complex_op",
+      "grade": "self"
+     },
+     "21": {
+      "type": "판별식",
+      "cat": "eq_quad",
+      "grade": "self"
+     },
+     "22": {
+      "type": "이차함수와 직선",
+      "cat": "fn_graph",
+      "grade": "self"
+     }
     }
    }
-  },
-  "mock||2026||공수1 실전모의 1회": {
-   "school": "김병진수학연구소",
-   "year": 2026,
-   "term": "실전모의 1회",
-   "totalCount": 23,
-   "typeMap": {
-    "1": {
-     "type": "다항식의 덧셈과 뺄셈 — 동류항 정리",
-     "cat": "calc_etc",
-     "grade": "mc"
-    },
-    "2": {
-     "type": "다항식의 나눗셈 — 조립제법으로 몫과 나머지 구하기",
-     "cat": "calc_div",
-     "grade": "mc"
-    },
-    "3": {
-     "type": "나머지정리 — 일차식 ax+b로 나눈 나머지",
-     "cat": "calc_rem",
-     "grade": "mc"
-    },
-    "4": {
-     "type": "복소수 — 음수의 제곱근의 곱과 나눗셈",
-     "cat": "complex_op",
-     "grade": "mc"
-    },
-    "5": {
-     "type": "이차방정식 — 켤레근과 근과 계수의 관계",
-     "cat": "eq_quad",
-     "grade": "mc"
-    },
-    "6": {
-     "type": "이차함수와 직선의 위치 관계 — 접할 조건 D=0",
-     "cat": "fn_graph",
-     "grade": "mc"
-    },
-    "7": {
-     "type": "다항식의 연산 — 곱셈 공식을 이용한 수의 계산",
-     "cat": "calc_mul",
-     "grade": "mc"
-    },
-    "8": {
-     "type": "항등식 — 수치대입법으로 계수의 합 구하기",
-     "cat": "calc_id",
-     "grade": "mc"
-    },
-    "9": {
-     "type": "나머지정리 — 나머지 R(x)를 (x+1)²의 나머지로 다시 쓰기",
-     "cat": "calc_rem",
-     "grade": "mc"
-    },
-    "10": {
-     "type": "인수분해 — 네 일차식의 곱, 공통부분 치환과 완전제곱식",
-     "cat": "factor",
-     "grade": "mc"
-    },
-    "11": {
-     "type": "인수분해 — 항 묶기와 자연수 조건(소인수분해)",
-     "cat": "factor",
-     "grade": "mc"
-    },
-    "12": {
-     "type": "복소수 — 거듭제곱의 주기성(z³=−1, z⁶=1)과 단위원 위의 회전",
-     "cat": "complex_op",
-     "grade": "mc"
-    },
-    "13": {
-     "type": "복소수 — x³=1의 허근 ω와 켤레복소수",
-     "cat": "complex_root",
-     "grade": "mc"
-    },
-    "14": {
-     "type": "이차방정식 — k에 관계없이 중근을 가질 조건(항등식)",
-     "cat": "eq_quad",
-     "grade": "mc"
-    },
-    "15": {
-     "type": "나머지정리 — 조건식으로 삼차식 P(x) 결정하기",
-     "cat": "calc_rem",
-     "grade": "mc"
-    },
-    "16": {
-     "type": "이차함수와 직선 — 축·x축 접함·접선 조건으로 식 결정",
-     "cat": "fn_graph",
-     "grade": "mc"
-    },
-    "17": {
-     "type": "복소수 — iⁿ의 주기성과 거듭제곱이 양의 실수가 될 조건",
-     "cat": "complex_op",
-     "grade": "mc"
-    },
-    "18": {
-     "type": "이차함수의 최대·최소 — 축의 위치에 따른 경우 나누기",
-     "cat": "fn_graph",
-     "grade": "mc"
-    },
-    "19": {
-     "type": "곱셈 공식의 변형 — x+y, xy로 x⁴+y⁴ 구하기",
-     "cat": "calc_mul",
-     "grade": "self"
-    },
-    "20": {
-     "type": "인수분해 — 삼각형의 모양 판정",
-     "cat": "factor",
-     "grade": "self"
-    },
-    "21": {
-     "type": "이차함수의 최대·최소 — 조건식으로 문자 줄이기(제한된 범위)",
-     "cat": "fn_graph",
-     "grade": "self"
-    },
-    "22": {
-     "type": "나머지정리 — x³+1로 나눈 나머지 (인수의 곱으로 나누기)",
-     "cat": "calc_rem",
-     "grade": "self"
-    },
-    "23": {
-     "type": "이차함수와 직선의 위치 관계 — 정점을 지나는 직선과 판별식",
-     "cat": "fn_graph",
-     "grade": "self"
-    }
-   }
-  }
  }
 }
