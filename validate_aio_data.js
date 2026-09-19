@@ -112,7 +112,7 @@ function validateAnswer(scope, no, meta) {
     return;
   }
   const kind = meta.k;
-  if (!['mc', 'int', 'frac', 'self'].includes(kind)) {
+  if (!['mc', 'int', 'frac', 'self', 'free'].includes(kind)) {
     addError(scope, no + '번 정답 유형이 잘못되었습니다: ' + kind);
     return;
   }
@@ -131,6 +131,12 @@ function validateAnswer(scope, no, meta) {
   } else if (kind === 'self') {
     if (meta.a == null || String(meta.a).trim() === '') {
       addWarning(scope, no + '번 자가채점 문항의 표시용 정답이 비어 있습니다.');
+    }
+  } else if (kind === 'free') {
+    // 교재 정답 오류 문항. 무조건 정답 처리하고 학생 화면에 '정답 오류'로 알린다.
+    // a 칸은 화면에 보여 줄 설명이므로 비어 있으면 안 된다.
+    if (meta.a == null || String(meta.a).trim() === '') {
+      addWarning(scope, no + '번 정답 오류(free) 문항의 안내 문구가 비어 있습니다.');
     }
   }
 }
