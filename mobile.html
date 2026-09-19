@@ -180,6 +180,11 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
   <div id="planner-list"></div>
 </div>
 
+<!-- 등원 문자 -->
+<div class="view" id="view-sms">
+  <div id="sms-body"></div>
+</div>
+
 <!-- 하단 탭바 -->
 <div class="tab-bar">
   <div class="tab-item active" onclick="switchTab('overview',this)"><div class="icon">📊</div>전체현황</div>
@@ -188,6 +193,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
   <div class="tab-item" onclick="switchTab('tests',this)"><div class="icon">📝</div>테스트</div>
   <div class="tab-item" onclick="switchTab('homework',this)"><div class="icon">📚</div>숙제</div>
   <div class="tab-item" onclick="switchTab('planner',this)"><div class="icon">🗓️</div>플래너</div>
+  <div class="tab-item" onclick="switchTab('sms',this)"><div class="icon">📩</div>등원문자</div>
 </div>
 
 <!-- 학생 상세 모달 -->
@@ -250,6 +256,7 @@ function renderAll(){
   renderTests();
   renderHomework();
   renderPlanner();
+  renderSms();
 }
   function fmt(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 
@@ -264,6 +271,7 @@ function switchTab(name, el){
   if(name==='tests') renderTests();
   if(name==='homework') renderHomework();
   if(name==='planner') renderPlanner();
+  if(name==='sms') renderSms();
 }
 
 // 재원생 판정 (퇴원·반이동 제외)
@@ -544,6 +552,159 @@ function renderPlanner(){
 }
 
 loadFromFirebase();
+
+// ===== 등원 문자 (260919 김병진T) =====
+//   아이폰은 웹이 문자를 대신 보낼 수 없다. sms: 링크로 ★문자앱을 채워서 열어 주는★ 것까지가 끝이고
+//   마지막 「보내기」는 손으로 누른다 (iOS·안드로이드 공통 sms:번호?body=내용 꼴을 쓴다).
+//   보낸 사람 표시는 이 폰 안에만 남긴다 (localStorage) — 파이어베이스를 건드리지 않는다.
+var SMS_TPL_KEY = 'bjm_sms_tpl';
+var SMS_TPL_BASE = '[김병진수학연구소] {이름} 학생이 {날짜} {시각} 에 등원했습니다.';
+var _sms = {
+  date: fmt(today),
+  time: String(today.getHours()).padStart(2,'0')+':'+String(today.getMinutes()).padStart(2,'0'),
+  지각보강: false,
+  틀펼침: false
+};
+function smsTpl(){
+  try { return localStorage.getItem(SMS_TPL_KEY) || SMS_TPL_BASE; } catch(e){ return SMS_TPL_BASE; }
+}
+function smsSentKey(){ return 'bjm_sms_sent_' + _sms.date; }
+function smsSentList(){
+  try { return JSON.parse(localStorage.getItem(smsSentKey()) || '[]') || []; } catch(e){ return []; }
+}
+function smsIsSent(sid){ return smsSentList().indexOf(String(sid)) !== -1; }
+function smsMarkSent(sid){
+  var list = smsSentList(); var k = String(sid);
+  if(list.indexOf(k) === -1) list.push(k);
+  try { localStorage.setItem(smsSentKey(), JSON.stringify(list)); } catch(e){}
+  setTimeout(renderSms, 400);
+}
+function smsUnmark(sid){
+  var list = smsSentList().filter(function(x){ return x !== String(sid); });
+  try { localStorage.setItem(smsSentKey(), JSON.stringify(list)); } catch(e){}
+  renderSms();
+}
+function smsClearAll(){
+  if(!confirm('오늘 보냄 표시를 모두 지울까요?')) return;
+  try { localStorage.removeItem(smsSentKey()); } catch(e){}
+  renderSms();
+}
+function smsSetDate(v){ _sms.date = v || fmt(today); renderSms(); }
+function smsSetTime(v){ _sms.time = v || _sms.time; renderSms(); }
+function smsToggleLate(el){ _sms.지각보강 = !!(el && el.checked); renderSms(); }
+function smsToggleTpl(){ _sms.틀펼침 = !_sms.틀펼침; renderSms(); }
+function smsSaveTpl(){
+  var el = document.getElementById('sms-tpl-input');
+  if(!el) return;
+  try { localStorage.setItem(SMS_TPL_KEY, el.value); } catch(e){}
+  _sms.틀펼침 = false;
+  renderSms();
+}
+function smsResetTpl(){
+  try { localStorage.removeItem(SMS_TPL_KEY); } catch(e){}
+  renderSms();
+}
+// 010-1234-5678 · +82 10 … → 01012345678
+function smsPhone(raw){
+  var v = String(raw || '').replace(/[^0-9]/g, '');
+  if(v.indexOf('82') === 0 && v.length > 10) v = '0' + v.slice(2);
+  return v;
+}
+function smsBody(name){
+  var d = new Date(_sms.date + 'T00:00:00');
+  var 날짜 = (d.getMonth()+1) + '/' + d.getDate() + '(' + DAYS[d.getDay()] + ')';
+  return smsTpl().split('{이름}').join(name).split('{날짜}').join(날짜).split('{시각}').join(_sms.time);
+}
+function smsEsc(t){
+  return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function renderSms(){
+  var box = document.getElementById('sms-body');
+  if(!box) return;
+  var 학생표 = {};
+  get('bjm_students').forEach(function(s){ if(s && s.id!=null) 학생표[s.id] = s; });
+  var 볼상태 = _sms.지각보강 ? {O:1,T:1,B:1} : {O:1};
+  var 줄들 = get('bjm_attendance').filter(function(r){
+    return r && r.date === _sms.date && !r.courseTag && 볼상태[r.status];
+  });
+  var 대상 = [];
+  줄들.forEach(function(r){
+    var s = 학생표[r.sid];
+    if(!s || !isActive(s)) return;
+    대상.push({ sid: r.sid, name: s.name || '—', grade: s.grade || '', phone: smsPhone(s.parent), status: r.status });
+  });
+  대상.sort(function(a,b){ return (a.grade||'').localeCompare(b.grade||'') || (a.name||'').localeCompare(b.name||''); });
+
+  var 번호없음 = 대상.filter(function(x){ return !x.phone; });
+  var 보낼것 = 대상.filter(function(x){ return x.phone; });
+  var 보냄수 = 보낼것.filter(function(x){ return smsIsSent(x.sid); }).length;
+
+  var h = '';
+  h += '<div class="card" style="margin-bottom:10px;"><div class="card-body">'
+    +  '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">'
+    +  '<input type="date" value="'+smsEsc(_sms.date)+'" onchange="smsSetDate(this.value)" style="flex:1;padding:8px;border:1px solid var(--line);border-radius:6px;font-size:13px;font-family:inherit;">'
+    +  '<input type="time" value="'+smsEsc(_sms.time)+'" onchange="smsSetTime(this.value)" style="width:104px;padding:8px;border:1px solid var(--line);border-radius:6px;font-size:13px;font-family:inherit;">'
+    +  '</div>'
+    +  '<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2);cursor:pointer;">'
+    +  '<input type="checkbox" '+(_sms.지각보강?'checked':'')+' onchange="smsToggleLate(this)" style="width:auto;"> 지각·보강도 함께 보기</label>'
+    +  '</div></div>';
+
+  h += '<div style="display:flex;justify-content:space-between;align-items:center;margin:0 2px 8px;">'
+    +  '<div style="font-size:12px;color:var(--muted);">보낼 사람 <b style="color:var(--ink);">'+보낼것.length+'</b>명 · 보냄 <b style="color:var(--green);">'+보냄수+'</b>명</div>'
+    +  '<div style="display:flex;gap:6px;">'
+    +  '<span onclick="smsToggleTpl()" style="font-size:11px;color:var(--blue);cursor:pointer;text-decoration:underline;">문구 고치기</span>'
+    +  '<span onclick="smsClearAll()" style="font-size:11px;color:var(--muted);cursor:pointer;text-decoration:underline;">보냄 지우기</span>'
+    +  '</div></div>';
+
+  if(_sms.틀펼침){
+    h += '<div class="card" style="margin-bottom:10px;"><div class="card-body">'
+      +  '<div style="font-size:11px;color:var(--muted);margin-bottom:6px;">{이름} {날짜} {시각} 자리에 값이 들어갑니다</div>'
+      +  '<textarea id="sms-tpl-input" rows="3" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:6px;font-size:13px;font-family:inherit;line-height:1.5;">'+smsEsc(smsTpl())+'</textarea>'
+      +  '<div style="display:flex;gap:6px;margin-top:8px;">'
+      +  '<button onclick="smsSaveTpl()" style="flex:1;padding:9px;border:0;border-radius:6px;background:var(--navy);color:#fff;font-size:13px;font-weight:700;font-family:inherit;">저장</button>'
+      +  '<button onclick="smsResetTpl()" style="padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--muted);font-size:13px;font-family:inherit;">처음 문구로</button>'
+      +  '</div></div></div>';
+  }
+
+  if(번호없음.length){
+    h += '<div style="padding:9px 11px;border-radius:6px;background:var(--red-bg);color:var(--red);font-size:12px;margin-bottom:10px;">'
+      +  '학부모 번호가 없어 못 보내는 학생 '+번호없음.length+'명 — '
+      +  smsEsc(번호없음.map(function(x){ return x.name; }).join(', ')) + '</div>';
+  }
+
+  if(!보낼것.length){
+    h += '<div class="empty" style="padding:28px 0;">이 날 등원한 학생이 없어요</div>';
+    box.innerHTML = h;
+    return;
+  }
+
+  var 미리 = smsBody(보낼것[0].name);
+  h += '<div style="padding:9px 11px;border-radius:6px;background:var(--blue-bg);color:var(--blue);font-size:12px;line-height:1.5;margin-bottom:10px;">'
+    +  '보낼 글 — ' + smsEsc(미리) + '</div>';
+
+  h += '<div class="card"><div class="card-body" style="padding:0 12px;">';
+  보낼것.forEach(function(x){
+    var 보냄 = smsIsSent(x.sid);
+    var 끝 = x.phone.slice(-4);
+    var link = 'sms:' + x.phone + '?body=' + encodeURIComponent(smsBody(x.name));
+    h += '<div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);'+(보냄?'opacity:.5;':'')+'">'
+      +  '<div style="flex:1;min-width:0;">'
+      +  '<div style="font-size:14px;font-weight:700;">'+smsEsc(x.name)
+      +  ' <span style="font-size:11px;font-weight:400;color:var(--muted);">'+smsEsc(x.grade)+(x.status!=='O'?' · '+(STATUS_MAP[x.status]||x.status):'')+'</span></div>'
+      +  '<div style="font-size:11px;color:var(--muted);">학부모 ···'+smsEsc(끝)+'</div></div>';
+    if(보냄){
+      h += '<span onclick="smsUnmark(\''+x.sid+'\')" style="font-size:12px;font-weight:700;color:var(--green);cursor:pointer;white-space:nowrap;">✓ 보냄</span>';
+    } else {
+      h += '<a href="'+link+'" onclick="smsMarkSent(\''+x.sid+'\')" style="padding:8px 14px;border-radius:6px;background:var(--navy);color:#fff;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;">문자</a>';
+    }
+    h += '</div>';
+  });
+  h += '</div></div>';
+  h += '<div style="font-size:11px;color:var(--muted);text-align:center;padding:14px 10px 0;line-height:1.6;">'
+    +  '문자 앱이 열리면 <b>보내기</b>를 눌러 주세요.<br>돌아오면 다음 학생이 기다리고 있습니다.</div>';
+  box.innerHTML = h;
+}
+
 </script>
 </body>
 </html>
