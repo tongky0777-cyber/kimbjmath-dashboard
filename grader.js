@@ -7,8 +7,10 @@
  *   int  정수        → 숫자 정규화 후 일치
  *   frac 분수        → 기약분수/소수 변환 후 값 일치
  *   self 자가채점     → 채점 보류(학생/선생님이 O/X). 정답 텍스트(a)는 화면 표시용.
- *   free 정답 없음    → 무조건 정답. 교재가 잘못돼 정답을 정할 수 없는 문항에 쓴다.
- *                      비워 두든 무엇을 적든 'correct'. (예: 온리원 미적분1 2권 도활 016)
+ *   free 정답 오류    → 무조건 정답. 교재의 정답이 틀렸거나 정답을 정할 수 없는 문항에 쓴다.
+ *                      비워 두든 무엇을 적든 'correct'. 학생 화면에는 '정답 오류'로 알린다.
+ *                      a 칸에는 화면에 보여 줄 설명을 적는다(교재 정답과 어긋난 까닭 등).
+ *                      (예: 온리원 미적분1 2권 도활 016 · 올인원 공수1 2권 이차부등식 022)
  *
  * 결과 상태:
  *   'correct'  맞음
@@ -118,6 +120,9 @@
     }
   }
 
+  // 교재 정답이 틀린 문항인가(정답 오류). 화면에 경고 띠를 붙일 때 쓴다.
+  function isBadAnswer(meta){ return !!(meta && meta.k==='free'); }
+
   // 숙제 한 건 전체 채점.
   // answers: { 번호: { raw, teacher } }  (raw=학생입력, teacher=선생님 O/X 보정)
   // 반환: { results:{번호:status}, wrong, correct, pending, blank, counts }
@@ -128,7 +133,7 @@
   //             self의 미입력은 results가 'self'(보류)이고 blank에는 넣지 않는다.
   function gradeHomework(akData, unitKey, qStart, qEnd, answers){
     answers = answers || {};
-    var results={}, wrong=[], correct=[], pending=[], blank=[];
+    var results={}, wrong=[], correct=[], pending=[], blank=[], bad=[];
     for(var n=qStart; n<=qEnd; n++){
       var meta = getAnswer(akData, unitKey, n);
       var inp = answers[n] || {};
@@ -137,6 +142,8 @@
       if(st==='correct') correct.push(n);
       else if(st==='wrong') wrong.push(n);
       else if(st==='self') pending.push(n);
+      // 교재 정답이 틀린 문항(free)은 정답 처리하되 따로 모아 화면에 '정답 오류'로 알린다.
+      if(meta && meta.k==='free') bad.push(n);
       // 미입력 정보 보존: 자동채점 유형이고, 선생님 보정이 없고, raw가 비어 있으면 blank로도 기록.
       // (이 문항은 results상 'wrong'으로 분류되지만 원래 비워둔 것임을 남긴다.)
       var autoKind = meta && (meta.k==='mc'||meta.k==='int'||meta.k==='frac');
@@ -146,8 +153,8 @@
     }
     return {
       results: results,
-      wrong: wrong, correct: correct, pending: pending, blank: blank,
-      counts: { total:(qEnd-qStart+1), correct:correct.length, wrong:wrong.length, pending:pending.length, blank:blank.length }
+      wrong: wrong, correct: correct, pending: pending, blank: blank, bad: bad,
+      counts: { total:(qEnd-qStart+1), correct:correct.length, wrong:wrong.length, pending:pending.length, blank:blank.length, bad:bad.length }
     };
   }
 
@@ -156,6 +163,7 @@
     getAnswer: getAnswer,
     gradeOne: gradeOne,
     gradeHomework: gradeHomework,
+    isBadAnswer: isBadAnswer,
     normNum: normNum
   };
   if(typeof module!=='undefined' && module.exports) module.exports = api;
