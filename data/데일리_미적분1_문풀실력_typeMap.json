@@ -1,345 +1,1433 @@
 {
-  "_주의": "subject '미적분1' · className '문풀반(실력)' · tests 키는 08 이 260820 에 코드 상수로 실측 확인했다(추정 아님). DAILY_TYPEMAP_PATH['미적분1||문풀반(실력)'] 은 원래 비어 있었고 08 이 typemap.js 176행에 새로 넣었다.",
-  "_출처": "미적분1 문풀반 마플시너지 Daily Test 1차시(함수의 극한) · 3차시(함수의 연속). 정답은 시험지 마지막 쪽 정답표.",
-  "_검산": "1차시 15/15 · 2차시 11/12 · 3차시 13/15 총괄방 독립 재검산. ★2차시 4번은 총괄 5 · 정답표 4 로 갈린다(판정 대기). 3차시 1·11번은 그래프가 시험지에 없어 검산 불가.",
-  "subject": "미적분1",
-  "className": "문풀반(실력)",
-  "categories": {
-    "lim_graph": "극한-그래프에서 읽기",
-    "lim_basic": "극한-인수분해·약분",
-    "lim_inf": "극한-무한대 꼴·유리화",
-    "lim_undet": "극한-미정계수 결정",
-    "lim_squeeze": "극한-샌드위치 정리",
-    "lim_poly": "극한-다항함수 결정",
-    "lim_geom": "극한-도형·좌표",
-    "lim_prop": "극한-성질 참거짓",
-    "cont_def": "연속-정의·미정계수",
-    "cont_piece": "연속-구간함수 이어붙이기",
-    "cont_abs": "연속-절댓값·합성",
-    "cont_poly": "연속-다항함수 결정",
-    "cont_cnt": "연속-개수함수·불연속점",
-    "cont_prop": "연속-성질 참거짓",
-    "lim_cnt": "극한-개수함수·합성"
-  },
-  "tests": {
-    "daily||미적분1||문풀반(실력)||함수의 극한(1)": {
-      "name": "함수의 극한(1)",
-      "unit": "함수의 극한(1)",
-      "order": 1,
-      "totalCount": 15,
-      "typeMap": {
-        "1": {
-          "type": "그래프-한쪽극한-합",
-          "cat": "lim_graph",
-          "unit": "함수의 극한 > 우극한과 좌극한",
-          "answer": "-2",
-          "grade": "int"
-        },
-        "2": {
-          "type": "분수식-꼴맞추기-극한의곱",
-          "cat": "lim_basic",
-          "unit": "함수의 극한 > 극한값의 계산",
-          "answer": "16",
-          "grade": "int"
-        },
-        "3": {
-          "type": "무한대-f를g로치환-비의극한",
-          "cat": "lim_inf",
-          "unit": "함수의 극한 > 미정계수와 극한",
-          "answer": "2",
-          "grade": "int"
-        },
-        "4": {
-          "type": "그래프-우극한과분수꼴좌극한",
-          "cat": "lim_graph",
-          "unit": "함수의 극한 > 우극한과 좌극한",
-          "answer": "6",
-          "grade": "int"
-        },
-        "5": {
-          "type": "인수분해-약분-대입",
-          "cat": "lim_basic",
-          "unit": "함수의 극한 > 극한값의 계산",
-          "answer": "6",
-          "grade": "int"
-        },
-        "6": {
-          "type": "극한존재조건-f를g로표현-약분",
-          "cat": "lim_poly",
-          "unit": "함수의 극한 > 다항함수의 결정",
-          "answer": "1",
-          "grade": "int"
-        },
-        "7": {
-          "type": "무한대비-분자0-미정계수",
-          "cat": "lim_undet",
-          "unit": "함수의 극한 > 미정계수의 결정",
-          "answer": "3",
-          "grade": "int"
-        },
-        "8": {
-          "type": "무리식-유리화-무한대의차",
-          "cat": "lim_inf",
-          "unit": "함수의 극한 > 극한값의 계산",
-          "answer": "9",
-          "grade": "int"
-        },
-        "9": {
-          "type": "0으로수렴-근의차수맞추기",
-          "cat": "lim_poly",
-          "unit": "함수의 극한 > 다항함수의 결정",
-          "answer": "20",
-          "grade": "int"
-        },
-        "10": {
-          "type": "차수·상수항조건-정수계수-최댓값",
-          "cat": "lim_poly",
-          "unit": "함수의 극한 > 다항함수의 결정",
-          "answer": "8",
-          "grade": "int"
-        },
-        "11": {
-          "type": "부등식샌드위치-f를3x로-세제곱",
-          "cat": "lim_squeeze",
-          "unit": "함수의 극한 > 함수의 극한의 대소관계",
-          "answer": "27",
-          "grade": "int"
-        },
-        "12": {
-          "type": "직선과포물선-두근의차-길이의극한",
-          "cat": "lim_geom",
-          "unit": "함수의 극한 > 극한의 활용",
-          "answer": "2",
-          "grade": "int"
-        },
-        "13": {
-          "type": "포물선교점-수선의발-미분계수꼴",
-          "cat": "lim_geom",
-          "unit": "함수의 극한 > 극한의 활용",
-          "answer": "2",
-          "grade": "int"
-        },
-        "14": {
-          "type": "미정계수두개-무한대비",
-          "cat": "lim_undet",
-          "unit": "함수의 극한 > 미정계수의 결정",
-          "answer": "4",
-          "grade": "int"
-        },
-        "15": {
-          "type": "극한성질-샌드위치-존재성반례",
-          "cat": "lim_prop",
-          "unit": "함수의 극한 > 함수의 극한의 성질",
-          "answer": "ㄱ,ㄴ,ㄷ",
-          "grade": "self"
-        }
-      }
+ "_주의": "subject '미적분1' · className '문풀반(실력)' · tests 키는 08 이 260820 에 코드 상수로 실측 확인했다(추정 아님). DAILY_TYPEMAP_PATH['미적분1||문풀반(실력)'] 은 원래 비어 있었고 08 이 typemap.js 176행에 새로 넣었다.",
+ "_출처": "미적분1 문풀반 마플시너지 Daily Test 1차시(함수의 극한) · 3차시(함수의 연속). 정답은 시험지 마지막 쪽 정답표.  ·  261005 4~14차시(마플시너지) 11벌 138문항 덧붙임 — 정답은 각 시험지 마지막 쪽 정답표를 그대로 옮겼다(따로 풀어 검산하지 않음).",
+ "_검산": "1차시 15/15 · 2차시 11/12 · 3차시 13/15 총괄방 독립 재검산. ★2차시 4번은 총괄 5 · 정답표 4 로 갈린다(판정 대기). 3차시 1·11번은 그래프가 시험지에 없어 검산 불가.",
+ "subject": "미적분1",
+ "className": "문풀반(실력)",
+ "categories": {
+  "lim_graph": "극한-그래프에서 읽기",
+  "lim_basic": "극한-인수분해·약분",
+  "lim_inf": "극한-무한대 꼴·유리화",
+  "lim_undet": "극한-미정계수 결정",
+  "lim_squeeze": "극한-샌드위치 정리",
+  "lim_poly": "극한-다항함수 결정",
+  "lim_geom": "극한-도형·좌표",
+  "lim_prop": "극한-성질 참거짓",
+  "cont_def": "연속-정의·미정계수",
+  "cont_piece": "연속-구간함수 이어붙이기",
+  "cont_abs": "연속-절댓값·합성",
+  "cont_poly": "연속-다항함수 결정",
+  "cont_cnt": "연속-개수함수·불연속점",
+  "cont_prop": "연속-성질 참거짓",
+  "lim_cnt": "극한-개수함수·합성",
+  "cont_branch": "연속-식을 인수분해해 분기 고르기",
+  "diff_avg": "미분-평균변화율",
+  "diff_def": "미분-미분계수의 정의(극한꼴)",
+  "diff_rule": "미분-도함수 계산·곱의 미분",
+  "diff_func": "미분-함수방정식 f(x+y)",
+  "diff_poly": "미분-조건으로 다항함수 결정",
+  "diff_nondiff": "미분-미분가능성·절댓값·구간함수",
+  "diff_graph": "미분-접선의 기울기와 그래프",
+  "tan_slope": "접선-곡선 위의 점에서의 접선",
+  "tan_out": "접선-곡선 밖의 점에서 그은 접선",
+  "tan_touch": "접선-접하는 조건(중근)",
+  "tan_perp": "접선-수직·평행인 접선",
+  "tan_area": "접선-접선과 축으로 둘러싼 넓이",
+  "tan_two": "접선-두 곡선의 공통접선",
+  "tan_geom": "접선-도형·좌표에 활용",
+  "mvt": "평균값의 정리·롤의 정리",
+  "inc_dec": "그래프-증가와 감소·도함수의 부호",
+  "ext_basic": "그래프-극댓값·극솟값 구하기",
+  "ext_cond": "그래프-극값을 가질 조건·미정계수",
+  "ext_abs": "그래프-절댓값·구간함수의 극값",
+  "ext_graph": "그래프-개형과 그래프 읽기",
+  "max_min": "그래프-최대와 최소",
+  "eq_root": "방정식-실근의 개수",
+  "eq_abs": "방정식-절댓값 그래프와 직선",
+  "eq_meet": "방정식-곡선과 직선의 교점",
+  "ineq_all": "부등식-모든 실수에서 성립할 조건",
+  "ineq_rng": "부등식-주어진 구간에서 성립할 조건",
+  "vel_line": "속도와 가속도-수직선 위의 운동",
+  "vel_rate": "변화율-실생활(부피·넓이·낙하)",
+  "int_basic": "부정적분-기본 계산과 성질",
+  "int_fn": "부정적분-조건식에서 f 결정",
+  "int_abs": "부정적분-절댓값·구간함수",
+  "int_ext": "부정적분-도함수의 부호와 극값",
+  "int_func": "부정적분-함수방정식"
+ },
+ "tests": {
+  "daily||미적분1||문풀반(실력)||함수의 극한(1)": {
+   "name": "함수의 극한(1)",
+   "unit": "함수의 극한(1)",
+   "order": 1,
+   "totalCount": 15,
+   "typeMap": {
+    "1": {
+     "type": "그래프-한쪽극한-합",
+     "cat": "lim_graph",
+     "unit": "함수의 극한 > 우극한과 좌극한",
+     "answer": "-2",
+     "grade": "int"
     },
-    "daily||미적분1||문풀반(실력)||함수의 극한(2)": {
-      "name": "함수의 극한(2)",
-      "unit": "함수의 극한(2)",
-      "order": 2,
-      "totalCount": 12,
-      "_주의": "4번 정답은 판정 대기다. 시험지 정답표 4 · 총괄방 독립 재검산 5. 김병진T 판정 전에는 자동채점을 켜지 마라.",
-      "typeMap": {
-        "1": {
-          "type": "몫과나머지-분모도0-비의극한",
-          "cat": "lim_poly",
-          "unit": "함수의 극한 > 다항함수의 결정",
-          "answer": "9",
-          "grade": "int"
-        },
-        "2": {
-          "type": "차수·계수결정-xf(1/x)치환",
-          "cat": "lim_poly",
-          "unit": "함수의 극한 > 다항함수의 결정",
-          "answer": "10",
-          "grade": "int"
-        },
-        "3": {
-          "type": "미분계수꼴-f(x)+f(-x)항등0-홀함수",
-          "cat": "lim_poly",
-          "unit": "함수의 극한 > 다항함수의 결정",
-          "answer": "21",
-          "grade": "int"
-        },
-        "4": {
-          "type": "교점개수함수-합성함수의극한",
-          "cat": "lim_cnt",
-          "unit": "함수의 극한 > 우극한과 좌극한",
-          "answer": "4",
-          "grade": "int"
-        },
-        "5": {
-          "type": "모든a에서극한존재-무리식점근-미정계수",
-          "cat": "lim_undet",
-          "unit": "함수의 극한 > 미정계수의 결정",
-          "answer": "60",
-          "grade": "int"
-        },
-        "6": {
-          "type": "그래프좌우극한-곱의극한-이차함수결정",
-          "cat": "lim_graph",
-          "unit": "함수의 극한 > 우극한과 좌극한",
-          "answer": "9",
-          "grade": "int"
-        },
-        "7": {
-          "type": "f(a)=0-근의차-비의극한",
-          "cat": "lim_poly",
-          "unit": "함수의 극한 > 다항함수의 결정",
-          "answer": "4",
-          "grade": "int"
-        },
-        "8": {
-          "type": "여러점의비-근의배치-삼차함수결정",
-          "cat": "lim_poly",
-          "unit": "함수의 극한 > 다항함수의 결정",
-          "answer": "12",
-          "grade": "int"
-        },
-        "9": {
-          "type": "n으로경우나누기-차수와최저차-f(1)최댓값",
-          "cat": "lim_poly",
-          "unit": "함수의 극한 > 다항함수의 결정",
-          "answer": "14",
-          "grade": "int"
-        },
-        "10": {
-          "type": "분모0회피-판별식-정수k의개수",
-          "cat": "lim_undet",
-          "unit": "함수의 극한 > 미정계수의 결정",
-          "answer": "8",
-          "grade": "int"
-        },
-        "11": {
-          "type": "근의사슬-고정점-정수계수최댓값",
-          "cat": "lim_poly",
-          "unit": "함수의 극한 > 다항함수의 결정",
-          "answer": "16",
-          "grade": "int"
-        },
-        "12": {
-          "type": "직선y=x공통근-x³차수맞추기-두조건",
-          "cat": "lim_poly",
-          "unit": "함수의 극한 > 다항함수의 결정",
-          "answer": "68",
-          "grade": "int"
-        }
-      }
+    "2": {
+     "type": "분수식-꼴맞추기-극한의곱",
+     "cat": "lim_basic",
+     "unit": "함수의 극한 > 극한값의 계산",
+     "answer": "16",
+     "grade": "int"
     },
-    "daily||미적분1||문풀반(실력)||함수의 연속(1)": {
-      "name": "함수의 연속(1)",
-      "unit": "함수의 연속(1)",
-      "order": 3,
-      "totalCount": 15,
-      "typeMap": {
-        "1": {
-          "type": "그래프-곱함수의극한과연속-참거짓",
-          "cat": "cont_prop",
-          "unit": "함수의 연속 > 연속함수의 성질",
-          "answer": "ㄴ,ㄷ",
-          "grade": "self"
-        },
-        "2": {
-          "type": "구간별합·차-좌우극한차-연속",
-          "cat": "cont_piece",
-          "unit": "함수의 연속 > 함수의 연속",
-          "answer": "3",
-          "grade": "int"
-        },
-        "3": {
-          "type": "제곱합성-좌우절댓값같음-미정계수",
-          "cat": "cont_abs",
-          "unit": "함수의 연속 > 연속함수의 성질",
-          "answer": "-5/4",
-          "grade": "frac"
-        },
-        "4": {
-          "type": "유리식-분자0-좌우값맞추기",
-          "cat": "cont_def",
-          "unit": "함수의 연속 > 함수의 연속",
-          "answer": "1",
-          "grade": "int"
-        },
-        "5": {
-          "type": "무리식-유리화-좌우값맞추기",
-          "cat": "cont_def",
-          "unit": "함수의 연속 > 함수의 연속",
-          "answer": "6",
-          "grade": "int"
-        },
-        "6": {
-          "type": "절댓값함수-두이음매-양수조건",
-          "cat": "cont_abs",
-          "unit": "함수의 연속 > 연속함수의 성질",
-          "answer": "11/3",
-          "grade": "frac"
-        },
-        "7": {
-          "type": "인수정리-몫함수-연속",
-          "cat": "cont_poly",
-          "unit": "함수의 연속 > 함수의 연속",
-          "answer": "-2",
-          "grade": "int"
-        },
-        "8": {
-          "type": "그래프-곱함수연속-인수0",
-          "cat": "cont_piece",
-          "unit": "함수의 연속 > 연속함수의 성질",
-          "answer": "-1",
-          "grade": "int"
-        },
-        "9": {
-          "type": "차수결정-중근-곱함수연속",
-          "cat": "cont_poly",
-          "unit": "함수의 연속 > 함수의 연속",
-          "answer": "8",
-          "grade": "int"
-        },
-        "10": {
-          "type": "평행이동-불연속점한개-값의곱",
-          "cat": "cont_cnt",
-          "unit": "함수의 연속 > 연속함수의 성질",
-          "answer": "-16",
-          "grade": "int"
-        },
-        "11": {
-          "type": "절댓값·대칭합성-x=0연속-참거짓",
-          "cat": "cont_prop",
-          "unit": "함수의 연속 > 연속함수의 성질",
-          "answer": "ㄱ,ㄴ",
-          "grade": "self"
-        },
-        "12": {
-          "type": "부호함수-극한존재-사차함수결정",
-          "cat": "cont_poly",
-          "unit": "함수의 연속 > 연속함수의 성질",
-          "answer": "42",
-          "grade": "int"
-        },
-        "13": {
-          "type": "사잇값정리-실근최소개수",
-          "cat": "cont_cnt",
-          "unit": "함수의 연속 > 사잇값의 정리",
-          "answer": "3",
-          "grade": "int"
-        },
-        "14": {
-          "type": "교점개수함수-불연속-참거짓",
-          "cat": "cont_cnt",
-          "unit": "함수의 연속 > 연속함수의 성질",
-          "answer": "ㄱ,ㄴ,ㄷ",
-          "grade": "self"
-        },
-        "15": {
-          "type": "구간함수의곱-이음매연속-미정계수",
-          "cat": "cont_piece",
-          "unit": "함수의 연속 > 함수의 연속",
-          "answer": "-7",
-          "grade": "int"
-        }
-      }
+    "3": {
+     "type": "무한대-f를g로치환-비의극한",
+     "cat": "lim_inf",
+     "unit": "함수의 극한 > 미정계수와 극한",
+     "answer": "2",
+     "grade": "int"
+    },
+    "4": {
+     "type": "그래프-우극한과분수꼴좌극한",
+     "cat": "lim_graph",
+     "unit": "함수의 극한 > 우극한과 좌극한",
+     "answer": "6",
+     "grade": "int"
+    },
+    "5": {
+     "type": "인수분해-약분-대입",
+     "cat": "lim_basic",
+     "unit": "함수의 극한 > 극한값의 계산",
+     "answer": "6",
+     "grade": "int"
+    },
+    "6": {
+     "type": "극한존재조건-f를g로표현-약분",
+     "cat": "lim_poly",
+     "unit": "함수의 극한 > 다항함수의 결정",
+     "answer": "1",
+     "grade": "int"
+    },
+    "7": {
+     "type": "무한대비-분자0-미정계수",
+     "cat": "lim_undet",
+     "unit": "함수의 극한 > 미정계수의 결정",
+     "answer": "3",
+     "grade": "int"
+    },
+    "8": {
+     "type": "무리식-유리화-무한대의차",
+     "cat": "lim_inf",
+     "unit": "함수의 극한 > 극한값의 계산",
+     "answer": "9",
+     "grade": "int"
+    },
+    "9": {
+     "type": "0으로수렴-근의차수맞추기",
+     "cat": "lim_poly",
+     "unit": "함수의 극한 > 다항함수의 결정",
+     "answer": "20",
+     "grade": "int"
+    },
+    "10": {
+     "type": "차수·상수항조건-정수계수-최댓값",
+     "cat": "lim_poly",
+     "unit": "함수의 극한 > 다항함수의 결정",
+     "answer": "8",
+     "grade": "int"
+    },
+    "11": {
+     "type": "부등식샌드위치-f를3x로-세제곱",
+     "cat": "lim_squeeze",
+     "unit": "함수의 극한 > 함수의 극한의 대소관계",
+     "answer": "27",
+     "grade": "int"
+    },
+    "12": {
+     "type": "직선과포물선-두근의차-길이의극한",
+     "cat": "lim_geom",
+     "unit": "함수의 극한 > 극한의 활용",
+     "answer": "2",
+     "grade": "int"
+    },
+    "13": {
+     "type": "포물선교점-수선의발-미분계수꼴",
+     "cat": "lim_geom",
+     "unit": "함수의 극한 > 극한의 활용",
+     "answer": "2",
+     "grade": "int"
+    },
+    "14": {
+     "type": "미정계수두개-무한대비",
+     "cat": "lim_undet",
+     "unit": "함수의 극한 > 미정계수의 결정",
+     "answer": "4",
+     "grade": "int"
+    },
+    "15": {
+     "type": "극한성질-샌드위치-존재성반례",
+     "cat": "lim_prop",
+     "unit": "함수의 극한 > 함수의 극한의 성질",
+     "answer": "ㄱ,ㄴ,ㄷ",
+     "grade": "self"
     }
+   }
+  },
+  "daily||미적분1||문풀반(실력)||함수의 극한(2)": {
+   "name": "함수의 극한(2)",
+   "unit": "함수의 극한(2)",
+   "order": 2,
+   "totalCount": 12,
+   "_주의": "4번 정답은 판정 대기다. 시험지 정답표 4 · 총괄방 독립 재검산 5. 김병진T 판정 전에는 자동채점을 켜지 마라.",
+   "typeMap": {
+    "1": {
+     "type": "몫과나머지-분모도0-비의극한",
+     "cat": "lim_poly",
+     "unit": "함수의 극한 > 다항함수의 결정",
+     "answer": "9",
+     "grade": "int"
+    },
+    "2": {
+     "type": "차수·계수결정-xf(1/x)치환",
+     "cat": "lim_poly",
+     "unit": "함수의 극한 > 다항함수의 결정",
+     "answer": "10",
+     "grade": "int"
+    },
+    "3": {
+     "type": "미분계수꼴-f(x)+f(-x)항등0-홀함수",
+     "cat": "lim_poly",
+     "unit": "함수의 극한 > 다항함수의 결정",
+     "answer": "21",
+     "grade": "int"
+    },
+    "4": {
+     "type": "교점개수함수-합성함수의극한",
+     "cat": "lim_cnt",
+     "unit": "함수의 극한 > 우극한과 좌극한",
+     "answer": "4",
+     "grade": "int"
+    },
+    "5": {
+     "type": "모든a에서극한존재-무리식점근-미정계수",
+     "cat": "lim_undet",
+     "unit": "함수의 극한 > 미정계수의 결정",
+     "answer": "60",
+     "grade": "int"
+    },
+    "6": {
+     "type": "그래프좌우극한-곱의극한-이차함수결정",
+     "cat": "lim_graph",
+     "unit": "함수의 극한 > 우극한과 좌극한",
+     "answer": "9",
+     "grade": "int"
+    },
+    "7": {
+     "type": "f(a)=0-근의차-비의극한",
+     "cat": "lim_poly",
+     "unit": "함수의 극한 > 다항함수의 결정",
+     "answer": "4",
+     "grade": "int"
+    },
+    "8": {
+     "type": "여러점의비-근의배치-삼차함수결정",
+     "cat": "lim_poly",
+     "unit": "함수의 극한 > 다항함수의 결정",
+     "answer": "12",
+     "grade": "int"
+    },
+    "9": {
+     "type": "n으로경우나누기-차수와최저차-f(1)최댓값",
+     "cat": "lim_poly",
+     "unit": "함수의 극한 > 다항함수의 결정",
+     "answer": "14",
+     "grade": "int"
+    },
+    "10": {
+     "type": "분모0회피-판별식-정수k의개수",
+     "cat": "lim_undet",
+     "unit": "함수의 극한 > 미정계수의 결정",
+     "answer": "8",
+     "grade": "int"
+    },
+    "11": {
+     "type": "근의사슬-고정점-정수계수최댓값",
+     "cat": "lim_poly",
+     "unit": "함수의 극한 > 다항함수의 결정",
+     "answer": "16",
+     "grade": "int"
+    },
+    "12": {
+     "type": "직선y=x공통근-x³차수맞추기-두조건",
+     "cat": "lim_poly",
+     "unit": "함수의 극한 > 다항함수의 결정",
+     "answer": "68",
+     "grade": "int"
+    }
+   }
+  },
+  "daily||미적분1||문풀반(실력)||함수의 연속(1)": {
+   "name": "함수의 연속(1)",
+   "unit": "함수의 연속(1)",
+   "order": 3,
+   "totalCount": 15,
+   "typeMap": {
+    "1": {
+     "type": "그래프-곱함수의극한과연속-참거짓",
+     "cat": "cont_prop",
+     "unit": "함수의 연속 > 연속함수의 성질",
+     "answer": "ㄴ,ㄷ",
+     "grade": "self"
+    },
+    "2": {
+     "type": "구간별합·차-좌우극한차-연속",
+     "cat": "cont_piece",
+     "unit": "함수의 연속 > 함수의 연속",
+     "answer": "3",
+     "grade": "int"
+    },
+    "3": {
+     "type": "제곱합성-좌우절댓값같음-미정계수",
+     "cat": "cont_abs",
+     "unit": "함수의 연속 > 연속함수의 성질",
+     "answer": "-5/4",
+     "grade": "frac"
+    },
+    "4": {
+     "type": "유리식-분자0-좌우값맞추기",
+     "cat": "cont_def",
+     "unit": "함수의 연속 > 함수의 연속",
+     "answer": "1",
+     "grade": "int"
+    },
+    "5": {
+     "type": "무리식-유리화-좌우값맞추기",
+     "cat": "cont_def",
+     "unit": "함수의 연속 > 함수의 연속",
+     "answer": "6",
+     "grade": "int"
+    },
+    "6": {
+     "type": "절댓값함수-두이음매-양수조건",
+     "cat": "cont_abs",
+     "unit": "함수의 연속 > 연속함수의 성질",
+     "answer": "11/3",
+     "grade": "frac"
+    },
+    "7": {
+     "type": "인수정리-몫함수-연속",
+     "cat": "cont_poly",
+     "unit": "함수의 연속 > 함수의 연속",
+     "answer": "-2",
+     "grade": "int"
+    },
+    "8": {
+     "type": "그래프-곱함수연속-인수0",
+     "cat": "cont_piece",
+     "unit": "함수의 연속 > 연속함수의 성질",
+     "answer": "-1",
+     "grade": "int"
+    },
+    "9": {
+     "type": "차수결정-중근-곱함수연속",
+     "cat": "cont_poly",
+     "unit": "함수의 연속 > 함수의 연속",
+     "answer": "8",
+     "grade": "int"
+    },
+    "10": {
+     "type": "평행이동-불연속점한개-값의곱",
+     "cat": "cont_cnt",
+     "unit": "함수의 연속 > 연속함수의 성질",
+     "answer": "-16",
+     "grade": "int"
+    },
+    "11": {
+     "type": "절댓값·대칭합성-x=0연속-참거짓",
+     "cat": "cont_prop",
+     "unit": "함수의 연속 > 연속함수의 성질",
+     "answer": "ㄱ,ㄴ",
+     "grade": "self"
+    },
+    "12": {
+     "type": "부호함수-극한존재-사차함수결정",
+     "cat": "cont_poly",
+     "unit": "함수의 연속 > 연속함수의 성질",
+     "answer": "42",
+     "grade": "int"
+    },
+    "13": {
+     "type": "사잇값정리-실근최소개수",
+     "cat": "cont_cnt",
+     "unit": "함수의 연속 > 사잇값의 정리",
+     "answer": "3",
+     "grade": "int"
+    },
+    "14": {
+     "type": "교점개수함수-불연속-참거짓",
+     "cat": "cont_cnt",
+     "unit": "함수의 연속 > 연속함수의 성질",
+     "answer": "ㄱ,ㄴ,ㄷ",
+     "grade": "self"
+    },
+    "15": {
+     "type": "구간함수의곱-이음매연속-미정계수",
+     "cat": "cont_piece",
+     "unit": "함수의 연속 > 함수의 연속",
+     "answer": "-7",
+     "grade": "int"
+    }
+   }
+  },
+  "daily||미적분1||문풀반(실력)||함수의 연속(2)": {
+   "name": "함수의 연속(2)",
+   "unit": "함수의 연속(2)",
+   "order": 4,
+   "totalCount": 12,
+   "typeMap": {
+    "1": {
+     "type": "분수꼴연속-극한조건-다항함수결정",
+     "cat": "cont_poly",
+     "unit": "함수의 연속 > 다항함수의 결정",
+     "answer": "-2",
+     "grade": "int"
+    },
+    "2": {
+     "type": "항등식-인수대입-미정계수합",
+     "cat": "cont_poly",
+     "unit": "함수의 연속 > 다항함수의 결정",
+     "answer": "2",
+     "grade": "int"
+    },
+    "3": {
+     "type": "구간이어붙이기-역수함수불연속-이차함수결정",
+     "cat": "cont_piece",
+     "unit": "함수의 연속 > 구간함수의 연속",
+     "answer": "16",
+     "grade": "int"
+    },
+    "4": {
+     "type": "닫힌구간연속-최댓값최솟값의곱",
+     "cat": "cont_def",
+     "unit": "함수의 연속 > 연속의 정의와 미정계수",
+     "answer": "10",
+     "grade": "int"
+    },
+    "5": {
+     "type": "구간함수연속-최댓값조건-미정계수",
+     "cat": "cont_piece",
+     "unit": "함수의 연속 > 구간함수의 연속",
+     "answer": "16",
+     "grade": "int"
+    },
+    "6": {
+     "type": "주기함수연속-실근개수-f(7)의값의합",
+     "cat": "cont_cnt",
+     "unit": "함수의 연속 > 불연속점·개수함수",
+     "answer": "0",
+     "grade": "int"
+    },
+    "7": {
+     "type": "절댓값곱연속-좌우극한의차",
+     "cat": "cont_abs",
+     "unit": "함수의 연속 > 절댓값·합성함수의 연속",
+     "answer": "18",
+     "grade": "int"
+    },
+    "8": {
+     "type": "절댓값구간함수-불연속점과곱의연속 참거짓",
+     "cat": "cont_prop",
+     "unit": "함수의 연속 > 연속함수의 성질",
+     "answer": "ㄱ, ㄴ, ㄷ",
+     "grade": "free"
+    },
+    "9": {
+     "type": "분수꼴연속-극한조건-삼차함수결정",
+     "cat": "cont_poly",
+     "unit": "함수의 연속 > 다항함수의 결정",
+     "answer": "20",
+     "grade": "int"
+    },
+    "10": {
+     "type": "인수분해로분기고르기-최대최소조건",
+     "cat": "cont_branch",
+     "unit": "함수의 연속 > 분기 고르기",
+     "answer": "3/2",
+     "grade": "free"
+    },
+    "11": {
+     "type": "두구간함수의곱-연속되도록상수",
+     "cat": "cont_piece",
+     "unit": "함수의 연속 > 구간함수의 연속",
+     "answer": "1",
+     "grade": "int"
+    },
+    "12": {
+     "type": "한점만불연속-극한과함숫값조건",
+     "cat": "cont_def",
+     "unit": "함수의 연속 > 연속의 정의와 미정계수",
+     "answer": "5",
+     "grade": "int"
+    }
+   }
+  },
+  "daily||미적분1||문풀반(실력)||미분계수와 도함수(1)": {
+   "name": "미분계수와 도함수(1)",
+   "unit": "미분계수와 도함수(1)",
+   "order": 5,
+   "totalCount": 15,
+   "typeMap": {
+    "1": {
+     "type": "두구간평균변화율같음-양수결정",
+     "cat": "diff_avg",
+     "unit": "미분계수와 도함수 > 평균변화율",
+     "answer": "3",
+     "grade": "int"
+    },
+    "2": {
+     "type": "차이식항등식-양변미분-f'(1)",
+     "cat": "diff_poly",
+     "unit": "미분계수와 도함수 > 다항함수의 결정",
+     "answer": "26",
+     "grade": "int"
+    },
+    "3": {
+     "type": "평균변화율=접선기울기-양수결정",
+     "cat": "diff_avg",
+     "unit": "미분계수와 도함수 > 평균변화율",
+     "answer": "√7",
+     "grade": "free"
+    },
+    "4": {
+     "type": "미분계수정의변형-f(1+2h)꼴",
+     "cat": "diff_def",
+     "unit": "미분계수와 도함수 > 미분계수의 정의",
+     "answer": "7",
+     "grade": "int"
+    },
+    "5": {
+     "type": "두극한조건-f'(1)과g(1)-ab",
+     "cat": "diff_def",
+     "unit": "미분계수와 도함수 > 미분계수의 정의",
+     "answer": "6",
+     "grade": "int"
+    },
+    "6": {
+     "type": "함수방정식-f(x+y)=f+g+2xy-1",
+     "cat": "diff_func",
+     "unit": "미분계수와 도함수 > 함수방정식",
+     "answer": "28",
+     "grade": "int"
+    },
+    "7": {
+     "type": "분기정의함수-미분불가능점개수 참거짓",
+     "cat": "diff_nondiff",
+     "unit": "미분계수와 도함수 > 미분가능성",
+     "answer": "ㄱ, ㄴ, ㄷ",
+     "grade": "free"
+    },
+    "8": {
+     "type": "절댓값함수-좌우미분계수의차",
+     "cat": "diff_nondiff",
+     "unit": "미분계수와 도함수 > 미분가능성",
+     "answer": "9",
+     "grade": "int"
+    },
+    "9": {
+     "type": "곱의미분-시그마곱함수-g'(1)",
+     "cat": "diff_rule",
+     "unit": "미분계수와 도함수 > 도함수의 계산",
+     "answer": "29",
+     "grade": "int"
+    },
+    "10": {
+     "type": "삼차함수-세실근등비수열-f(3)",
+     "cat": "diff_poly",
+     "unit": "미분계수와 도함수 > 다항함수의 결정",
+     "answer": "7",
+     "grade": "int"
+    },
+    "11": {
+     "type": "곱의극한조건-f'(1)",
+     "cat": "diff_def",
+     "unit": "미분계수와 도함수 > 미분계수의 정의",
+     "answer": "5",
+     "grade": "int"
+    },
+    "12": {
+     "type": "미분계수정의-상수결정",
+     "cat": "diff_def",
+     "unit": "미분계수와 도함수 > 미분계수의 정의",
+     "answer": "5",
+     "grade": "int"
+    },
+    "13": {
+     "type": "극한과f'제곱-삼차함수결정",
+     "cat": "diff_poly",
+     "unit": "미분계수와 도함수 > 다항함수의 결정",
+     "answer": "10",
+     "grade": "int"
+    },
+    "14": {
+     "type": "xf'-3f항등식-다항함수결정",
+     "cat": "diff_poly",
+     "unit": "미분계수와 도함수 > 다항함수의 결정",
+     "answer": "3",
+     "grade": "int"
+    },
+    "15": {
+     "type": "접선기울기함수-집합조건-g(2)",
+     "cat": "diff_graph",
+     "unit": "미분계수와 도함수 > 접선의 기울기",
+     "answer": "-33",
+     "grade": "int"
+    }
+   }
+  },
+  "daily||미적분1||문풀반(실력)||미분계수와 도함수(2)": {
+   "name": "미분계수와 도함수(2)",
+   "unit": "미분계수와 도함수(2)",
+   "order": 6,
+   "totalCount": 12,
+   "typeMap": {
+    "1": {
+     "type": "극한조건과접선기울기-삼차함수결정",
+     "cat": "diff_poly",
+     "unit": "미분계수와 도함수 > 다항함수의 결정",
+     "answer": "12",
+     "grade": "int"
+    },
+    "2": {
+     "type": "시그마합함수-미분계수정의",
+     "cat": "diff_def",
+     "unit": "미분계수와 도함수 > 미분계수의 정의",
+     "answer": "8",
+     "grade": "int"
+    },
+    "3": {
+     "type": "무한대극한과분수극한-다항함수결정",
+     "cat": "diff_poly",
+     "unit": "미분계수와 도함수 > 다항함수의 결정",
+     "answer": "9",
+     "grade": "int"
+    },
+    "4": {
+     "type": "부등식사이낀함수-미분계수",
+     "cat": "diff_def",
+     "unit": "미분계수와 도함수 > 미분계수의 정의",
+     "answer": "5",
+     "grade": "int"
+    },
+    "5": {
+     "type": "구간함수미분가능-f'(2)",
+     "cat": "diff_nondiff",
+     "unit": "미분계수와 도함수 > 미분가능성",
+     "answer": "7",
+     "grade": "int"
+    },
+    "6": {
+     "type": "사차함수-인수조건과극한-f(3)",
+     "cat": "diff_poly",
+     "unit": "미분계수와 도함수 > 다항함수의 결정",
+     "answer": "5",
+     "grade": "int"
+    },
+    "7": {
+     "type": "시그마와미분계수정의-a+b",
+     "cat": "diff_def",
+     "unit": "미분계수와 도함수 > 미분계수의 정의",
+     "answer": "2",
+     "grade": "int"
+    },
+    "8": {
+     "type": "평균변화율과극한조건-사차함수",
+     "cat": "diff_avg",
+     "unit": "미분계수와 도함수 > 평균변화율",
+     "answer": "18",
+     "grade": "int"
+    },
+    "9": {
+     "type": "두극한조건-곱함수-g(-5)",
+     "cat": "diff_def",
+     "unit": "미분계수와 도함수 > 미분계수의 정의",
+     "answer": "147",
+     "grade": "int"
+    },
+    "10": {
+     "type": "구간함수와다항식의곱-연속·미분가능 참거짓",
+     "cat": "diff_nondiff",
+     "unit": "미분계수와 도함수 > 미분가능성",
+     "answer": "ㄱ, ㄴ",
+     "grade": "free"
+    },
+    "11": {
+     "type": "두극한조건-삼차함수결정",
+     "cat": "diff_poly",
+     "unit": "미분계수와 도함수 > 다항함수의 결정",
+     "answer": "18",
+     "grade": "int"
+    },
+    "12": {
+     "type": "부등식사이평균변화율-f'(3)",
+     "cat": "diff_avg",
+     "unit": "미분계수와 도함수 > 평균변화율",
+     "answer": "31",
+     "grade": "int"
+    }
+   }
+  },
+  "daily||미적분1||문풀반(실력)||접선의 방정식과 평균값의 정리(1)": {
+   "name": "접선의 방정식과 평균값의 정리(1)",
+   "unit": "접선의 방정식과 평균값의 정리(1)",
+   "order": 7,
+   "totalCount": 15,
+   "typeMap": {
+    "1": {
+     "type": "극한조건-삼차함수결정-접선기울기",
+     "cat": "tan_slope",
+     "unit": "접선의 방정식 > 곡선 위의 점에서의 접선",
+     "answer": "20",
+     "grade": "int"
+    },
+    "2": {
+     "type": "두곡선의접선일치-f'(2)",
+     "cat": "tan_two",
+     "unit": "접선의 방정식 > 공통접선",
+     "answer": "-14",
+     "grade": "int"
+    },
+    "3": {
+     "type": "k에무관한고정점-접선이한점에서만남",
+     "cat": "tan_touch",
+     "unit": "접선의 방정식 > 접하는 조건",
+     "answer": "3",
+     "grade": "int"
+    },
+    "4": {
+     "type": "두조건-g의접선방정식-a²+b²",
+     "cat": "tan_slope",
+     "unit": "접선의 방정식 > 곡선 위의 점에서의 접선",
+     "answer": "97",
+     "grade": "int"
+    },
+    "5": {
+     "type": "접선에수직인직선-x절편",
+     "cat": "tan_perp",
+     "unit": "접선의 방정식 > 수직·평행인 접선",
+     "answer": "4",
+     "grade": "int"
+    },
+    "6": {
+     "type": "두접선과y축-둘러싼넓이",
+     "cat": "tan_area",
+     "unit": "접선의 방정식 > 접선과 넓이",
+     "answer": "49",
+     "grade": "int"
+    },
+    "7": {
+     "type": "접선과곡선의교점-원과선분의곱",
+     "cat": "tan_geom",
+     "unit": "접선의 방정식 > 도형에의 활용",
+     "answer": "25",
+     "grade": "int"
+    },
+    "8": {
+     "type": "직선이곡선에접함-상수결정",
+     "cat": "tan_touch",
+     "unit": "접선의 방정식 > 접하는 조건",
+     "answer": "11",
+     "grade": "int"
+    },
+    "9": {
+     "type": "기울기최대인접선-축과둘러싼넓이",
+     "cat": "tan_area",
+     "unit": "접선의 방정식 > 접선과 넓이",
+     "answer": "3/2",
+     "grade": "free"
+    },
+    "10": {
+     "type": "거리최소인점-선분의극한",
+     "cat": "tan_geom",
+     "unit": "접선의 방정식 > 도형에의 활용",
+     "answer": "2√2",
+     "grade": "free"
+    },
+    "11": {
+     "type": "원점에서그은접선-기울기의합",
+     "cat": "tan_out",
+     "unit": "접선의 방정식 > 곡선 밖의 점에서 그은 접선",
+     "answer": "9/4",
+     "grade": "free"
+    },
+    "12": {
+     "type": "두곡선의접선일치-양수결정",
+     "cat": "tan_two",
+     "unit": "접선의 방정식 > 공통접선",
+     "answer": "22",
+     "grade": "int"
+    },
+    "13": {
+     "type": "평균값의정리-f(5)의최솟값",
+     "cat": "mvt",
+     "unit": "평균값의 정리 > 평균값의 정리",
+     "answer": "23",
+     "grade": "int"
+    },
+    "14": {
+     "type": "곡선에접하고중심이y축-원의넓이",
+     "cat": "tan_geom",
+     "unit": "접선의 방정식 > 도형에의 활용",
+     "answer": "33",
+     "grade": "int"
+    },
+    "15": {
+     "type": "한점에서만나고접선이수직-b-a",
+     "cat": "tan_perp",
+     "unit": "접선의 방정식 > 수직·평행인 접선",
+     "answer": "-5",
+     "grade": "int"
+    }
+   }
+  },
+  "daily||미적분1||문풀반(실력)||접선의 방정식과 평균값의 정리(2)": {
+   "name": "접선의 방정식과 평균값의 정리(2)",
+   "unit": "접선의 방정식과 평균값의 정리(2)",
+   "order": 8,
+   "totalCount": 6,
+   "typeMap": {
+    "1": {
+     "type": "그래프읽기-곱함수의접선-a-b",
+     "cat": "tan_slope",
+     "unit": "접선의 방정식 > 곡선 위의 점에서의 접선",
+     "answer": "7",
+     "grade": "int"
+    },
+    "2": {
+     "type": "곱과극한조건-g의접선-a-b",
+     "cat": "tan_slope",
+     "unit": "접선의 방정식 > 곡선 위의 점에서의 접선",
+     "answer": "10",
+     "grade": "int"
+    },
+    "3": {
+     "type": "두점에서그은접선이평행-90a",
+     "cat": "tan_out",
+     "unit": "접선의 방정식 > 곡선 밖의 점에서 그은 접선",
+     "answer": "20",
+     "grade": "int"
+    },
+    "4": {
+     "type": "곡선과직선의교점-삼각형넓이최대",
+     "cat": "tan_geom",
+     "unit": "접선의 방정식 > 도형에의 활용",
+     "answer": "1/2",
+     "grade": "free"
+    },
+    "5": {
+     "type": "두접선이한점에서만남-f(0)",
+     "cat": "tan_out",
+     "unit": "접선의 방정식 > 곡선 밖의 점에서 그은 접선",
+     "answer": "35",
+     "grade": "int"
+    },
+    "6": {
+     "type": "구간함수미분가능과부등식-k의최솟값",
+     "cat": "tan_touch",
+     "unit": "접선의 방정식 > 접하는 조건",
+     "answer": "32",
+     "grade": "int"
+    }
+   }
+  },
+  "daily||미적분1||문풀반(실력)||함수의 극대 극소와 그래프(1)": {
+   "name": "함수의 극대 극소와 그래프(1)",
+   "unit": "함수의 극대 극소와 그래프(1)",
+   "order": 9,
+   "totalCount": 17,
+   "typeMap": {
+    "1": {
+     "type": "구간함수의증가감소-a+b의최대최소",
+     "cat": "inc_dec",
+     "unit": "함수의 증가와 감소 > 도함수의 부호",
+     "answer": "9/2+3√2",
+     "grade": "free"
+    },
+    "2": {
+     "type": "절댓값낀삼차함수증가-a의최댓값",
+     "cat": "inc_dec",
+     "unit": "함수의 증가와 감소 > 도함수의 부호",
+     "answer": "-5/2",
+     "grade": "free"
+    },
+    "3": {
+     "type": "접선의y절편함수증가-a의최솟값",
+     "cat": "inc_dec",
+     "unit": "함수의 증가와 감소 > 도함수의 부호",
+     "answer": "13",
+     "grade": "int"
+    },
+    "4": {
+     "type": "이차함수그래프-f'(f-2)≤0 정수개수",
+     "cat": "ext_graph",
+     "unit": "함수의 그래프 > 그래프의 개형",
+     "answer": "5",
+     "grade": "int"
+    },
+    "5": {
+     "type": "삼차함수-극댓값과극솟값의합",
+     "cat": "ext_basic",
+     "unit": "극대와 극소 > 극값 구하기",
+     "answer": "15",
+     "grade": "int"
+    },
+    "6": {
+     "type": "극솟값이a-극댓값구하기",
+     "cat": "ext_cond",
+     "unit": "극대와 극소 > 극값을 가질 조건",
+     "answer": "10",
+     "grade": "int"
+    },
+    "7": {
+     "type": "절댓값삼차함수-두극대가같음-p",
+     "cat": "ext_abs",
+     "unit": "극대와 극소 > 절댓값·구간함수의 극값",
+     "answer": "2",
+     "grade": "int"
+    },
+    "8": {
+     "type": "곱함수-극솟값조건-g'(3)",
+     "cat": "ext_basic",
+     "unit": "극대와 극소 > 극값 구하기",
+     "answer": "8",
+     "grade": "int"
+    },
+    "9": {
+     "type": "삼차함수실근과극솟값 참거짓",
+     "cat": "ext_graph",
+     "unit": "함수의 그래프 > 그래프의 개형",
+     "answer": "ㄱ, ㄴ",
+     "grade": "free"
+    },
+    "10": {
+     "type": "극값을가질정수a의개수",
+     "cat": "ext_cond",
+     "unit": "극대와 극소 > 극값을 가질 조건",
+     "answer": "5",
+     "grade": "int"
+    },
+    "11": {
+     "type": "극한조건과교점개수-f(4)",
+     "cat": "ext_graph",
+     "unit": "함수의 그래프 > 그래프의 개형",
+     "answer": "19",
+     "grade": "int"
+    },
+    "12": {
+     "type": "절댓값식과미분불가능개수-p+q",
+     "cat": "ext_abs",
+     "unit": "극대와 극소 > 절댓값·구간함수의 극값",
+     "answer": "8",
+     "grade": "int"
+    },
+    "13": {
+     "type": "구간함수의극한과극값 참거짓",
+     "cat": "ext_abs",
+     "unit": "극대와 극소 > 절댓값·구간함수의 극값",
+     "answer": "ㄱ, ㄴ",
+     "grade": "free"
+    },
+    "14": {
+     "type": "두도함수그래프-차함수 참거짓",
+     "cat": "ext_graph",
+     "unit": "함수의 그래프 > 그래프의 개형",
+     "answer": "ㄱ, ㄴ, ㄷ",
+     "grade": "free"
+    },
+    "15": {
+     "type": "우함수사차함수-극댓값조건-극솟값",
+     "cat": "ext_basic",
+     "unit": "극대와 극소 > 극값 구하기",
+     "answer": "-2",
+     "grade": "int"
+    },
+    "16": {
+     "type": "합성함수의최솟값-k의최솟값",
+     "cat": "max_min",
+     "unit": "최대·최소 > 최댓값과 최솟값",
+     "answer": "3/2",
+     "grade": "free"
+    },
+    "17": {
+     "type": "닫힌구간최대최소-a+M",
+     "cat": "max_min",
+     "unit": "최대·최소 > 최댓값과 최솟값",
+     "answer": "12",
+     "grade": "int"
+    }
+   }
+  },
+  "daily||미적분1||문풀반(실력)||함수의 극대 극소와 그래프(2)": {
+   "name": "함수의 극대 극소와 그래프(2)",
+   "unit": "함수의 극대 극소와 그래프(2)",
+   "order": 10,
+   "totalCount": 12,
+   "typeMap": {
+    "1": {
+     "type": "두극한조건-극대극소의x좌표차",
+     "cat": "ext_basic",
+     "unit": "극대와 극소 > 극값 구하기",
+     "answer": "3",
+     "grade": "int"
+    },
+    "2": {
+     "type": "곱함수-교점개수와극댓값없음-p+q",
+     "cat": "ext_cond",
+     "unit": "극대와 극소 > 극값을 가질 조건",
+     "answer": "43",
+     "grade": "int"
+    },
+    "3": {
+     "type": "교점개수와극대조건-극솟값",
+     "cat": "ext_graph",
+     "unit": "함수의 그래프 > 그래프의 개형",
+     "answer": "50",
+     "grade": "int"
+    },
+    "4": {
+     "type": "절댓값미분불가능과곱의극댓값-원소의합",
+     "cat": "ext_abs",
+     "unit": "극대와 극소 > 절댓값·구간함수의 극값",
+     "answer": "6",
+     "grade": "int"
+    },
+    "5": {
+     "type": "함수방정식-극대극소의x좌표-a²+b²",
+     "cat": "ext_basic",
+     "unit": "극대와 극소 > 극값 구하기",
+     "answer": "4",
+     "grade": "int"
+    },
+    "6": {
+     "type": "교점개수함수의불연속-f(-4)",
+     "cat": "ext_graph",
+     "unit": "함수의 그래프 > 그래프의 개형",
+     "answer": "30",
+     "grade": "int"
+    },
+    "7": {
+     "type": "사차함수도함수부호 참거짓",
+     "cat": "ext_graph",
+     "unit": "함수의 그래프 > 그래프의 개형",
+     "answer": "ㄱ, ㄷ",
+     "grade": "free"
+    },
+    "8": {
+     "type": "최댓값함수의미분가능-a의최댓값",
+     "cat": "max_min",
+     "unit": "최대·최소 > 최댓값과 최솟값",
+     "answer": "1",
+     "grade": "int"
+    },
+    "9": {
+     "type": "f(x)∓x=0 실근개수조건-f(3)",
+     "cat": "ext_graph",
+     "unit": "함수의 그래프 > 그래프의 개형",
+     "answer": "51",
+     "grade": "int"
+    },
+    "10": {
+     "type": "극댓값조건과부호-f(-1)",
+     "cat": "ext_cond",
+     "unit": "극대와 극소 > 극값을 가질 조건",
+     "answer": "2",
+     "grade": "int"
+    },
+    "11": {
+     "type": "f+|f'x|의조건-g(3)",
+     "cat": "ext_abs",
+     "unit": "극대와 극소 > 절댓값·구간함수의 극값",
+     "answer": "9",
+     "grade": "int"
+    },
+    "12": {
+     "type": "구간함수미분가능과도함수근개수-g(-2)+g(2)",
+     "cat": "ext_abs",
+     "unit": "극대와 극소 > 절댓값·구간함수의 극값",
+     "answer": "32",
+     "grade": "int"
+    }
+   }
+  },
+  "daily||미적분1||문풀반(실력)||방정식과 부등식(1)": {
+   "name": "방정식과 부등식(1)",
+   "unit": "방정식과 부등식(1)",
+   "order": 11,
+   "totalCount": 15,
+   "typeMap": {
+    "1": {
+     "type": "절댓값삼차함수=t 실근3개-t의합",
+     "cat": "eq_abs",
+     "unit": "방정식에의 활용 > 절댓값 그래프",
+     "answer": "6",
+     "grade": "int"
+    },
+    "2": {
+     "type": "구간에서두실근-정수a의개수",
+     "cat": "eq_root",
+     "unit": "방정식에의 활용 > 실근의 개수",
+     "answer": "8",
+     "grade": "int"
+    },
+    "3": {
+     "type": "사차도함수그래프 참거짓",
+     "cat": "ext_graph",
+     "unit": "함수의 그래프 > 그래프의 개형",
+     "answer": "ㄴ, ㄷ",
+     "grade": "free"
+    },
+    "4": {
+     "type": "양의실근2개-정수k의개수",
+     "cat": "eq_root",
+     "unit": "방정식에의 활용 > 실근의 개수",
+     "answer": "7",
+     "grade": "int"
+    },
+    "5": {
+     "type": "사차방정식실근4개-자연수k개수",
+     "cat": "eq_root",
+     "unit": "방정식에의 활용 > 실근의 개수",
+     "answer": "4",
+     "grade": "int"
+    },
+    "6": {
+     "type": "곡선과직선두점에서만남-k의곱",
+     "cat": "eq_meet",
+     "unit": "방정식에의 활용 > 곡선과 직선의 교점",
+     "answer": "21",
+     "grade": "int"
+    },
+    "7": {
+     "type": "구간부등식-양수k의최솟값",
+     "cat": "ineq_rng",
+     "unit": "부등식에의 활용 > 구간에서 성립",
+     "answer": "15",
+     "grade": "int"
+    },
+    "8": {
+     "type": "모든실수부등식-k의최솟값",
+     "cat": "ineq_all",
+     "unit": "부등식에의 활용 > 모든 실수에서 성립",
+     "answer": "32",
+     "grade": "int"
+    },
+    "9": {
+     "type": "두함수사이직선-자연수k가3개-a",
+     "cat": "ineq_all",
+     "unit": "부등식에의 활용 > 모든 실수에서 성립",
+     "answer": "34",
+     "grade": "int"
+    },
+    "10": {
+     "type": "위치가같아지는순간-가속도의차",
+     "cat": "vel_line",
+     "unit": "속도와 가속도 > 수직선 위의 운동",
+     "answer": "24",
+     "grade": "int"
+    },
+    "11": {
+     "type": "운동방향두번바뀜-정수k의개수",
+     "cat": "vel_line",
+     "unit": "속도와 가속도 > 수직선 위의 운동",
+     "answer": "7",
+     "grade": "int"
+    },
+    "12": {
+     "type": "두점사이거리최소-가속도",
+     "cat": "vel_line",
+     "unit": "속도와 가속도 > 수직선 위의 운동",
+     "answer": "14",
+     "grade": "int"
+    },
+    "13": {
+     "type": "자유낙하-충돌순간의속도",
+     "cat": "vel_rate",
+     "unit": "속도와 가속도 > 변화율의 활용",
+     "answer": "-19.6",
+     "grade": "free"
+    },
+    "14": {
+     "type": "반구그릇-수면넓이의변화율",
+     "cat": "vel_rate",
+     "unit": "속도와 가속도 > 변화율의 활용",
+     "answer": "10π",
+     "grade": "free"
+    },
+    "15": {
+     "type": "원뿔그릇-부피의변화율",
+     "cat": "vel_rate",
+     "unit": "속도와 가속도 > 변화율의 활용",
+     "answer": "π",
+     "grade": "free"
+    }
+   }
+  },
+  "daily||미적분1||문풀반(실력)||방정식과 부등식(2)": {
+   "name": "방정식과 부등식(2)",
+   "unit": "방정식과 부등식(2)",
+   "order": 12,
+   "totalCount": 12,
+   "typeMap": {
+    "1": {
+     "type": "도함수그래프-f=kx+1 세실근-정수k최솟값",
+     "cat": "eq_meet",
+     "unit": "방정식에의 활용 > 곡선과 직선의 교점",
+     "answer": "-1",
+     "grade": "int"
+    },
+    "2": {
+     "type": "삼차와이차가세점에서만남-자연수a최솟값",
+     "cat": "eq_meet",
+     "unit": "방정식에의 활용 > 곡선과 직선의 교점",
+     "answer": "3",
+     "grade": "int"
+    },
+    "3": {
+     "type": "사차도함수그래프-근의부호조건-3k",
+     "cat": "eq_root",
+     "unit": "방정식에의 활용 > 실근의 개수",
+     "answer": "5",
+     "grade": "int"
+    },
+    "4": {
+     "type": "기함수조건과절댓값그래프-네점-f(2)",
+     "cat": "eq_abs",
+     "unit": "방정식에의 활용 > 절댓값 그래프",
+     "answer": "4",
+     "grade": "int"
+    },
+    "5": {
+     "type": "곡선과직선두점에서만남-양수k",
+     "cat": "eq_meet",
+     "unit": "방정식에의 활용 > 곡선과 직선의 교점",
+     "answer": "5",
+     "grade": "int"
+    },
+    "6": {
+     "type": "치환부등식-정수n의최댓값",
+     "cat": "ineq_all",
+     "unit": "부등식에의 활용 > 모든 실수에서 성립",
+     "answer": "-54",
+     "grade": "int"
+    },
+    "7": {
+     "type": "(x+n)f≥0조건-극댓값이자연수-n최솟값",
+     "cat": "ineq_all",
+     "unit": "부등식에의 활용 > 모든 실수에서 성립",
+     "answer": "3",
+     "grade": "int"
+    },
+    "8": {
+     "type": "집합의원소1개-t의값의합",
+     "cat": "eq_root",
+     "unit": "방정식에의 활용 > 실근의 개수",
+     "answer": "6",
+     "grade": "int"
+    },
+    "9": {
+     "type": "속도가같아지는순간세번-정수m",
+     "cat": "vel_line",
+     "unit": "속도와 가속도 > 수직선 위의 운동",
+     "answer": "9",
+     "grade": "int"
+    },
+    "10": {
+     "type": "위치와속도조건-t=b에서가속도",
+     "cat": "vel_line",
+     "unit": "속도와 가속도 > 수직선 위의 운동",
+     "answer": "12",
+     "grade": "int"
+    },
+    "11": {
+     "type": "절댓값삼차와수평선-교점개수홀수-k",
+     "cat": "eq_abs",
+     "unit": "방정식에의 활용 > 절댓값 그래프",
+     "answer": "16",
+     "grade": "int"
+    },
+    "12": {
+     "type": "f=0과f(x-f(x))=0 실근개수-f(0)",
+     "cat": "eq_root",
+     "unit": "방정식에의 활용 > 실근의 개수",
+     "answer": "61",
+     "grade": "int"
+    }
+   }
+  },
+  "daily||미적분1||문풀반(실력)||부정적분(1)": {
+   "name": "부정적분(1)",
+   "unit": "부정적분(1)",
+   "order": 13,
+   "totalCount": 10,
+   "typeMap": {
+    "1": {
+     "type": "두부정적분의관계-G-2F",
+     "cat": "int_basic",
+     "unit": "부정적분 > 부정적분의 뜻과 계산",
+     "answer": "2",
+     "grade": "int"
+    },
+    "2": {
+     "type": "미분과적분의순서바꾸기-f(0)",
+     "cat": "int_basic",
+     "unit": "부정적분 > 부정적분의 뜻과 계산",
+     "answer": "1",
+     "grade": "int"
+    },
+    "3": {
+     "type": "두부정적분의차-f(4)",
+     "cat": "int_basic",
+     "unit": "부정적분 > 부정적분의 뜻과 계산",
+     "answer": "13",
+     "grade": "int"
+    },
+    "4": {
+     "type": "곱의도함수조건-g(-2)",
+     "cat": "int_fn",
+     "unit": "부정적분 > 조건식에서 함수 결정",
+     "answer": "-4",
+     "grade": "int"
+    },
+    "5": {
+     "type": "f'이이차식-극값없음-f(3)",
+     "cat": "int_ext",
+     "unit": "부정적분 > 도함수와 극값",
+     "answer": "5",
+     "grade": "int"
+    },
+    "6": {
+     "type": "접선기울기가주어짐-f(-1)",
+     "cat": "int_fn",
+     "unit": "부정적분 > 조건식에서 함수 결정",
+     "answer": "5",
+     "grade": "int"
+    },
+    "7": {
+     "type": "F=(x+2)f-x³+12x-f(2)",
+     "cat": "int_fn",
+     "unit": "부정적분 > 조건식에서 함수 결정",
+     "answer": "9",
+     "grade": "int"
+    },
+    "8": {
+     "type": "함수방정식-f(3)",
+     "cat": "int_func",
+     "unit": "부정적분 > 함수방정식",
+     "answer": "14",
+     "grade": "int"
+    },
+    "9": {
+     "type": "극값없음과f(1)=f'(1)=0-f(3)",
+     "cat": "int_ext",
+     "unit": "부정적분 > 도함수와 극값",
+     "answer": "8",
+     "grade": "int"
+    },
+    "10": {
+     "type": "부정적분과초기조건-F(2)",
+     "cat": "int_basic",
+     "unit": "부정적분 > 부정적분의 뜻과 계산",
+     "answer": "16",
+     "grade": "int"
+    }
+   }
+  },
+  "daily||미적분1||문풀반(실력)||부정적분(2)": {
+   "name": "부정적분(2)",
+   "unit": "부정적분(2)",
+   "order": 14,
+   "totalCount": 12,
+   "typeMap": {
+    "1": {
+     "type": "적분과미분이같음-g(1)",
+     "cat": "int_basic",
+     "unit": "부정적분 > 부정적분의 뜻과 계산",
+     "answer": "3",
+     "grade": "int"
+    },
+    "2": {
+     "type": "세극한조건과f'=g'-g(-3)",
+     "cat": "int_fn",
+     "unit": "부정적분 > 조건식에서 함수 결정",
+     "answer": "6",
+     "grade": "int"
+    },
+    "3": {
+     "type": "함수방정식-f'(0)",
+     "cat": "int_func",
+     "unit": "부정적분 > 함수방정식",
+     "answer": "28",
+     "grade": "int"
+    },
+    "4": {
+     "type": "x축에접하고두극값-극솟값",
+     "cat": "int_ext",
+     "unit": "부정적분 > 도함수와 극값",
+     "answer": "-16",
+     "grade": "int"
+    },
+    "5": {
+     "type": "접선기울기x²+a와x축접함-극댓값",
+     "cat": "int_ext",
+     "unit": "부정적분 > 도함수와 극값",
+     "answer": "36",
+     "grade": "int"
+    },
+    "6": {
+     "type": "곱의미분꼴적분-최솟값-p+q",
+     "cat": "int_fn",
+     "unit": "부정적분 > 조건식에서 함수 결정",
+     "answer": "7",
+     "grade": "int"
+    },
+    "7": {
+     "type": "사차도함수그래프-f(m)f(m+1)<0-m의합",
+     "cat": "int_ext",
+     "unit": "부정적분 > 도함수와 극값",
+     "answer": "-2",
+     "grade": "int"
+    },
+    "8": {
+     "type": "f'이구간함수-극값과대칭 참거짓",
+     "cat": "int_abs",
+     "unit": "부정적분 > 절댓값·구간함수",
+     "answer": "ㄱ, ㄷ",
+     "grade": "free"
+    },
+    "9": {
+     "type": "F와f'제곱의항등식-F(2)",
+     "cat": "int_fn",
+     "unit": "부정적분 > 조건식에서 함수 결정",
+     "answer": "-4",
+     "grade": "int"
+    },
+    "10": {
+     "type": "두식연립-g(1)",
+     "cat": "int_fn",
+     "unit": "부정적분 > 조건식에서 함수 결정",
+     "answer": "2",
+     "grade": "int"
+    },
+    "11": {
+     "type": "F미분가능-구간함수적분-k",
+     "cat": "int_abs",
+     "unit": "부정적분 > 절댓값·구간함수",
+     "answer": "9",
+     "grade": "int"
+    },
+    "12": {
+     "type": "f(0)·f'(4)와xf'>0 범위-f(2)",
+     "cat": "int_ext",
+     "unit": "부정적분 > 도함수와 극값",
+     "answer": "10/3",
+     "grade": "free"
+    }
+   }
   }
+ }
 }
